@@ -217,15 +217,46 @@ class DataService {
       if (filters.sellerId) {
         query = query.where('sellerId', '==', filters.sellerId);
       }
+      
+      // Apply pagination limit if specified (before ordering to avoid index requirements)
+      if (filters.limit) {
+        query = query.limit(filters.limit);
+      }
 
       const snapshot = await query.get();
-      return snapshot.docs.map(doc => ({
+      const products = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      
+      // Sort in memory to avoid Firestore index requirements
+      products.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date();
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date();
+        return dateB - dateA; // descending order
+      });
+      
+      return products;
     } catch (error) {
       console.error('Error fetching products:', error);
       return [];
+    }
+  }
+
+  // Delete a product
+  async deleteProduct(productId) {
+    await this.init();
+
+    try {
+      if (!this.db || !productId) {
+        throw new Error('Invalid product ID or database not initialized');
+      }
+
+      await this.db.collection('products').doc(productId).delete();
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      throw error;
     }
   }
 

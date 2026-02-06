@@ -1,8 +1,9 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import languageManager from '../js/language.js';
+import dataService from '../js/dataService.js';
 
-export function renderProducts() {
+export async function renderProducts() {
   const t = languageManager.t.bind(languageManager);
   
   const content = `
@@ -77,7 +78,19 @@ export function renderProducts() {
         </div>
       </div>
 
-      <div class="empty-state">
+      <!-- Products Loading State -->
+      <div id="products-loading" style="display: flex; justify-content: center; padding: 40px;">
+        <div class="spinner"></div>
+        <p style="margin-left: 12px;">Loading products...</p>
+      </div>
+
+      <!-- Products Grid -->
+      <div id="products-grid" style="display: none;">
+        <!-- Products will be loaded here -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state" style="display: none;">
         <i data-lucide="package" style="width: 64px; height: 64px; opacity: 0.3;"></i>
         <h2>No products yet</h2>
         <p>Start by adding your first product or use bulk import</p>
@@ -88,8 +101,159 @@ export function renderProducts() {
   renderPageWithLayout(content, 'seller');
   if (window.lucide) window.lucide.createIcons();
   
+  // Load and display products
+  await loadProducts();
+  
   // Initialize bulk import functionality
   initializeBulkImport();
+}
+
+// Load products from Firestore
+async function loadProducts() {
+  const loadingEl = document.getElementById('products-loading');
+  const gridEl = document.getElementById('products-grid');
+  const emptyStateEl = document.getElementById('empty-state');
+  
+  try {
+    const user = authManager.getCurrentUser();
+    if (!user) {
+      console.error('No user logged in');
+      showEmptyState();
+      return;
+    }
+
+    // Fetch products for current seller
+    const products = await dataService.getProducts({ sellerId: user.uid });
+    
+    if (loadingEl) loadingEl.style.display = 'none';
+    
+    if (products.length === 0) {
+      showEmptyState();
+    } else {
+      displayProducts(products);
+    }
+  } catch (error) {
+    console.error('Error loading products:', error);
+    if (loadingEl) loadingEl.style.display = 'none';
+    showEmptyState();
+    if (window.toast) {
+      window.toast.error('Failed to load products');
+    }
+  }
+}
+
+// Show empty state
+function showEmptyState() {
+  const loadingEl = document.getElementById('products-loading');
+  const gridEl = document.getElementById('products-grid');
+  const emptyStateEl = document.getElementById('empty-state');
+  
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (gridEl) gridEl.style.display = 'none';
+  if (emptyStateEl) {
+    emptyStateEl.style.display = 'flex';
+    if (window.lucide) window.lucide.createIcons();
+  }
+}
+
+// Display products in grid
+function displayProducts(products) {
+  const gridEl = document.getElementById('products-grid');
+  const emptyStateEl = document.getElementById('empty-state');
+  
+  if (!gridEl) return;
+  
+  if (emptyStateEl) emptyStateEl.style.display = 'none';
+  gridEl.style.display = 'grid';
+  
+  gridEl.innerHTML = `
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px 0;">
+      ${products.map(product => `
+        <div class="product-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background: white;">
+          ${product.imageUrl ? `
+            <img src="${product.imageUrl}" alt="${product.modelNumber || 'Product'}" 
+                 style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 12px;" />
+          ` : `
+            <div style="width: 100%; height: 180px; background: #f3f4f6; border-radius: 4px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
+              <i data-lucide="package" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+            </div>
+          `}
+          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #111827;">
+            ${product.modelNumber || 'Unnamed Product'}
+          </h3>
+          <p style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">
+            ${product.category || 'No category'}
+          </p>
+          <p style="font-size: 18px; font-weight: 700; color: #047857; margin-bottom: 12px;">
+            $${product.pricePerMeter ? product.pricePerMeter.toFixed(2) : '0.00'}/m
+          </p>
+          ${product.description ? `
+            <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px; line-height: 1.4;">
+              ${product.description.substring(0, 100)}${product.description.length > 100 ? '...' : ''}
+            </p>
+          ` : ''}
+          <div style="display: flex; gap: 8px; margin-top: auto;">
+            <button class="btn btn-sm btn-secondary edit-product-btn" data-id="${product.id}" style="flex: 1; font-size: 14px; padding: 6px 12px;">
+              <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>
+              Edit
+            </button>
+            <button class="btn btn-sm btn-danger delete-product-btn" data-id="${product.id}" style="flex: 1; font-size: 14px; padding: 6px 12px;">
+              <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+              Delete
+            </button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+  
+  if (window.lucide) window.lucide.createIcons();
+  
+  // Add event listeners for edit and delete buttons
+  document.querySelectorAll('.edit-product-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const productId = e.currentTarget.getAttribute('data-id');
+      editProduct(productId);
+    });
+  });
+  
+  document.querySelectorAll('.delete-product-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const productId = e.currentTarget.getAttribute('data-id');
+      deleteProduct(productId);
+    });
+  });
+}
+
+// Edit product (placeholder for future implementation)
+function editProduct(productId) {
+  if (window.toast) {
+    window.toast.info('Edit product feature coming soon');
+  }
+  console.log('Edit product:', productId);
+}
+
+// Delete product
+async function deleteProduct(productId) {
+  if (!confirm('Are you sure you want to delete this product?')) {
+    return;
+  }
+  
+  try {
+    await dataService.deleteProduct(productId);
+    
+    if (window.toast) {
+      window.toast.success('Product deleted successfully');
+    }
+    
+    // Reload products
+    await loadProducts();
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    if (window.toast) {
+      window.toast.error('Failed to delete product');
+    }
+  }
 }
 
 function initializeBulkImport() {
