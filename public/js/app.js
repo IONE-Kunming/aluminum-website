@@ -114,8 +114,9 @@ async function initApp() {
     router.handleRoute();
   });
   
-  // Export toast globally
+  // Export toast and router globally
   window.toast = toast;
+  window.router = router;
   
   // Initialize Lucide icons
   if (window.lucide) {

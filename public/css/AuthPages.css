@@ -52,6 +52,11 @@
   margin: var(--spacing-xl) 0;
 }
 
+.auth-form .btn {
+  width: 100%;
+  justify-content: center;
+}
+
 .error-message {
   display: flex;
   align-items: center;
