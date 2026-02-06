@@ -7,28 +7,29 @@ import languageManager from './language.js';
 export function renderLayout(content, userRole = null) {
   const profile = authManager.getUserProfile();
   const role = userRole || profile?.role || 'buyer';
+  const t = languageManager.t.bind(languageManager);
   
   const buyerMenuItems = [
-    { path: '/buyer/dashboard', icon: 'layout-dashboard', label: 'Dashboard' },
-    { path: '/buyer/catalog', icon: 'package', label: 'Product Catalog' },
-    { path: '/buyer/cart', icon: 'shopping-cart', label: 'Shopping Cart' },
-    { path: '/buyer/orders', icon: 'file-text', label: 'My Orders' },
-    { path: '/buyer/invoices', icon: 'file-text', label: 'Invoices' },
-    { path: '/buyer/sellers', icon: 'store', label: 'Sellers Directory' },
-    { path: '/buyer/support', icon: 'help-circle', label: 'Support' },
-    { path: '/buyer/notifications', icon: 'bell', label: 'Notifications' },
-    { path: '/buyer/profile', icon: 'user', label: 'Profile' },
+    { path: '/buyer/dashboard', icon: 'layout-dashboard', label: t('nav.dashboard') },
+    { path: '/buyer/catalog', icon: 'package', label: t('nav.catalog') },
+    { path: '/buyer/cart', icon: 'shopping-cart', label: t('nav.cart') },
+    { path: '/buyer/orders', icon: 'file-text', label: t('nav.orders') },
+    { path: '/buyer/invoices', icon: 'file-text', label: t('nav.invoices') },
+    { path: '/buyer/sellers', icon: 'store', label: t('nav.sellers') },
+    { path: '/buyer/support', icon: 'help-circle', label: t('nav.support') },
+    { path: '/buyer/notifications', icon: 'bell', label: t('nav.notifications') },
+    { path: '/buyer/profile', icon: 'user', label: t('nav.profile') },
   ];
 
   const sellerMenuItems = [
-    { path: '/seller/dashboard', icon: 'layout-dashboard', label: 'Dashboard' },
-    { path: '/seller/products', icon: 'package', label: 'My Products' },
-    { path: '/seller/orders', icon: 'file-text', label: 'Orders' },
-    { path: '/seller/invoices', icon: 'file-text', label: 'Invoices' },
-    { path: '/seller/branches', icon: 'git-branch', label: 'Branches' },
-    { path: '/seller/support', icon: 'help-circle', label: 'Support' },
-    { path: '/seller/notifications', icon: 'bell', label: 'Notifications' },
-    { path: '/seller/profile', icon: 'user', label: 'Profile' },
+    { path: '/seller/dashboard', icon: 'layout-dashboard', label: t('nav.dashboard') },
+    { path: '/seller/products', icon: 'package', label: t('nav.products') },
+    { path: '/seller/orders', icon: 'file-text', label: t('nav.orders') },
+    { path: '/seller/invoices', icon: 'file-text', label: t('nav.invoices') },
+    { path: '/seller/branches', icon: 'git-branch', label: t('nav.branches') },
+    { path: '/seller/support', icon: 'help-circle', label: t('nav.support') },
+    { path: '/seller/notifications', icon: 'bell', label: t('nav.notifications') },
+    { path: '/seller/profile', icon: 'user', label: t('nav.profile') },
   ];
 
   const menuItems = role === 'seller' ? sellerMenuItems : buyerMenuItems;
@@ -55,9 +56,17 @@ export function renderLayout(content, userRole = null) {
             <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">
               <i data-lucide="${themeManager.getTheme() === 'dark' ? 'sun' : 'moon'}"></i>
             </button>
-            <button class="language-toggle" id="language-toggle" title="Change Language">
-              ${languageManager.getLanguage().toUpperCase()}
-            </button>
+            <div class="language-dropdown">
+              <button class="language-toggle" id="language-toggle" title="Change Language">
+                ${t('languages.' + languageManager.getLanguage())}
+                <i data-lucide="chevron-down" style="width: 14px; height: 14px; margin-left: 4px;"></i>
+              </button>
+              <div class="language-dropdown-menu" id="language-menu">
+                <button class="language-option" data-lang="en">${t('languages.en')}</button>
+                <button class="language-option" data-lang="ar">${t('languages.ar')}</button>
+                <button class="language-option" data-lang="zh">${t('languages.zh')}</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -71,7 +80,7 @@ export function renderLayout(content, userRole = null) {
           
           <button class="nav-item logout-btn" id="logout-btn">
             <i data-lucide="log-out"></i>
-            <span>Sign Out</span>
+            <span>${t('nav.signOut')}</span>
           </button>
         </nav>
 
@@ -164,13 +173,29 @@ export function renderLayout(content, userRole = null) {
   });
 
   // Language toggle
-  languageToggle.addEventListener('click', () => {
-    const currentLang = languageManager.getLanguage();
-    const languages = ['en', 'zh', 'ar'];
-    const currentIndex = languages.indexOf(currentLang);
-    const nextIndex = (currentIndex + 1) % languages.length;
-    languageManager.setLanguage(languages[nextIndex]);
-  });
+  const languageToggle = document.getElementById('language-toggle');
+  const languageMenu = document.getElementById('language-menu');
+  
+  if (languageToggle && languageMenu) {
+    languageToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      languageMenu.classList.toggle('active');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => {
+      languageMenu.classList.remove('active');
+    });
+
+    // Language selection
+    languageMenu.querySelectorAll('.language-option').forEach(option => {
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const lang = option.getAttribute('data-lang');
+        languageManager.setLanguage(lang);
+      });
+    });
+  }
 }
 
 // Helper function to render page with layout
