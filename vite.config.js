@@ -3,7 +3,9 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [],
-  base: '/aluminum-website/',
+  // Use environment variable for base path, defaults to '/' for custom domain deployments
+  // Set VITE_BASE_PATH=/aluminum-website/ for GitHub Pages deployments
+  base: process.env.VITE_BASE_PATH || '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
