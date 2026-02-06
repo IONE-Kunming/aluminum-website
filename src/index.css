@@ -405,8 +405,8 @@ tr:hover {
   animation: iconFloat 3s ease-in-out infinite;
 }
 
-/* Smooth Transitions */
-* {
+/* Smooth Transitions - Applied to specific elements for better performance */
+a, button, .card, .icon-interactive, .btn, .nav-link, .stat-card {
   transition-property: color, background-color, border-color, transform, box-shadow;
   transition-duration: 0.2s;
   transition-timing-function: ease;
