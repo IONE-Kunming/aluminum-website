@@ -1,6 +1,7 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
+import { escapeHtml } from '../js/utils.js';
 
 const mockStats = {
   totalOrders: 24,
@@ -68,7 +69,7 @@ export function renderBuyerDashboard() {
     <div class="dashboard-page">
       <div class="dashboard-header">
         <div>
-          <h1>Welcome back, ${profile?.displayName || 'User'}!</h1>
+          <h1>Welcome back, ${escapeHtml(profile?.displayName || 'User')}!</h1>
           <p class="dashboard-subtitle">Here's what's happening with your orders today</p>
         </div>
       </div>
@@ -149,15 +150,15 @@ export function renderBuyerDashboard() {
             <tbody>
               ${mockRecentOrders.map(order => `
                 <tr>
-                  <td class="font-medium">${order.id}</td>
-                  <td>${order.date}</td>
-                  <td>${order.product}</td>
-                  <td>${order.quantity}</td>
-                  <td>${order.seller}</td>
+                  <td class="font-medium">${escapeHtml(order.id)}</td>
+                  <td>${escapeHtml(order.date)}</td>
+                  <td>${escapeHtml(order.product)}</td>
+                  <td>${escapeHtml(order.quantity)}</td>
+                  <td>${escapeHtml(order.seller)}</td>
                   <td class="font-medium">$${order.total.toLocaleString()}</td>
                   <td>
                     <span class="status-badge ${getStatusColor(order.status)}">
-                      ${order.status}
+                      ${escapeHtml(order.status)}
                     </span>
                   </td>
                 </tr>

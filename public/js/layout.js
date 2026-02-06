@@ -1,5 +1,6 @@
 import router from './router.js';
 import authManager from './auth.js';
+import { escapeHtml } from './utils.js';
 
 export function renderLayout(content, userRole = null) {
   const profile = authManager.getUserProfile();
@@ -33,6 +34,10 @@ export function renderLayout(content, userRole = null) {
 
   const app = document.getElementById('app');
   
+  const displayName = escapeHtml(profile?.displayName || 'User');
+  const roleText = escapeHtml(profile?.role || 'guest');
+  const avatarLetter = displayName.charAt(0).toUpperCase() || 'U';
+  
   app.innerHTML = `
     <div class="layout">
       <!-- Mobile Menu Button -->
@@ -64,11 +69,11 @@ export function renderLayout(content, userRole = null) {
         <div class="sidebar-footer">
           <div class="user-info">
             <div class="user-avatar">
-              ${profile?.displayName?.charAt(0).toUpperCase() || 'U'}
+              ${avatarLetter}
             </div>
             <div class="user-details">
-              <p class="user-name">${profile?.displayName || 'User'}</p>
-              <p class="user-role">${profile?.role || 'guest'}</p>
+              <p class="user-name">${displayName}</p>
+              <p class="user-role">${roleText}</p>
             </div>
           </div>
         </div>

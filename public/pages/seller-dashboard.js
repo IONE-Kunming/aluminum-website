@@ -1,6 +1,7 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
+import { escapeHtml } from '../js/utils.js';
 
 const mockStats = {
   totalProducts: 48,
@@ -61,7 +62,7 @@ export function renderSellerDashboard() {
     <div class="dashboard-page">
       <div class="dashboard-header">
         <div>
-          <h1>Welcome back, ${profile?.displayName || 'User'}!</h1>
+          <h1>Welcome back, ${escapeHtml(profile?.displayName || 'User')}!</h1>
           <p class="dashboard-subtitle">Here's an overview of your business performance</p>
         </div>
       </div>
@@ -144,15 +145,15 @@ export function renderSellerDashboard() {
                 const stockStatus = getStockStatus(product.stock);
                 return `
                   <tr>
-                    <td class="font-medium">${product.id}</td>
-                    <td>${product.name}</td>
-                    <td>${product.category}</td>
-                    <td>${product.stock} ${product.unit}</td>
-                    <td class="font-medium">$${product.price}/${product.unit}</td>
+                    <td class="font-medium">${escapeHtml(product.id)}</td>
+                    <td>${escapeHtml(product.name)}</td>
+                    <td>${escapeHtml(product.category)}</td>
+                    <td>${product.stock} ${escapeHtml(product.unit)}</td>
+                    <td class="font-medium">$${product.price}/${escapeHtml(product.unit)}</td>
                     <td>${product.sales} units</td>
                     <td>
                       <span class="status-badge ${stockStatus.className}">
-                        ${stockStatus.label}
+                        ${escapeHtml(stockStatus.label)}
                       </span>
                     </td>
                   </tr>

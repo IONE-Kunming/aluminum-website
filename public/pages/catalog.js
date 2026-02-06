@@ -1,6 +1,7 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
+import { escapeHtml } from '../js/utils.js';
 
 const mockProducts = [
   {
@@ -63,27 +64,27 @@ export function renderCatalog() {
         ${mockProducts.map(product => `
           <div class="product-card card">
             <div class="product-header">
-              <h3>${product.name}</h3>
-              <span class="product-category">${product.category}</span>
+              <h3>${escapeHtml(product.name)}</h3>
+              <span class="product-category">${escapeHtml(product.category)}</span>
             </div>
             <div class="product-body">
-              <p>${product.description}</p>
+              <p>${escapeHtml(product.description)}</p>
               <div class="product-info">
                 <div class="info-item">
                   <span class="label">Seller:</span>
-                  <span class="value">${product.seller}</span>
+                  <span class="value">${escapeHtml(product.seller)}</span>
                 </div>
                 <div class="info-item">
                   <span class="label">Price:</span>
-                  <span class="value">$${product.price}/${product.unit}</span>
+                  <span class="value">$${product.price}/${escapeHtml(product.unit)}</span>
                 </div>
                 <div class="info-item">
                   <span class="label">Min Order:</span>
-                  <span class="value">${product.minOrder} ${product.unit}</span>
+                  <span class="value">${product.minOrder} ${escapeHtml(product.unit)}</span>
                 </div>
                 <div class="info-item">
                   <span class="label">Stock:</span>
-                  <span class="value">${product.stock} ${product.unit}</span>
+                  <span class="value">${product.stock} ${escapeHtml(product.unit)}</span>
                 </div>
               </div>
             </div>
