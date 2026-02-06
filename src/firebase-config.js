@@ -1,4 +1,4 @@
-// Firebase configuration
+// Firebase configuration - Lazy initialization for better performance
 // Using actual Firebase project: gen-lang-client-0988357303
 // Make sure to enable the following in Firebase Console:
 // 1. Authentication > Sign-in method > Email/Password
@@ -10,7 +10,6 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
   apiKey: "AIzaSyA2soyxD1Bqe40CmgMDIGnPKmTp6QW2vmM",
@@ -29,6 +28,14 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const analytics = typeof window !== 'undefined' ? getAnalytics(app) : null;
+
+// Lazy load analytics only when needed
+export const getAnalyticsInstance = async () => {
+  if (typeof window !== 'undefined') {
+    const { getAnalytics } = await import('firebase/analytics');
+    return getAnalytics(app);
+  }
+  return null;
+};
 
 export default app;
