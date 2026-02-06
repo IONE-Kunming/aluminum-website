@@ -540,19 +540,7 @@
   animation: fadeIn 0.2s ease-in;
 }
 
-.modal {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  max-width: 600px;
-  width: 100%;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  animation: slideUp 0.3s ease-out;
-}
+/* Removed duplicate .modal definition - see line 1108 for correct modal styles */
 
 .modal-large {
   max-width: 800px;
@@ -569,52 +557,13 @@
   }
 }
 
-.modal-header {
-  padding: var(--spacing-xl);
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+/* Removed duplicate .modal-header definition - see line 1128 for correct modal-header styles */
 
-.modal-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-}
+/* Removed duplicate .btn-close definition */
 
-.btn-close {
-  background: transparent;
-  border: none;
-  font-size: 2rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  transition: all 0.3s ease;
-}
+/* Removed duplicate .modal-body definition - see line 1162 for correct modal-body styles */
 
-.btn-close:hover {
-  background: var(--error);
-  color: white;
-}
-
-.modal-body {
-  padding: var(--spacing-xl);
-  overflow-y: auto;
-  flex: 1;
-}
-
-.modal-footer {
-  padding: var(--spacing-xl);
-  border-top: 1px solid var(--border-color);
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-md);
-}
+/* Removed duplicate .modal-footer definition - see line 1133 for correct modal-footer styles */
 
 .form-grid {
   display: grid;
