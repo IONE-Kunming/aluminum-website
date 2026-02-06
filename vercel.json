@@ -36,12 +36,5 @@
         }
       ]
     }
-  ],
-  "redirects": [
-    {
-      "source": "http://ione.live/(.*)",
-      "destination": "https://ione.live/$1",
-      "permanent": true
-    }
   ]
 }
