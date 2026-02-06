@@ -8,7 +8,7 @@ const mockProducts = [
     id: 1,
     name: 'Aluminum Sheet 6061-T6',
     category: 'Sheets',
-    seller: 'AlumaTech Industries',
+    seller: 'I ONE Construction',
     price: 25,
     unit: 'kg',
     minOrder: 100,

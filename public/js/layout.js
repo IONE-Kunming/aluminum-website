@@ -1,6 +1,8 @@
 import router from './router.js';
 import authManager from './auth.js';
 import { escapeHtml } from './utils.js';
+import themeManager from './theme.js';
+import languageManager from './language.js';
 
 export function renderLayout(content, userRole = null) {
   const profile = authManager.getUserProfile();
@@ -48,8 +50,15 @@ export function renderLayout(content, userRole = null) {
       <!-- Sidebar -->
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-          <h1 class="logo">IONE</h1>
-          <p class="logo-subtitle">AlumaTech Industries</p>
+          <img src="/aluminum-website/logo.svg" alt="I ONE Construction" class="logo-svg" />
+          <div class="header-controls">
+            <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">
+              <i data-lucide="${themeManager.getTheme() === 'dark' ? 'sun' : 'moon'}"></i>
+            </button>
+            <button class="language-toggle" id="language-toggle" title="Change Language">
+              ${languageManager.getLanguage().toUpperCase()}
+            </button>
+          </div>
         </div>
 
         <nav class="sidebar-nav">
@@ -101,6 +110,8 @@ export function renderLayout(content, userRole = null) {
   const menuIcon = document.getElementById('menu-icon');
   const logoutBtn = document.getElementById('logout-btn');
   const navItems = document.querySelectorAll('.nav-item[data-path]');
+  const themeToggle = document.getElementById('theme-toggle');
+  const languageToggle = document.getElementById('language-toggle');
 
   function toggleSidebar() {
     sidebar.classList.toggle('open');
@@ -140,6 +151,25 @@ export function renderLayout(content, userRole = null) {
     if (result.success) {
       router.navigate('/login');
     }
+  });
+
+  // Theme toggle
+  themeToggle.addEventListener('click', () => {
+    const newTheme = themeManager.toggle();
+    const icon = themeToggle.querySelector('i');
+    icon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  });
+
+  // Language toggle
+  languageToggle.addEventListener('click', () => {
+    const currentLang = languageManager.getLanguage();
+    const languages = ['en', 'zh', 'ar'];
+    const currentIndex = languages.indexOf(currentLang);
+    const nextIndex = (currentIndex + 1) % languages.length;
+    languageManager.setLanguage(languages[nextIndex]);
   });
 }
 
