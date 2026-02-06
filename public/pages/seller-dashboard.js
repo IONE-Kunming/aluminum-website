@@ -2,6 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
 import { escapeHtml } from '../js/utils.js';
+import languageManager from '../js/language.js';
 
 const mockStats = {
   totalProducts: 48,
@@ -57,13 +58,14 @@ function getStockStatus(stock) {
 
 export function renderSellerDashboard() {
   const profile = authManager.getUserProfile();
+  const t = languageManager.t.bind(languageManager);
   
   const content = `
     <div class="dashboard-page">
       <div class="dashboard-header">
         <div>
-          <h1>Welcome back, ${escapeHtml(profile?.displayName || 'User')}!</h1>
-          <p class="dashboard-subtitle">Here's an overview of your business performance</p>
+          <h1>${t('dashboard.welcome')}, ${escapeHtml(profile?.displayName || 'User')}!</h1>
+          <p class="dashboard-subtitle">${t('dashboard.sellerSubtitle')}</p>
         </div>
       </div>
 
@@ -74,9 +76,9 @@ export function renderSellerDashboard() {
             <i data-lucide="package" style="color: #1976d2;"></i>
           </div>
           <div class="stat-content">
-            <h3>Total Products</h3>
+            <h3>${t('dashboard.totalProducts')}</h3>
             <p class="stat-value">${mockStats.totalProducts}</p>
-            <span class="stat-label">Active listings</span>
+            <span class="stat-label">${t('dashboard.activeListings')}</span>
           </div>
         </div>
 
@@ -85,11 +87,11 @@ export function renderSellerDashboard() {
             <i data-lucide="shopping-bag" style="color: #f57c00;"></i>
           </div>
           <div class="stat-content">
-            <h3>Total Orders</h3>
+            <h3>${t('dashboard.totalOrders')}</h3>
             <p class="stat-value">${mockStats.totalOrders}</p>
             <span class="stat-change positive">
               <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
-              +15% from last month
+              +15% ${t('dashboard.fromLastMonth')}
             </span>
           </div>
         </div>
@@ -99,11 +101,11 @@ export function renderSellerDashboard() {
             <i data-lucide="dollar-sign" style="color: #388e3c;"></i>
           </div>
           <div class="stat-content">
-            <h3>Revenue</h3>
+            <h3>${t('dashboard.revenue')}</h3>
             <p class="stat-value">$${mockStats.revenue.toLocaleString()}</p>
             <span class="stat-change positive">
               <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
-              +22% from last month
+              +22% ${t('dashboard.fromLastMonth')}
             </span>
           </div>
         </div>
@@ -113,9 +115,9 @@ export function renderSellerDashboard() {
             <i data-lucide="alert-circle" style="color: #7b1fa2;"></i>
           </div>
           <div class="stat-content">
-            <h3>Active Orders</h3>
+            <h3>${t('dashboard.activeOrders')}</h3>
             <p class="stat-value">${mockStats.activeOrders}</p>
-            <span class="stat-label">Needs attention</span>
+            <span class="stat-label">${t('dashboard.needsAttention')}</span>
           </div>
         </div>
       </div>
@@ -123,8 +125,8 @@ export function renderSellerDashboard() {
       <!-- Top Products Section -->
       <div class="dashboard-section">
         <div class="section-header">
-          <h2>Top Products</h2>
-          <button class="btn btn-text" data-nav="/seller/products">View All</button>
+          <h2>${t('dashboard.topProducts')}</h2>
+          <button class="btn btn-text" data-nav="/seller/products">${t('dashboard.viewAll')}</button>
         </div>
 
         <div class="table-container">
@@ -166,19 +168,19 @@ export function renderSellerDashboard() {
 
       <!-- Quick Actions -->
       <div class="quick-actions">
-        <h2>Quick Actions</h2>
+        <h2>${t('dashboard.quickActions')}</h2>
         <div class="action-buttons">
           <button class="action-button" data-nav="/seller/products">
             <i data-lucide="package"></i>
-            Manage Products
+            ${t('dashboard.manageProducts')}
           </button>
           <button class="action-button" data-nav="/seller/orders">
             <i data-lucide="shopping-bag"></i>
-            View Orders
+            ${t('dashboard.viewOrders')}
           </button>
           <button class="action-button" data-nav="/seller/branches">
             <i data-lucide="git-branch"></i>
-            Manage Branches
+            ${t('dashboard.manageBranches')}
           </button>
         </div>
       </div>

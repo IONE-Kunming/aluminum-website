@@ -2,6 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
 import { escapeHtml } from '../js/utils.js';
+import languageManager from '../js/language.js';
 
 const mockStats = {
   totalOrders: 24,
@@ -64,13 +65,14 @@ function getStatusColor(status) {
 
 export function renderBuyerDashboard() {
   const profile = authManager.getUserProfile();
+  const t = languageManager.t.bind(languageManager);
   
   const content = `
     <div class="dashboard-page">
       <div class="dashboard-header">
         <div>
-          <h1>Welcome back, ${escapeHtml(profile?.displayName || 'User')}!</h1>
-          <p class="dashboard-subtitle">Here's what's happening with your orders today</p>
+          <h1>${t('dashboard.welcome')}, ${escapeHtml(profile?.displayName || 'User')}!</h1>
+          <p class="dashboard-subtitle">${t('dashboard.buyerSubtitle')}</p>
         </div>
       </div>
 
@@ -81,11 +83,11 @@ export function renderBuyerDashboard() {
             <i data-lucide="package" style="color: #1976d2;"></i>
           </div>
           <div class="stat-content">
-            <h3>Total Orders</h3>
+            <h3>${t('dashboard.totalOrders')}</h3>
             <p class="stat-value">${mockStats.totalOrders}</p>
             <span class="stat-change positive">
               <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
-              +12% from last month
+              +12% ${t('dashboard.fromLastMonth')}
             </span>
           </div>
         </div>
@@ -95,9 +97,9 @@ export function renderBuyerDashboard() {
             <i data-lucide="clock" style="color: #f57c00;"></i>
           </div>
           <div class="stat-content">
-            <h3>Active Orders</h3>
+            <h3>${t('dashboard.activeOrders')}</h3>
             <p class="stat-value">${mockStats.activeOrders}</p>
-            <span class="stat-label">Currently in progress</span>
+            <span class="stat-label">${t('dashboard.currentlyInProgress')}</span>
           </div>
         </div>
 
@@ -106,11 +108,11 @@ export function renderBuyerDashboard() {
             <i data-lucide="dollar-sign" style="color: #388e3c;"></i>
           </div>
           <div class="stat-content">
-            <h3>Total Spent</h3>
+            <h3>${t('dashboard.totalSpent')}</h3>
             <p class="stat-value">$${mockStats.totalSpent.toLocaleString()}</p>
             <span class="stat-change positive">
               <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
-              +8% from last month
+              +8% ${t('dashboard.fromLastMonth')}
             </span>
           </div>
         </div>
@@ -120,9 +122,9 @@ export function renderBuyerDashboard() {
             <i data-lucide="check-circle" style="color: #7b1fa2;"></i>
           </div>
           <div class="stat-content">
-            <h3>Completed</h3>
+            <h3>${t('dashboard.completedOrders')}</h3>
             <p class="stat-value">${mockStats.completedOrders}</p>
-            <span class="stat-label">Successfully delivered</span>
+            <span class="stat-label">${t('dashboard.successfullyDelivered')}</span>
           </div>
         </div>
       </div>
@@ -130,21 +132,21 @@ export function renderBuyerDashboard() {
       <!-- Recent Orders Section -->
       <div class="dashboard-section">
         <div class="section-header">
-          <h2>Recent Orders</h2>
-          <button class="btn btn-text" data-nav="/buyer/orders">View All</button>
+          <h2>${t('dashboard.recentOrders')}</h2>
+          <button class="btn btn-text" data-nav="/buyer/orders">${t('dashboard.viewAll')}</button>
         </div>
 
         <div class="table-container">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Order ID</th>
-                <th>Date</th>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Seller</th>
-                <th>Total</th>
-                <th>Status</th>
+                <th>${t('orders.orderId')}</th>
+                <th>${t('orders.date')}</th>
+                <th>${t('orders.product')}</th>
+                <th>${t('orders.quantity')}</th>
+                <th>${t('orders.seller')}</th>
+                <th>${t('orders.total')}</th>
+                <th>${t('orders.status')}</th>
               </tr>
             </thead>
             <tbody>
@@ -170,19 +172,19 @@ export function renderBuyerDashboard() {
 
       <!-- Quick Actions -->
       <div class="quick-actions">
-        <h2>Quick Actions</h2>
+        <h2>${t('dashboard.quickActions')}</h2>
         <div class="action-buttons">
           <button class="action-button" data-nav="/buyer/catalog">
             <i data-lucide="shopping-cart"></i>
-            Browse Catalog
+            ${t('dashboard.browseCatalog')}
           </button>
           <button class="action-button" data-nav="/buyer/orders">
             <i data-lucide="package"></i>
-            View Orders
+            ${t('dashboard.viewOrders')}
           </button>
           <button class="action-button" data-nav="/buyer/sellers">
             <i data-lucide="store"></i>
-            Find Sellers
+            ${t('dashboard.findSellers')}
           </button>
         </div>
       </div>

@@ -1,11 +1,14 @@
 import { renderPageWithLayout } from '../js/layout.js';
+import languageManager from '../js/language.js';
 
 export function renderAdminDashboard() {
+  const t = languageManager.t.bind(languageManager);
+  
   const content = `
     <div class="dashboard-page">
       <div class="page-header">
-        <h1>Admin Dashboard</h1>
-        <p>Manage the platform</p>
+        <h1>${t('nav.dashboard')}</h1>
+        <p>${t('dashboard.adminSubtitle')}</p>
       </div>
 
       <div class="stats-grid">
@@ -14,9 +17,9 @@ export function renderAdminDashboard() {
             <i data-lucide="users" style="color: #1976d2;"></i>
           </div>
           <div class="stat-content">
-            <h3>Total Users</h3>
+            <h3>${t('dashboard.totalUsers')}</h3>
             <p class="stat-value">1,234</p>
-            <span class="stat-label">Active accounts</span>
+            <span class="stat-label">${t('dashboard.activeAccounts')}</span>
           </div>
         </div>
 
@@ -25,9 +28,9 @@ export function renderAdminDashboard() {
             <i data-lucide="shopping-bag" style="color: #f57c00;"></i>
           </div>
           <div class="stat-content">
-            <h3>Total Orders</h3>
+            <h3>${t('dashboard.totalOrders')}</h3>
             <p class="stat-value">5,678</p>
-            <span class="stat-label">All time</span>
+            <span class="stat-label">${t('dashboard.allTime')}</span>
           </div>
         </div>
 
@@ -36,9 +39,9 @@ export function renderAdminDashboard() {
             <i data-lucide="dollar-sign" style="color: #388e3c;"></i>
           </div>
           <div class="stat-content">
-            <h3>Revenue</h3>
+            <h3>${t('dashboard.revenue')}</h3>
             <p class="stat-value">$1.2M</p>
-            <span class="stat-label">Total platform revenue</span>
+            <span class="stat-label">${t('dashboard.totalPlatformRevenue')}</span>
           </div>
         </div>
 
@@ -47,16 +50,16 @@ export function renderAdminDashboard() {
             <i data-lucide="store" style="color: #7b1fa2;"></i>
           </div>
           <div class="stat-content">
-            <h3>Sellers</h3>
+            <h3>${t('dashboard.sellers')}</h3>
             <p class="stat-value">234</p>
-            <span class="stat-label">Active sellers</span>
+            <span class="stat-label">${t('dashboard.activeSellers')}</span>
           </div>
         </div>
       </div>
 
       <div class="dashboard-section">
-        <h2>Platform Overview</h2>
-        <p>Admin controls and analytics will be displayed here</p>
+        <h2>${t('dashboard.platformOverview')}</h2>
+        <p>${t('dashboard.adminControlsMessage')}</p>
       </div>
     </div>
   `;

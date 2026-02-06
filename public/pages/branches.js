@@ -1,21 +1,24 @@
 import { renderPageWithLayout } from '../js/layout.js';
+import languageManager from '../js/language.js';
 
 export function renderBranches() {
+  const t = languageManager.t.bind(languageManager);
+  
   const content = `
     <div class="branches-page">
       <div class="page-header">
-        <h1>Branches</h1>
-        <p>Manage your business locations</p>
+        <h1>${t('branches.title')}</h1>
+        <p>${t('branches.subtitle')}</p>
         <button class="btn btn-primary">
           <i data-lucide="plus"></i>
-          Add Branch
+          ${t('branches.addBranch')}
         </button>
       </div>
 
       <div class="empty-state">
         <i data-lucide="git-branch" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-        <h2>No branches yet</h2>
-        <p>Add your first branch location</p>
+        <h2>${t('branches.noBranches')}</h2>
+        <p>${t('branches.addFirstBranch')}</p>
       </div>
     </div>
   `;
