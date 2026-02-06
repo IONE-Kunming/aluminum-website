@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FileText, Search, Download, Eye, Filter } from 'lucide-react';
 import { toast } from 'sonner';
+import '../styles/Pages.css';
 
 // Mock invoices data
 const mockInvoices = [

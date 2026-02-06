@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Store, Search, Mail, Phone, MapPin, Star } from 'lucide-react';
 import { toast } from 'sonner';
+import '../styles/Pages.css';
 
 // Mock sellers data
 const mockSellers = [

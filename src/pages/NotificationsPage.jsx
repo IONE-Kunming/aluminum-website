@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Bell, Check, Trash2, Filter, Package, ShoppingBag, FileText, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import '../styles/Pages.css';
 
 // Mock notifications data
 const mockNotifications = [

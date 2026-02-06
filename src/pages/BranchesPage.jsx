@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MapPin, Plus, Edit, Trash2, Phone, Mail } from 'lucide-react';
 import { toast } from 'sonner';
+import '../styles/Pages.css';
 
 // Mock branches data
 const mockBranches = [

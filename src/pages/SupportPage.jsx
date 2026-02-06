@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { HelpCircle, Mail, Phone, MessageSquare, Send } from 'lucide-react';
 import { toast } from 'sonner';
+import '../styles/Pages.css';
 
 const SupportPage = () => {
   const { userProfile } = useAuth();

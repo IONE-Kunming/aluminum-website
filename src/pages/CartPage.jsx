@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import '../styles/Pages.css';
 
 // Mock cart items
 const mockCartItems = [
