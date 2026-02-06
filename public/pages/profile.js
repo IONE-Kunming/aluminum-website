@@ -1,16 +1,18 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import { escapeHtml } from '../js/utils.js';
+import languageManager from '../js/language.js';
 
 export function renderProfile() {
   const profile = authManager.getUserProfile();
   const user = authManager.getCurrentUser();
+  const t = languageManager.t.bind(languageManager);
   
   const content = `
     <div class="profile-page">
       <div class="page-header">
-        <h1>Profile Settings</h1>
-        <p>Manage your account information</p>
+        <h1>${t('profile.profileSettings')}</h1>
+        <p>${t('profile.manageAccountInfo')}</p>
       </div>
 
       <div class="profile-card card">
@@ -25,13 +27,13 @@ export function renderProfile() {
       </div>
 
       <div class="profile-section card">
-        <h3>Account Information</h3>
+        <h3>${t('profile.accountInformation')}</h3>
         <div class="form-group">
-          <label>Full Name</label>
+          <label>${t('profile.displayName')}</label>
           <input type="text" class="form-control" value="${escapeHtml(profile?.displayName || '')}" readonly>
         </div>
         <div class="form-group">
-          <label>Email</label>
+          <label>${t('profile.email')}</label>
           <input type="email" class="form-control" value="${escapeHtml(user?.email || '')}" readonly>
         </div>
         <div class="form-group">

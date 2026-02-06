@@ -3,6 +3,7 @@ import router from '../js/router.js';
 import authManager from '../js/auth.js';
 import cartManager from '../js/cart.js';
 import { escapeHtml } from '../js/utils.js';
+import languageManager from '../js/language.js';
 
 const mockProducts = [
   {
@@ -42,16 +43,17 @@ const mockProducts = [
 
 export function renderCatalog() {
   const profile = authManager.getUserProfile();
+  const t = languageManager.t.bind(languageManager);
   
   const content = `
     <div class="catalog-page">
       <div class="page-header">
-        <h1>Product Catalog</h1>
-        <p>Browse our selection of premium aluminum products</p>
+        <h1>${t('catalog.title')}</h1>
+        <p>${t('catalog.subtitle')}</p>
       </div>
 
       <div class="catalog-controls">
-        <input type="text" id="search-input" placeholder="Search products..." class="form-control">
+        <input type="text" id="search-input" placeholder="${t('common.search')}..." class="form-control">
         <select id="category-filter" class="form-control">
           <option value="">All Categories</option>
           <option value="Sheets">Sheets</option>
@@ -72,19 +74,19 @@ export function renderCatalog() {
               <p>${escapeHtml(product.description)}</p>
               <div class="product-info">
                 <div class="info-item">
-                  <span class="label">Seller:</span>
+                  <span class="label">${t('catalog.seller')}</span>
                   <span class="value">${escapeHtml(product.seller)}</span>
                 </div>
                 <div class="info-item">
-                  <span class="label">Price:</span>
+                  <span class="label">${t('catalog.price')}</span>
                   <span class="value">$${product.price}/${escapeHtml(product.unit)}</span>
                 </div>
                 <div class="info-item">
-                  <span class="label">Min Order:</span>
+                  <span class="label">${t('catalog.minOrder')}</span>
                   <span class="value">${product.minOrder} ${escapeHtml(product.unit)}</span>
                 </div>
                 <div class="info-item">
-                  <span class="label">Stock:</span>
+                  <span class="label">${t('catalog.stock')}</span>
                   <span class="value">${product.stock} ${escapeHtml(product.unit)}</span>
                 </div>
               </div>
@@ -92,7 +94,7 @@ export function renderCatalog() {
             <div class="product-footer">
               <button class="btn btn-primary" data-product-id="${product.id}">
                 <i data-lucide="shopping-cart"></i>
-                Add to Cart
+                ${t('catalog.addToCart')}
               </button>
             </div>
           </div>

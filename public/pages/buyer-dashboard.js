@@ -2,91 +2,47 @@ import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
 import { escapeHtml } from '../js/utils.js';
-
-const mockStats = {
-  totalOrders: 24,
-  activeOrders: 5,
-  totalSpent: 125000,
-  completedOrders: 19
-};
-
-const mockRecentOrders = [
-  {
-    id: 'ORD-001',
-    date: '2024-01-15',
-    product: 'Aluminum Sheet 6061-T6',
-    quantity: '500 kg',
-    total: 12500,
-    status: 'Delivered',
-    seller: 'I ONE Construction'
-  },
-  {
-    id: 'ORD-002',
-    date: '2024-01-14',
-    product: 'Aluminum Extrusion Profile',
-    quantity: '1000 units',
-    total: 25000,
-    status: 'In Transit',
-    seller: 'Metro Aluminum Co.'
-  },
-  {
-    id: 'ORD-003',
-    date: '2024-01-12',
-    product: 'Aluminum Rod 2024-T4',
-    quantity: '300 kg',
-    total: 8500,
-    status: 'Processing',
-    seller: 'Premium Metals Ltd.'
-  },
-  {
-    id: 'ORD-004',
-    date: '2024-01-10',
-    product: 'Aluminum Plate 7075',
-    quantity: '200 kg',
-    total: 15000,
-    status: 'Delivered',
-    seller: 'I ONE Construction'
-  }
-];
+import languageManager from '../js/language.js';
+import dataService from '../js/dataService.js';
 
 function getStatusColor(status) {
-  switch (status) {
-    case 'Delivered':
+  const statusLower = status?.toLowerCase() || '';
+  switch (statusLower) {
+    case 'delivered':
       return 'status-delivered';
-    case 'In Transit':
+    case 'in transit':
+    case 'shipped':
       return 'status-transit';
-    case 'Processing':
+    case 'processing':
       return 'status-processing';
     default:
       return 'status-pending';
   }
 }
 
-export function renderBuyerDashboard() {
+export async function renderBuyerDashboard() {
   const profile = authManager.getUserProfile();
+  const t = languageManager.t.bind(languageManager);
+  const userId = authManager.getCurrentUser()?.uid;
   
+  // Show loading state
   const content = `
     <div class="dashboard-page">
       <div class="dashboard-header">
         <div>
-          <h1>Welcome back, ${escapeHtml(profile?.displayName || 'User')}!</h1>
-          <p class="dashboard-subtitle">Here's what's happening with your orders today</p>
+          <h1>${t('dashboard.welcome')}, ${escapeHtml(profile?.displayName || 'User')}!</h1>
+          <p class="dashboard-subtitle">${t('dashboard.buyerSubtitle')}</p>
         </div>
       </div>
 
-      <!-- Stats Cards -->
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-icon" style="background-color: #e3f2fd;">
             <i data-lucide="package" style="color: #1976d2;"></i>
           </div>
           <div class="stat-content">
-            <h3>Total Orders</h3>
-            <p class="stat-value">${mockStats.totalOrders}</p>
-            <span class="stat-change positive">
-              <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
-              +12% from last month
-            </span>
+            <h3>${t('dashboard.totalOrders')}</h3>
+            <p class="stat-value" id="total-orders-stat">${t('common.loading')}</p>
           </div>
         </div>
 
@@ -95,9 +51,8 @@ export function renderBuyerDashboard() {
             <i data-lucide="clock" style="color: #f57c00;"></i>
           </div>
           <div class="stat-content">
-            <h3>Active Orders</h3>
-            <p class="stat-value">${mockStats.activeOrders}</p>
-            <span class="stat-label">Currently in progress</span>
+            <h3>${t('dashboard.activeOrders')}</h3>
+            <p class="stat-value" id="active-orders-stat">${t('common.loading')}</p>
           </div>
         </div>
 
@@ -106,12 +61,8 @@ export function renderBuyerDashboard() {
             <i data-lucide="dollar-sign" style="color: #388e3c;"></i>
           </div>
           <div class="stat-content">
-            <h3>Total Spent</h3>
-            <p class="stat-value">$${mockStats.totalSpent.toLocaleString()}</p>
-            <span class="stat-change positive">
-              <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
-              +8% from last month
-            </span>
+            <h3>${t('dashboard.totalSpent')}</h3>
+            <p class="stat-value" id="total-spent-stat">${t('common.loading')}</p>
           </div>
         </div>
 
@@ -120,9 +71,8 @@ export function renderBuyerDashboard() {
             <i data-lucide="check-circle" style="color: #7b1fa2;"></i>
           </div>
           <div class="stat-content">
-            <h3>Completed</h3>
-            <p class="stat-value">${mockStats.completedOrders}</p>
-            <span class="stat-label">Successfully delivered</span>
+            <h3>${t('dashboard.completedOrders')}</h3>
+            <p class="stat-value" id="completed-orders-stat">${t('common.loading')}</p>
           </div>
         </div>
       </div>
@@ -130,59 +80,30 @@ export function renderBuyerDashboard() {
       <!-- Recent Orders Section -->
       <div class="dashboard-section">
         <div class="section-header">
-          <h2>Recent Orders</h2>
-          <button class="btn btn-text" data-nav="/buyer/orders">View All</button>
+          <h2>${t('dashboard.recentOrders')}</h2>
+          <button class="btn btn-text" data-nav="/buyer/orders">${t('dashboard.viewAll')}</button>
         </div>
 
-        <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Date</th>
-                <th>Product</th>
-                <th>Quantity</th>
-                <th>Seller</th>
-                <th>Total</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${mockRecentOrders.map(order => `
-                <tr>
-                  <td class="font-medium">${escapeHtml(order.id)}</td>
-                  <td>${escapeHtml(order.date)}</td>
-                  <td>${escapeHtml(order.product)}</td>
-                  <td>${escapeHtml(order.quantity)}</td>
-                  <td>${escapeHtml(order.seller)}</td>
-                  <td class="font-medium">$${order.total.toLocaleString()}</td>
-                  <td>
-                    <span class="status-badge ${getStatusColor(order.status)}">
-                      ${escapeHtml(order.status)}
-                    </span>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+        <div id="recent-orders-container">
+          <p style="text-align: center; color: var(--text-secondary);">${t('common.loading')}</p>
         </div>
       </div>
 
       <!-- Quick Actions -->
       <div class="quick-actions">
-        <h2>Quick Actions</h2>
+        <h2>${t('dashboard.quickActions')}</h2>
         <div class="action-buttons">
           <button class="action-button" data-nav="/buyer/catalog">
             <i data-lucide="shopping-cart"></i>
-            Browse Catalog
+            ${t('dashboard.browseCatalog')}
           </button>
           <button class="action-button" data-nav="/buyer/orders">
             <i data-lucide="package"></i>
-            View Orders
+            ${t('dashboard.viewOrders')}
           </button>
           <button class="action-button" data-nav="/buyer/sellers">
             <i data-lucide="store"></i>
-            Find Sellers
+            ${t('dashboard.findSellers')}
           </button>
         </div>
       </div>
@@ -190,6 +111,83 @@ export function renderBuyerDashboard() {
   `;
 
   renderPageWithLayout(content, 'buyer');
+
+  // Initialize Lucide icons
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+
+  // Load real data
+  try {
+    // Fetch dashboard stats
+    const stats = await dataService.getDashboardStats('buyer');
+    document.getElementById('total-orders-stat').textContent = stats.totalOrders || 0;
+    document.getElementById('active-orders-stat').textContent = stats.activeOrders || 0;
+    document.getElementById('total-spent-stat').textContent = `$${(stats.totalSpent || 0).toLocaleString()}`;
+    document.getElementById('completed-orders-stat').textContent = stats.completedOrders || 0;
+
+    // Fetch recent orders
+    const recentOrders = await dataService.getRecentOrders(userId, 5);
+    const ordersContainer = document.getElementById('recent-orders-container');
+    
+    if (recentOrders.length === 0) {
+      ordersContainer.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="package" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+          <p>${t('orders.noOrders')}</p>
+        </div>
+      `;
+    } else {
+      ordersContainer.innerHTML = `
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>${t('orders.orderId')}</th>
+                <th>${t('orders.date')}</th>
+                <th>${t('orders.product')}</th>
+                <th>${t('orders.quantity')}</th>
+                <th>${t('orders.seller')}</th>
+                <th>${t('orders.total')}</th>
+                <th>${t('orders.status')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${recentOrders.map(order => `
+                <tr>
+                  <td class="font-medium">${escapeHtml(order.id || order.orderNumber || '')}</td>
+                  <td>${escapeHtml(order.date || new Date(order.createdAt?.toDate?.() || Date.now()).toLocaleDateString())}</td>
+                  <td>${escapeHtml(order.product || order.productName || '')}</td>
+                  <td>${escapeHtml(order.quantity || '')}</td>
+                  <td>${escapeHtml(order.seller || order.sellerName || '')}</td>
+                  <td class="font-medium">$${(order.total || 0).toLocaleString()}</td>
+                  <td>
+                    <span class="status-badge ${getStatusColor(order.status)}">
+                      ${escapeHtml(order.status || 'Pending')}
+                    </span>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    // Re-initialize Lucide icons for newly added elements
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  } catch (error) {
+    console.error('Error loading dashboard data:', error);
+    // Keep the loading indicators or show error message
+    document.querySelectorAll('[id$="-stat"]').forEach(el => {
+      el.textContent = '0';
+    });
+    document.getElementById('recent-orders-container').innerHTML = `
+      <p style="text-align: center; color: var(--error);">${t('common.error')}</p>
+    `;
+  }
 
   // Add event listeners for navigation
   document.querySelectorAll('[data-nav]').forEach(btn => {
@@ -199,9 +197,4 @@ export function renderBuyerDashboard() {
       router.navigate(path);
     });
   });
-
-  // Initialize Lucide icons
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
 }

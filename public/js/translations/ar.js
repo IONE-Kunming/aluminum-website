@@ -43,6 +43,7 @@ export default {
   // المنتجات
   products: {
     title: 'المنتجات',
+    myProducts: 'منتجاتي',
     addProduct: 'إضافة منتج',
     editProduct: 'تعديل المنتج',
     deleteProduct: 'حذف المنتج',
@@ -50,31 +51,66 @@ export default {
     modelNumber: 'رقم الموديل',
     category: 'الفئة',
     pricePerMeter: 'السعر للمتر',
+    price: 'السعر',
     imagePath: 'مسار الصورة',
     description: 'الوصف',
     stock: 'المخزون',
+    minOrder: 'الحد الأدنى للطلب',
     uploadExcel: 'تحميل ملف Excel',
     importInstructions: 'قم بتحميل ملف Excel يحتوي على الأعمدة: رقم الموديل، الفئة، السعر للمتر، مسار الصورة',
     selectFile: 'اختر ملف',
     importProducts: 'استيراد المنتجات',
     importSuccess: 'تم استيراد المنتجات بنجاح',
-    importError: 'خطأ في استيراد المنتجات'
+    importError: 'خطأ في استيراد المنتجات',
+    manageProductListings: 'إدارة قوائم المنتجات الخاصة بك',
+    downloadTemplate: 'تحميل نموذج Excel',
+    addToCart: 'إضافة إلى السلة'
   },
   
   // لوحة التحكم
   dashboard: {
     welcome: 'مرحباً بك',
+    buyerSubtitle: 'إليك ما يحدث مع طلباتك اليوم',
+    sellerSubtitle: 'إليك نظرة عامة على أداء عملك',
+    adminSubtitle: 'إدارة المنصة',
     recentOrders: 'الطلبات الأخيرة',
     totalSales: 'إجمالي المبيعات',
     totalProducts: 'إجمالي المنتجات',
+    totalOrders: 'إجمالي الطلبات',
+    activeOrders: 'الطلبات النشطة',
+    completedOrders: 'المكتملة',
+    totalSpent: 'إجمالي المصروفات',
+    revenue: 'الإيرادات',
+    totalUsers: 'إجمالي المستخدمين',
+    sellers: 'البائعون',
     pendingOrders: 'الطلبات المعلقة',
-    viewAll: 'عرض الكل'
+    viewAll: 'عرض الكل',
+    currentlyInProgress: 'قيد التنفيذ حاليًا',
+    successfullyDelivered: 'تم التسليم بنجاح',
+    fromLastMonth: 'من الشهر الماضي',
+    activeListings: 'القوائم النشطة',
+    needsAttention: 'تحتاج إلى اهتمام',
+    topProducts: 'أفضل المنتجات',
+    quickActions: 'إجراءات سريعة',
+    browseCatalog: 'تصفح الكتالوج',
+    viewOrders: 'عرض الطلبات',
+    findSellers: 'البحث عن البائعين',
+    manageProducts: 'إدارة المنتجات',
+    manageBranches: 'إدارة الفروع',
+    activeAccounts: 'الحسابات النشطة',
+    allTime: 'طوال الوقت',
+    totalPlatformRevenue: 'إجمالي إيرادات المنصة',
+    activeSellers: 'البائعون النشطون',
+    platformOverview: 'نظرة عامة على المنصة',
+    adminControlsMessage: 'سيتم عرض عناصر التحكم والتحليلات الخاصة بالمسؤول هنا'
   },
   
   // الطلبات
   orders: {
     title: 'الطلبات',
+    myOrders: 'طلباتي',
     orderNumber: 'رقم الطلب',
+    orderId: 'رقم الطلب',
     date: 'التاريخ',
     total: 'الإجمالي',
     status: 'الحالة',
@@ -82,7 +118,14 @@ export default {
     processing: 'قيد المعالجة',
     shipped: 'تم الشحن',
     delivered: 'تم التسليم',
-    cancelled: 'ملغى'
+    cancelled: 'ملغى',
+    inTransit: 'في الطريق',
+    product: 'المنتج',
+    quantity: 'الكمية',
+    seller: 'البائع',
+    trackAndManage: 'تتبع وإدارة طلباتك',
+    noOrders: 'لا توجد طلبات بعد',
+    ordersWillAppear: 'ستظهر طلباتك هنا بمجرد إجراء أول عملية شراء'
   },
   
   // سلة التسوق
@@ -93,6 +136,37 @@ export default {
     checkout: 'الدفع',
     continueShopping: 'متابعة التسوق',
     removeItem: 'حذف العنصر'
+  },
+  
+  // الكتالوج
+  catalog: {
+    title: 'كتالوج المنتجات',
+    subtitle: 'تصفح مجموعتنا المختارة من منتجات الألمنيوم المتميزة',
+    seller: 'البائع:',
+    price: 'السعر:',
+    minOrder: 'الحد الأدنى للطلب:',
+    stock: 'المخزون:',
+    addToCart: 'إضافة إلى السلة',
+    loading: 'جارٍ تحميل المنتجات...',
+    noProducts: 'لا توجد منتجات متاحة'
+  },
+  
+  // البائعون
+  sellers: {
+    title: 'دليل البائعين',
+    subtitle: 'تصفح واتصل بموردي الألمنيوم',
+    loading: 'جارٍ تحميل البائعين...',
+    noSellers: 'لا يوجد بائعون متاحون',
+    directory: 'سيظهر دليل البائعين هنا'
+  },
+  
+  // الفروع
+  branches: {
+    title: 'الفروع',
+    subtitle: 'إدارة مواقع عملك',
+    noBranches: 'لا توجد فروع بعد',
+    addFirstBranch: 'أضف موقع فرعك الأول',
+    addBranch: 'إضافة فرع'
   },
   
   // المصادقة
@@ -119,13 +193,16 @@ export default {
   // الملف الشخصي
   profile: {
     title: 'الملف الشخصي',
+    profileSettings: 'إعدادات الملف الشخصي',
     displayName: 'اسم العرض',
     email: 'البريد الإلكتروني',
     role: 'الدور',
     buyer: 'مشتري',
     seller: 'بائع',
     updateProfile: 'تحديث الملف الشخصي',
-    changePassword: 'تغيير كلمة المرور'
+    changePassword: 'تغيير كلمة المرور',
+    manageAccountInfo: 'إدارة معلومات حسابك',
+    accountInformation: 'معلومات الحساب'
   },
   
   // الصفحة الرئيسية

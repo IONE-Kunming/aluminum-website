@@ -299,3 +299,66 @@
   border-color: var(--electric-blue);
 }
 
+/* RTL Support for Arabic */
+[dir="rtl"] .sidebar {
+  left: auto;
+  right: 0;
+  border-right: none;
+  border-left: 1px solid var(--border-color);
+}
+
+[dir="rtl"] .main-content {
+  margin-left: 0;
+  margin-right: 280px;
+}
+
+[dir="rtl"] .nav-item {
+  border-left: none;
+  border-right: 3px solid transparent;
+}
+
+[dir="rtl"] .nav-item:hover {
+  border-left-color: transparent;
+  border-right-color: var(--electric-blue);
+}
+
+[dir="rtl"] .nav-item.active {
+  border-left-color: transparent;
+  border-right-color: var(--neon-cyan);
+}
+
+[dir="rtl"] .logout-btn:hover {
+  border-left-color: transparent;
+  border-right-color: var(--error);
+}
+
+[dir="rtl"] .language-dropdown-menu {
+  left: auto;
+  right: 0;
+}
+
+[dir="rtl"] .language-option {
+  text-align: right;
+}
+
+[dir="rtl"] .mobile-menu-btn {
+  left: auto;
+  right: var(--spacing-lg);
+}
+
+/* RTL Mobile Responsive */
+@media (max-width: 768px) {
+  [dir="rtl"] .sidebar {
+    transform: translateX(100%);
+  }
+
+  [dir="rtl"] .sidebar.open {
+    transform: translateX(0);
+  }
+
+  [dir="rtl"] .main-content {
+    margin-right: 0;
+    margin-left: 0;
+  }
+}
+

@@ -1,20 +1,23 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
+import languageManager from '../js/language.js';
 
 export function renderProducts() {
+  const t = languageManager.t.bind(languageManager);
+  
   const content = `
     <div class="products-page">
       <div class="page-header">
-        <h1>My Products</h1>
-        <p>Manage your product listings</p>
+        <h1>${t('products.myProducts')}</h1>
+        <p>${t('products.manageProductListings')}</p>
         <div style="display: flex; gap: 12px;">
           <button class="btn btn-primary" id="add-product-btn">
             <i data-lucide="plus"></i>
-            Add Product
+            ${t('products.addProduct')}
           </button>
           <button class="btn btn-secondary" id="bulk-import-btn">
             <i data-lucide="upload"></i>
-            Bulk Import
+            ${t('products.bulkImport')}
           </button>
         </div>
       </div>
@@ -23,27 +26,26 @@ export function renderProducts() {
       <div id="bulk-import-modal" class="modal" style="display: none;">
         <div class="modal-content">
           <div class="modal-header">
-            <h2>Bulk Import Products</h2>
+            <h2>${t('products.bulkImport')} ${t('products.title')}</h2>
             <button class="modal-close" id="close-modal-btn">
               <i data-lucide="x"></i>
             </button>
           </div>
           <div class="modal-body">
             <p class="import-instructions">
-              Upload an Excel file (.xlsx) with the following columns:<br>
-              <strong>Model Number</strong>, <strong>Category</strong>, <strong>Price per Meter</strong>, <strong>Image Path</strong>
+              ${t('products.importInstructions')}
             </p>
             
             <div style="margin-bottom: 16px;">
-              <a href="/aluminum-website/sample-products-import.csv" download="sample-products-import.csv" class="btn btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+              <a href="/sample-products-import.csv" download="sample-products-import.csv" class="btn btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
                 <i data-lucide="download"></i>
-                Download Excel Template
+                ${t('products.downloadTemplate')}
               </a>
             </div>
             
             <div class="file-upload-area" id="file-upload-area">
               <i data-lucide="file-spreadsheet" style="width: 48px; height: 48px; opacity: 0.5;"></i>
-              <p>Click to select Excel file or drag and drop</p>
+              <p>${t('products.selectFile')}</p>
               <input type="file" id="excel-file-input" accept=".xlsx,.xls" style="display: none;" />
             </div>
             
