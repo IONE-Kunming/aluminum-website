@@ -36,7 +36,8 @@ export default {
     back: 'رجوع',
     next: 'التالي',
     previous: 'السابق',
-    close: 'إغلاق'
+    close: 'إغلاق',
+    or: 'أو'
   },
   
   // المنتجات
@@ -106,7 +107,13 @@ export default {
     dontHaveAccount: 'ليس لديك حساب؟',
     alreadyHaveAccount: 'لديك حساب بالفعل؟',
     signIn: 'تسجيل الدخول',
-    createAccount: 'إنشاء حساب'
+    createAccount: 'إنشاء حساب',
+    welcomeBack: 'مرحباً بعودتك',
+    signInDescription: 'قم بتسجيل الدخول للوصول إلى حسابك',
+    companyName: 'اسم الشركة',
+    phoneNumber: 'رقم الهاتف',
+    passwordMinLength: 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
+    continueWithGoogle: 'المتابعة مع Google'
   },
   
   // الملف الشخصي

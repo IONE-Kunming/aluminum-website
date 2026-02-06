@@ -36,7 +36,8 @@ export default {
     back: '返回',
     next: '下一步',
     previous: '上一步',
-    close: '关闭'
+    close: '关闭',
+    or: '或'
   },
   
   // 产品
@@ -106,7 +107,13 @@ export default {
     dontHaveAccount: '还没有账户？',
     alreadyHaveAccount: '已有账户？',
     signIn: '登录',
-    createAccount: '创建账户'
+    createAccount: '创建账户',
+    welcomeBack: '欢迎回来',
+    signInDescription: '登录以访问您的账户',
+    companyName: '公司名称',
+    phoneNumber: '电话号码',
+    passwordMinLength: '密码必须至少6个字符',
+    continueWithGoogle: '使用Google继续'
   },
   
   // 个人资料

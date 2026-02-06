@@ -36,7 +36,8 @@ export default {
     back: 'Back',
     next: 'Next',
     previous: 'Previous',
-    close: 'Close'
+    close: 'Close',
+    or: 'OR'
   },
   
   // Products
@@ -106,7 +107,13 @@ export default {
     dontHaveAccount: "Don't have an account?",
     alreadyHaveAccount: 'Already have an account?',
     signIn: 'Sign In',
-    createAccount: 'Create Account'
+    createAccount: 'Create Account',
+    welcomeBack: 'Welcome Back',
+    signInDescription: 'Sign in to access your account',
+    companyName: 'Company Name',
+    phoneNumber: 'Phone Number',
+    passwordMinLength: 'Password must be at least 6 characters',
+    continueWithGoogle: 'Continue with Google'
   },
   
   // Profile

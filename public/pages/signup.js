@@ -1,17 +1,33 @@
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
+import languageManager from '../js/language.js';
 
 export function renderSignupPage() {
   const app = document.getElementById('app');
+  const t = languageManager.t.bind(languageManager);
   
   app.innerHTML = `
     <div class="auth-page">
       <div class="auth-container">
         <div class="auth-header">
-          <h1 class="auth-logo">I ONE</h1>
-          <p class="auth-subtitle">Construction</p>
-          <h2 class="auth-title">Create Account</h2>
-          <p class="auth-description">Join the aluminum trading platform</p>
+          <img src="/aluminum-website/logo.svg" alt="I ONE Construction" class="auth-logo-image" />
+          <h2 class="auth-title">${t('auth.createAccount')}</h2>
+          <p class="auth-description">${t('landing.hero.description')}</p>
+        </div>
+
+        <!-- Language Dropdown -->
+        <div class="auth-language-dropdown">
+          <div class="language-dropdown">
+            <button class="language-toggle" id="auth-language-toggle" type="button">
+              ${t('languages.' + languageManager.getLanguage())}
+              <i data-lucide="chevron-down" style="width: 14px; height: 14px; margin-left: 4px;"></i>
+            </button>
+            <div class="language-dropdown-menu" id="auth-language-menu">
+              <button class="language-option" data-lang="en">${t('languages.en')}</button>
+              <button class="language-option" data-lang="ar">${t('languages.ar')}</button>
+              <button class="language-option" data-lang="zh">${t('languages.zh')}</button>
+            </div>
+          </div>
         </div>
 
         <div id="error-message" class="error-message" style="display: none;">
@@ -22,7 +38,7 @@ export function renderSignupPage() {
         <form id="signup-form" class="auth-form">
           <!-- Role Selection -->
           <div class="form-group">
-            <label>Account Type</label>
+            <label>${t('profile.role')}</label>
             <div class="role-selection">
               <label class="role-option active">
                 <input
@@ -31,7 +47,7 @@ export function renderSignupPage() {
                   value="buyer"
                   checked
                 />
-                <span>Buyer</span>
+                <span>${t('profile.buyer')}</span>
               </label>
               <label class="role-option">
                 <input
@@ -39,7 +55,7 @@ export function renderSignupPage() {
                   name="role"
                   value="seller"
                 />
-                <span>Seller</span>
+                <span>${t('profile.seller')}</span>
               </label>
             </div>
           </div>
@@ -48,26 +64,12 @@ export function renderSignupPage() {
           <div class="form-group">
             <label for="displayName">
               <i data-lucide="user"></i>
-              Full Name
+              ${t('profile.displayName')}
             </label>
             <input
               id="displayName"
               type="text"
-              placeholder="John Doe"
-              required
-            />
-          </div>
-
-          <!-- Email -->
-          <div class="form-group">
-            <label for="email">
-              <i data-lucide="mail"></i>
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder="your@email.com"
+              placeholder="${t('profile.displayName')}"
               required
             />
           </div>
@@ -76,12 +78,26 @@ export function renderSignupPage() {
           <div class="form-group">
             <label for="companyName">
               <i data-lucide="building"></i>
-              Company Name
+              ${t('auth.companyName')}
             </label>
             <input
               id="companyName"
               type="text"
-              placeholder="Your Company"
+              placeholder="${t('auth.companyName')}"
+              required
+            />
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label for="email">
+              <i data-lucide="mail"></i>
+              ${t('auth.email')}
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="${t('auth.email')}"
               required
             />
           </div>
@@ -90,12 +106,12 @@ export function renderSignupPage() {
           <div class="form-group">
             <label for="phoneNumber">
               <i data-lucide="phone"></i>
-              Phone Number
+              ${t('auth.phoneNumber')}
             </label>
             <input
               id="phoneNumber"
               type="tel"
-              placeholder="+1 (555) 000-0000"
+              placeholder="${t('auth.phoneNumber')}"
               required
             />
           </div>
@@ -104,7 +120,7 @@ export function renderSignupPage() {
           <div class="form-group">
             <label for="password">
               <i data-lucide="lock"></i>
-              Password
+              ${t('auth.password')}
             </label>
             <input
               id="password"
@@ -114,29 +130,15 @@ export function renderSignupPage() {
             />
           </div>
 
-          <!-- Confirm Password -->
-          <div class="form-group">
-            <label for="confirmPassword">
-              <i data-lucide="lock"></i>
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              placeholder="••••••••"
-              required
-            />
-          </div>
-
           <button type="submit" class="btn btn-primary">
-            <span class="btn-text">Create Account</span>
+            <span class="btn-text">${t('auth.createAccount')}</span>
           </button>
         </form>
 
         <div class="auth-footer">
           <p>
-            Already have an account? 
-            <a href="#" id="login-link" class="auth-link">Sign in</a>
+            ${t('auth.alreadyHaveAccount')}
+            <a href="#" id="login-link" class="auth-link">${t('auth.signIn')}</a>
           </p>
         </div>
       </div>
@@ -152,6 +154,29 @@ export function renderSignupPage() {
   const errorDiv = document.getElementById('error-message');
   const roleOptions = document.querySelectorAll('.role-option');
   const loginLink = document.getElementById('login-link');
+  
+  // Language dropdown
+  const langToggle = document.getElementById('auth-language-toggle');
+  const langMenu = document.getElementById('auth-language-menu');
+  
+  if (langToggle && langMenu) {
+    langToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      langMenu.classList.toggle('active');
+    });
+
+    document.addEventListener('click', () => {
+      langMenu.classList.remove('active');
+    });
+
+    langMenu.querySelectorAll('.language-option').forEach(option => {
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const lang = option.getAttribute('data-lang');
+        languageManager.setLanguage(lang);
+      });
+    });
+  }
 
   // Handle role selection
   roleOptions.forEach(option => {
@@ -180,11 +205,11 @@ export function renderSignupPage() {
     
     if (isLoading) {
       submitBtn.disabled = true;
-      btnText.textContent = 'Creating account...';
+      btnText.textContent = t('common.loading');
       inputs.forEach(input => input.disabled = true);
     } else {
       submitBtn.disabled = false;
-      btnText.textContent = 'Create Account';
+      btnText.textContent = t('auth.createAccount');
       inputs.forEach(input => input.disabled = false);
     }
   }
@@ -198,17 +223,11 @@ export function renderSignupPage() {
     const companyName = document.getElementById('companyName').value;
     const phoneNumber = document.getElementById('phoneNumber').value;
     const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
     const role = form.querySelector('input[name="role"]:checked').value;
 
     // Validation
-    if (password !== confirmPassword) {
-      showError('Passwords do not match');
-      return;
-    }
-
     if (password.length < 6) {
-      showError('Password must be at least 6 characters');
+      showError(t('auth.passwordMinLength'));
       return;
     }
 

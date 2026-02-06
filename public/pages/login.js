@@ -1,17 +1,33 @@
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
+import languageManager from '../js/language.js';
 
 export function renderLoginPage() {
   const app = document.getElementById('app');
+  const t = languageManager.t.bind(languageManager);
   
   app.innerHTML = `
     <div class="auth-page">
       <div class="auth-container">
         <div class="auth-header">
-          <h1 class="auth-logo">I ONE</h1>
-          <p class="auth-subtitle">Construction</p>
-          <h2 class="auth-title">Welcome Back</h2>
-          <p class="auth-description">Sign in to access your account</p>
+          <img src="/aluminum-website/logo.svg" alt="I ONE Construction" class="auth-logo-image" />
+          <h2 class="auth-title">${t('auth.welcomeBack')}</h2>
+          <p class="auth-description">${t('auth.signInDescription')}</p>
+        </div>
+
+        <!-- Language Dropdown -->
+        <div class="auth-language-dropdown">
+          <div class="language-dropdown">
+            <button class="language-toggle" id="auth-language-toggle" type="button">
+              ${t('languages.' + languageManager.getLanguage())}
+              <i data-lucide="chevron-down" style="width: 14px; height: 14px; margin-left: 4px;"></i>
+            </button>
+            <div class="language-dropdown-menu" id="auth-language-menu">
+              <button class="language-option" data-lang="en">${t('languages.en')}</button>
+              <button class="language-option" data-lang="ar">${t('languages.ar')}</button>
+              <button class="language-option" data-lang="zh">${t('languages.zh')}</button>
+            </div>
+          </div>
         </div>
 
         <div id="error-message" class="error-message" style="display: none;">
@@ -23,12 +39,12 @@ export function renderLoginPage() {
           <div class="form-group">
             <label for="email">
               <i data-lucide="mail"></i>
-              Email Address
+              ${t('auth.email')}
             </label>
             <input
               id="email"
               type="email"
-              placeholder="your@email.com"
+              placeholder="${t('auth.email')}"
               required
             />
           </div>
@@ -36,7 +52,7 @@ export function renderLoginPage() {
           <div class="form-group">
             <label for="password">
               <i data-lucide="lock"></i>
-              Password
+              ${t('auth.password')}
             </label>
             <input
               id="password"
@@ -47,12 +63,12 @@ export function renderLoginPage() {
           </div>
 
           <button type="submit" class="btn btn-primary">
-            <span class="btn-text">Sign In</span>
+            <span class="btn-text">${t('auth.signIn')}</span>
           </button>
         </form>
 
         <div class="auth-divider">
-          <span>OR</span>
+          <span>${t('common.or')}</span>
         </div>
 
         <button id="google-signin-btn" type="button" class="btn btn-google">
@@ -62,13 +78,13 @@ export function renderLoginPage() {
             <path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71 0-.593.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
             <path d="M9.003 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.464.891 11.426 0 9.003 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
           </svg>
-          Continue with Google
+          ${t('auth.continueWithGoogle')}
         </button>
 
         <div class="auth-footer">
           <p>
-            Don't have an account? 
-            <a href="#" id="signup-link" class="auth-link">Sign up</a>
+            ${t('auth.dontHaveAccount')}
+            <a href="#" id="signup-link" class="auth-link">${t('auth.signup')}</a>
           </p>
         </div>
       </div>
@@ -86,6 +102,29 @@ export function renderLoginPage() {
   const errorDiv = document.getElementById('error-message');
   const googleBtn = document.getElementById('google-signin-btn');
   const signupLink = document.getElementById('signup-link');
+  
+  // Language dropdown
+  const langToggle = document.getElementById('auth-language-toggle');
+  const langMenu = document.getElementById('auth-language-menu');
+  
+  if (langToggle && langMenu) {
+    langToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      langMenu.classList.toggle('active');
+    });
+
+    document.addEventListener('click', () => {
+      langMenu.classList.remove('active');
+    });
+
+    langMenu.querySelectorAll('.language-option').forEach(option => {
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const lang = option.getAttribute('data-lang');
+        languageManager.setLanguage(lang);
+      });
+    });
+  }
 
   function showError(message) {
     errorDiv.style.display = 'flex';
@@ -106,13 +145,13 @@ export function renderLoginPage() {
     if (isLoading) {
       submitBtn.disabled = true;
       googleBtn.disabled = true;
-      btnText.textContent = 'Signing in...';
+      btnText.textContent = t('common.loading');
       emailInput.disabled = true;
       passwordInput.disabled = true;
     } else {
       submitBtn.disabled = false;
       googleBtn.disabled = false;
-      btnText.textContent = 'Sign In';
+      btnText.textContent = t('auth.signIn');
       emailInput.disabled = false;
       passwordInput.disabled = false;
     }
