@@ -1,18 +1,10 @@
 // Firebase configuration
-// ⚠️ IMPORTANT: Replace these demo credentials with your actual Firebase project credentials
-// Get them from Firebase Console > Project Settings > Your apps
-// 
-// For production:
-// 1. Create a Firebase project at https://console.firebase.google.com/
-// 2. Enable Authentication (Email/Password + Google Sign-In)
-// 3. Create a Firestore database
-// 4. Enable Firebase Storage
-// 5. Copy your config values here
-// 
-// NOTE: Consider using environment variables for sensitive data:
-// - Create a .env file with VITE_FIREBASE_* variables
-// - Use import.meta.env.VITE_FIREBASE_API_KEY instead of hardcoded values
-// - Add .env to .gitignore to prevent committing secrets
+// Using actual Firebase project: gen-lang-client-0988357303
+// Make sure to enable the following in Firebase Console:
+// 1. Authentication > Sign-in method > Email/Password
+// 2. Authentication > Sign-in method > Google
+// 3. Firestore Database
+// 4. Storage
 
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
@@ -21,13 +13,13 @@ import { getStorage } from 'firebase/storage';
 import { getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: "demo-api-key",
-  authDomain: "demo-project.firebaseapp.com",
-  projectId: "demo-project",
-  storageBucket: "demo-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef",
-  measurementId: "G-XXXXXXXXXX"
+  apiKey: "AIzaSyA2soyxD1Bqe40CmgMDIGnPKmTp6QW2vmM",
+  authDomain: "gen-lang-client-0988357303.firebaseapp.com",
+  projectId: "gen-lang-client-0988357303",
+  storageBucket: "gen-lang-client-0988357303.firebasestorage.app",
+  messagingSenderId: "248469969544",
+  appId: "1:248469969544:web:460684f506faec8b9b1d3d",
+  measurementId: "G-J7L65NCMB5"
 };
 
 // Initialize Firebase
