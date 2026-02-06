@@ -144,7 +144,6 @@ export function renderLoginPage() {
       }, 500);
     } else {
       showError(result.error || 'Failed to login. Please check your credentials.');
-      window.toast.error('Failed to login');
       setLoading(false);
     }
   });
@@ -172,7 +171,6 @@ export function renderLoginPage() {
       }, 500);
     } else {
       showError(result.error || 'Failed to sign in with Google.');
-      window.toast.error('Failed to sign in with Google');
       setLoading(false);
     }
   });

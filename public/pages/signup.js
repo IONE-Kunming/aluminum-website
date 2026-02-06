@@ -254,7 +254,6 @@ export function renderSignupPage() {
       }
     } else {
       showError(result.error || 'Failed to create account');
-      window.toast.error('Failed to create account');
       setLoading(false);
     }
   });

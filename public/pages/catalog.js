@@ -48,7 +48,7 @@ export function renderCatalog() {
         <p>Browse our selection of premium aluminum products</p>
       </div>
 
-      <div class="catalog-filters">
+      <div class="catalog-controls">
         <input type="text" id="search-input" placeholder="Search products..." class="form-control">
         <select id="category-filter" class="form-control">
           <option value="">All Categories</option>
