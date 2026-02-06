@@ -16,7 +16,7 @@ base: '/aluminum-website/'
 This configuration is correct for GitHub Pages (where the site is at `username.github.io/aluminum-website/`), but incorrect for a custom domain deployment at the root. It caused all asset paths to include the unnecessary `/aluminum-website/` prefix.
 
 ## Solution
-Made the base path configurable to support both deployment scenarios:
+Made the base path configurable to support both deployment scenarios and added proper GitHub Pages configuration:
 
 ### 1. Custom Domain Deployment (ione.live) - DEFAULT
 Assets are served from the root path:
@@ -40,6 +40,19 @@ https://username.github.io/aluminum-website/assets/main-xxx.css
 // Set VITE_BASE_PATH=/aluminum-website/ for GitHub Pages deployments
 base: process.env.VITE_BASE_PATH || '/',
 ```
+
+### router.js
+```javascript
+// Router automatically detects base path from Vite's environment
+this.basePath = (import.meta.env?.BASE_URL || '/').replace(/\/$/, '');
+if (this.basePath === '/') this.basePath = '';
+```
+
+### .nojekyll file
+A `.nojekyll` file is placed in the `public/` directory (copied to `dist/` during build) to tell GitHub Pages not to process the site with Jekyll. This is crucial because:
+- Jekyll ignores files and folders starting with underscores
+- Jekyll may interfere with the SPA routing
+- Without this file, the site may show a blank white page on GitHub Pages
 
 ### GitHub Actions Workflow (.github/workflows/deploy.yml)
 ```yaml
@@ -111,3 +124,18 @@ For any deployment issues:
 1. Check the browser console for 404 errors
 2. Verify the asset paths in `dist/index.html` match your deployment structure
 3. Ensure the base path configuration matches your hosting setup
+4. Verify `.nojekyll` file exists in the dist folder for GitHub Pages deployments
+
+## Troubleshooting Blank White Page
+
+If you see a blank white page on GitHub Pages:
+1. **Check asset paths**: Open browser DevTools and check the Network tab for 404 errors
+2. **Verify .nojekyll exists**: The file should be in the `dist/` folder after build
+3. **Check base path**: Ensure `VITE_BASE_PATH=/aluminum-website/` is set in the GitHub Actions workflow
+4. **Verify router base path**: The router should automatically detect the base path from Vite
+5. **Clear browser cache**: Sometimes the old broken version is cached
+
+Common issues:
+- Missing `.nojekyll` file → GitHub Pages processes site with Jekyll → Blank page
+- Wrong base path in build → 404 errors on all assets → Blank page
+- Router base path not set → Navigation doesn't work after page refresh
