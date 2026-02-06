@@ -13,11 +13,34 @@
     <link rel="dns-prefetch" href="https://firebase.googleapis.com" />
     <link rel="dns-prefetch" href="https://firebaseinstallations.googleapis.com" />
     
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script defer src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="./public/css/main.css">
+    <link rel="stylesheet" href="./public/css/LandingPage.css">
+    <link rel="stylesheet" href="./public/css/AuthPages.css">
+    <link rel="stylesheet" href="./public/css/Layout.css">
+    <link rel="stylesheet" href="./public/css/Dashboard.css">
+    <link rel="stylesheet" href="./public/css/Pages.css">
+    
     <title>IONE AlumaTech - Aluminum Trading Platform</title>
     <meta name="description" content="Transform your aluminum trading experience with IONE AlumaTech - The premier B2B platform connecting buyers and sellers." />
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <div id="app"></div>
+    <div id="toast-container"></div>
+    
+    <!-- Main Application Script -->
+    <script type="module" src="./public/js/app.js"></script>
   </body>
 </html>

@@ -1,27 +1,23 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [],
   base: '/aluminum-website/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    // Optimize bundle splitting
     rollupOptions: {
+      input: {
+        main: '/index.html',
+      },
       output: {
-        manualChunks: {
-          // Split vendor chunks for better caching
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore'],
-          'ui-vendor': ['lucide-react', 'sonner'],
-        },
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
-    // Increase chunk size warning limit
     chunkSizeWarningLimit: 1000,
-    // Enable minification
     minify: 'terser',
     terserOptions: {
       compress: {
@@ -29,13 +25,8 @@ export default defineConfig({
       },
     },
   },
-  // Optimize dev server
   server: {
     host: true,
     port: 5173,
-  },
-  // Optimize dependencies
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', 'lucide-react', 'sonner'],
   },
 })
