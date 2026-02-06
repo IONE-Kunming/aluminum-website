@@ -121,6 +121,7 @@ export function renderLayout(content, userRole = null) {
   const navItems = document.querySelectorAll('.nav-item[data-path]');
   const themeToggle = document.getElementById('theme-toggle');
   const languageToggle = document.getElementById('language-toggle');
+  const languageMenu = document.getElementById('language-menu');
 
   function toggleSidebar() {
     sidebar.classList.toggle('open');
@@ -173,9 +174,6 @@ export function renderLayout(content, userRole = null) {
   });
 
   // Language toggle
-  const languageToggle = document.getElementById('language-toggle');
-  const languageMenu = document.getElementById('language-menu');
-  
   if (languageToggle && languageMenu) {
     languageToggle.addEventListener('click', (e) => {
       e.stopPropagation();
