@@ -50,7 +50,7 @@ if (this.basePath === '/') this.basePath = '';
 
 ### .nojekyll file
 A `.nojekyll` file is placed in the `public/` directory (copied to `dist/` during build) to tell GitHub Pages not to process the site with Jekyll. This is crucial because:
-- Jekyll ignores files and folders starting with underscores (like `_redirects`)
+- Jekyll ignores files and folders starting with underscores
 - Jekyll may interfere with the SPA routing
 - Without this file, the site may show a blank white page on GitHub Pages
 

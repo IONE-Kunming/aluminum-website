@@ -4,7 +4,7 @@ class Router {
     this.routes = {};
     this.currentRoute = null;
     // Get base path from Vite's import.meta.env.BASE_URL, removing trailing slash
-    this.basePath = (import.meta.env?.BASE_URL || '/').replace(/\/$/, '');
+    this.basePath = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
     // If basePath is just '/', set it to empty string for cleaner logic
     if (this.basePath === '/') this.basePath = '';
     
