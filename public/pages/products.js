@@ -34,6 +34,13 @@ export function renderProducts() {
               <strong>Model Number</strong>, <strong>Category</strong>, <strong>Price per Meter</strong>, <strong>Image Path</strong>
             </p>
             
+            <div style="margin-bottom: 16px;">
+              <a href="/aluminum-website/sample-products-import.csv" download="sample-products-import.csv" class="btn btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                <i data-lucide="download"></i>
+                Download Excel Template
+              </a>
+            </div>
+            
             <div class="file-upload-area" id="file-upload-area">
               <i data-lucide="file-spreadsheet" style="width: 48px; height: 48px; opacity: 0.5;"></i>
               <p>Click to select Excel file or drag and drop</p>

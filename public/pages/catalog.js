@@ -1,6 +1,7 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
+import cartManager from '../js/cart.js';
 import { escapeHtml } from '../js/utils.js';
 
 const mockProducts = [
@@ -105,8 +106,13 @@ export function renderCatalog() {
   // Add to cart functionality
   document.querySelectorAll('[data-product-id]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const productId = btn.getAttribute('data-product-id');
-      window.toast.success('Product added to cart!');
+      const productId = parseInt(btn.getAttribute('data-product-id'));
+      const product = mockProducts.find(p => p.id === productId);
+      
+      if (product) {
+        cartManager.addToCart(product, product.minOrder);
+        window.toast.success(`${product.name} added to cart!`);
+      }
     });
   });
 

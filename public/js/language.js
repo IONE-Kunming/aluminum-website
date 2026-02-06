@@ -32,8 +32,11 @@ class LanguageManager {
   setLanguage(lang) {
     if (this.translations[lang]) {
       this.applyLanguage(lang);
-      // Reload current page to apply translations
-      window.location.reload();
+      // Re-render current route without full page reload
+      // This prevents 404 errors by using the router
+      if (window.router) {
+        window.router.handleRoute();
+      }
     }
   }
 
