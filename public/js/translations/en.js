@@ -43,6 +43,7 @@ export default {
   // Products
   products: {
     title: 'Products',
+    myProducts: 'My Products',
     addProduct: 'Add Product',
     editProduct: 'Edit Product',
     deleteProduct: 'Delete Product',
@@ -50,31 +51,66 @@ export default {
     modelNumber: 'Model Number',
     category: 'Category',
     pricePerMeter: 'Price per Meter',
+    price: 'Price',
     imagePath: 'Image Path',
     description: 'Description',
     stock: 'Stock',
+    minOrder: 'Min Order',
     uploadExcel: 'Upload Excel File',
     importInstructions: 'Upload an Excel file with columns: Model Number, Category, Price per Meter, Image Path',
     selectFile: 'Select File',
     importProducts: 'Import Products',
     importSuccess: 'Products imported successfully',
-    importError: 'Error importing products'
+    importError: 'Error importing products',
+    manageProductListings: 'Manage your product listings',
+    downloadTemplate: 'Download Excel Template',
+    addToCart: 'Add to Cart'
   },
   
   // Dashboard
   dashboard: {
     welcome: 'Welcome back',
+    buyerSubtitle: "Here's what's happening with your orders today",
+    sellerSubtitle: "Here's an overview of your business performance",
+    adminSubtitle: 'Manage the platform',
     recentOrders: 'Recent Orders',
     totalSales: 'Total Sales',
     totalProducts: 'Total Products',
+    totalOrders: 'Total Orders',
+    activeOrders: 'Active Orders',
+    completedOrders: 'Completed',
+    totalSpent: 'Total Spent',
+    revenue: 'Revenue',
+    totalUsers: 'Total Users',
+    sellers: 'Sellers',
     pendingOrders: 'Pending Orders',
-    viewAll: 'View All'
+    viewAll: 'View All',
+    currentlyInProgress: 'Currently in progress',
+    successfullyDelivered: 'Successfully delivered',
+    fromLastMonth: 'from last month',
+    activeListings: 'Active listings',
+    needsAttention: 'Needs attention',
+    topProducts: 'Top Products',
+    quickActions: 'Quick Actions',
+    browseCatalog: 'Browse Catalog',
+    viewOrders: 'View Orders',
+    findSellers: 'Find Sellers',
+    manageProducts: 'Manage Products',
+    manageBranches: 'Manage Branches',
+    activeAccounts: 'Active accounts',
+    allTime: 'All time',
+    totalPlatformRevenue: 'Total platform revenue',
+    activeSellers: 'Active sellers',
+    platformOverview: 'Platform Overview',
+    adminControlsMessage: 'Admin controls and analytics will be displayed here'
   },
   
   // Orders
   orders: {
     title: 'Orders',
+    myOrders: 'My Orders',
     orderNumber: 'Order Number',
+    orderId: 'Order ID',
     date: 'Date',
     total: 'Total',
     status: 'Status',
@@ -82,7 +118,14 @@ export default {
     processing: 'Processing',
     shipped: 'Shipped',
     delivered: 'Delivered',
-    cancelled: 'Cancelled'
+    cancelled: 'Cancelled',
+    inTransit: 'In Transit',
+    product: 'Product',
+    quantity: 'Quantity',
+    seller: 'Seller',
+    trackAndManage: 'Track and manage your orders',
+    noOrders: 'No orders yet',
+    ordersWillAppear: 'Your orders will appear here once you make your first purchase'
   },
   
   // Cart
@@ -93,6 +136,37 @@ export default {
     checkout: 'Checkout',
     continueShopping: 'Continue Shopping',
     removeItem: 'Remove Item'
+  },
+  
+  // Catalog
+  catalog: {
+    title: 'Product Catalog',
+    subtitle: 'Browse our selection of premium aluminum products',
+    seller: 'Seller:',
+    price: 'Price:',
+    minOrder: 'Min Order:',
+    stock: 'Stock:',
+    addToCart: 'Add to Cart',
+    loading: 'Loading products...',
+    noProducts: 'No products available'
+  },
+  
+  // Sellers
+  sellers: {
+    title: 'Sellers Directory',
+    subtitle: 'Browse and connect with aluminum suppliers',
+    loading: 'Loading sellers...',
+    noSellers: 'No sellers available',
+    directory: 'Seller directory will appear here'
+  },
+  
+  // Branches
+  branches: {
+    title: 'Branches',
+    subtitle: 'Manage your business locations',
+    noBranches: 'No branches yet',
+    addFirstBranch: 'Add your first branch location',
+    addBranch: 'Add Branch'
   },
   
   // Auth
@@ -119,15 +193,17 @@ export default {
   // Profile
   profile: {
     title: 'Profile',
+    profileSettings: 'Profile Settings',
     displayName: 'Display Name',
     email: 'Email',
     role: 'Role',
     buyer: 'Buyer',
     seller: 'Seller',
     updateProfile: 'Update Profile',
-    changePassword: 'Change Password'
+    changePassword: 'Change Password',
+    manageAccountInfo: 'Manage your account information',
+    accountInformation: 'Account Information'
   },
-  
   // Landing Page
   landing: {
     nav: {
