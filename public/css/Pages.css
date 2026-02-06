@@ -1423,4 +1423,30 @@
   }
 }
 
+/* RTL Support for Pages */
+[dir="rtl"] .modal-header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .modal-footer {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .cart-summary {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+[dir="rtl"] .product-card {
+  text-align: right;
+}
+
+[dir="rtl"] .catalog-controls {
+  direction: rtl;
+}
+
+[dir="rtl"] .summary-row {
+  flex-direction: row-reverse;
+}
+
 
