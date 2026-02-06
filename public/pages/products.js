@@ -240,8 +240,7 @@ async function deleteProduct(productId) {
   }
   
   try {
-    const db = firebase.firestore();
-    await db.collection('products').doc(productId).delete();
+    await dataService.deleteProduct(productId);
     
     if (window.toast) {
       window.toast.success('Product deleted successfully');

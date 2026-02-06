@@ -231,8 +231,8 @@ class DataService {
       
       // Sort in memory to avoid Firestore index requirements
       products.sort((a, b) => {
-        const dateA = new Date(a.createdAt || 0);
-        const dateB = new Date(b.createdAt || 0);
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date();
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date();
         return dateB - dateA; // descending order
       });
       
@@ -240,6 +240,23 @@ class DataService {
     } catch (error) {
       console.error('Error fetching products:', error);
       return [];
+    }
+  }
+
+  // Delete a product
+  async deleteProduct(productId) {
+    await this.init();
+
+    try {
+      if (!this.db || !productId) {
+        throw new Error('Invalid product ID or database not initialized');
+      }
+
+      await this.db.collection('products').doc(productId).delete();
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      throw error;
     }
   }
 
