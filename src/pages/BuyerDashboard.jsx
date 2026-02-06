@@ -1,5 +1,5 @@
 import { useAuth } from '../context/AuthContext';
-import { ShoppingCart, Package, DollarSign, Clock, CheckCircle, TrendingUp } from 'lucide-react';
+import { ShoppingCart, Package, DollarSign, Clock, CheckCircle, TrendingUp, Store } from 'lucide-react';
 
 // Mock data for demo
 const mockStats = {
