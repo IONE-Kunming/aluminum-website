@@ -138,11 +138,18 @@ const firebaseConfig = {
 npm run dev
 ```
 
-Open [http://localhost:5173/aluminum-website/](http://localhost:5173/aluminum-website/)
+Open [http://localhost:5173/](http://localhost:5173/)
 
 ### 5. Build for Production
+
+**For custom domain deployment (e.g., ione.live):**
 ```bash
 npm run build
+```
+
+**For GitHub Pages deployment:**
+```bash
+VITE_BASE_PATH=/aluminum-website/ npm run build
 ```
 
 Production build: 59KB total, 11KB gzipped ⚡
@@ -154,9 +161,18 @@ npm run preview
 
 ## 🌐 Deployment
 
+### Custom Domain Deployment
+
+The project is configured by default to deploy to a root domain (e.g., `ione.live`). Simply build and deploy the `dist` folder to your hosting provider:
+
+```bash
+npm run build
+# Deploy the dist folder to your hosting provider
+```
+
 ### GitHub Pages (Automated)
 
-The project includes a GitHub Actions workflow that automatically deploys to GitHub Pages when you push to the main branch.
+The project includes a GitHub Actions workflow that automatically deploys to GitHub Pages when you push to the main branch. The workflow is pre-configured with the correct base path.
 
 **Enable GitHub Pages:**
 1. Go to repository Settings > Pages
@@ -164,7 +180,7 @@ The project includes a GitHub Actions workflow that automatically deploys to Git
 3. Push to main branch
 4. Your site will be live at `https://[username].github.io/aluminum-website/`
 
-### Manual Deployment
+### Firebase Hosting
 
 ```bash
 # Build the project
