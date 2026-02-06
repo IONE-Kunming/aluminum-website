@@ -71,6 +71,7 @@ const mockSystemMetrics = [
 ];
 
 const AdminDashboard = () => {
+  // eslint-disable-next-line no-unused-vars
   const { userProfile } = useAuth();
 
   const getActivityIcon = (type) => {
