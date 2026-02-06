@@ -8,8 +8,8 @@ export function renderSignupPage() {
     <div class="auth-page">
       <div class="auth-container">
         <div class="auth-header">
-          <h1 class="auth-logo">IONE</h1>
-          <p class="auth-subtitle">AlumaTech Industries</p>
+          <h1 class="auth-logo">I ONE</h1>
+          <p class="auth-subtitle">Construction</p>
           <h2 class="auth-title">Create Account</h2>
           <p class="auth-description">Join the aluminum trading platform</p>
         </div>

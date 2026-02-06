@@ -9,8 +9,8 @@ export function renderLandingPage() {
       <nav class="landing-nav">
         <div class="nav-container">
           <div class="nav-logo">
-            <h1 class="logo-text">IONE</h1>
-            <span class="logo-subtitle">AlumaTech</span>
+            <h1 class="logo-text">I ONE</h1>
+            <span class="logo-subtitle">Construction</span>
           </div>
           <div class="nav-links">
             <a href="#features" class="nav-link">Features</a>
@@ -197,7 +197,7 @@ export function renderLandingPage() {
         <div class="section-container">
           <div class="benefits-content">
             <div class="benefits-text">
-              <h2 class="section-title">Why Choose IONE AlumaTech?</h2>
+              <h2 class="section-title">Why Choose I ONE Construction?</h2>
               <div class="benefits-list">
                 <div class="benefit-item">
                   <div class="benefit-icon">
@@ -266,7 +266,7 @@ export function renderLandingPage() {
         <div class="cta-card card card-glass">
           <h2 class="cta-title">Ready to Transform Your Trading?</h2>
           <p class="cta-description">
-            Join thousands of successful traders on the IONE AlumaTech platform
+            Join thousands of successful traders on the I ONE Construction platform
           </p>
           <div class="cta-buttons">
             <button class="btn btn-primary btn-lg" data-nav="signup">
@@ -281,7 +281,7 @@ export function renderLandingPage() {
         <div class="footer-container">
           <div class="footer-content">
             <div class="footer-section">
-              <h3 class="footer-logo">IONE AlumaTech</h3>
+              <h3 class="footer-logo">I ONE Construction</h3>
               <p class="footer-description">
                 The premier platform for aluminum trading, connecting buyers and sellers worldwide.
               </p>
@@ -315,7 +315,7 @@ export function renderLandingPage() {
             </div>
           </div>
           <div class="footer-bottom">
-            <p>&copy; 2024 IONE AlumaTech Industries. All rights reserved.</p>
+            <p>&copy; 2024 I ONE Construction. All rights reserved.</p>
           </div>
         </div>
       </footer>

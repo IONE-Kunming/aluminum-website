@@ -18,7 +18,7 @@ const mockRecentOrders = [
     quantity: '500 kg',
     total: 12500,
     status: 'Delivered',
-    seller: 'AlumaTech Industries'
+    seller: 'I ONE Construction'
   },
   {
     id: 'ORD-002',
@@ -45,7 +45,7 @@ const mockRecentOrders = [
     quantity: '200 kg',
     total: 15000,
     status: 'Delivered',
-    seller: 'AlumaTech Industries'
+    seller: 'I ONE Construction'
   }
 ];
 

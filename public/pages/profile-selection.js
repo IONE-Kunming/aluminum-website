@@ -8,8 +8,8 @@ export function renderProfileSelection() {
     <div class="auth-page">
       <div class="auth-container profile-selection-container">
         <div class="auth-header">
-          <h1 class="auth-logo">IONE</h1>
-          <p class="auth-subtitle">AlumaTech Industries</p>
+          <h1 class="auth-logo">I ONE</h1>
+          <p class="auth-subtitle">Construction</p>
           <h2 class="auth-title">Choose Your Role</h2>
           <p class="auth-description">Select how you want to use the platform</p>
         </div>
