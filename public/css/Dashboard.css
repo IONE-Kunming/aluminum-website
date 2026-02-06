@@ -363,3 +363,30 @@
   color: var(--text-secondary);
   font-size: 0.8125rem;
 }
+
+/* RTL Support for Dashboard */
+[dir="rtl"] .stat-card {
+  text-align: right;
+}
+
+[dir="rtl"] .stat-content {
+  text-align: right;
+}
+
+[dir="rtl"] .section-header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .table-container {
+  direction: rtl;
+}
+
+[dir="rtl"] .data-table th,
+[dir="rtl"] .data-table td {
+  text-align: right;
+}
+
+[dir="rtl"] .data-table th:first-child,
+[dir="rtl"] .data-table td:first-child {
+  text-align: right;
+}
