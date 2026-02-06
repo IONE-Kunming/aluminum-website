@@ -3,7 +3,7 @@ class Router {
   constructor() {
     this.routes = {};
     this.currentRoute = null;
-    this.basePath = '/aluminum-website';
+    this.basePath = '';
     
     window.addEventListener('popstate', () => this.handleRoute());
     

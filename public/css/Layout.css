@@ -315,6 +315,8 @@
 [dir="rtl"] .nav-item {
   border-left: none;
   border-right: 3px solid transparent;
+  flex-direction: row-reverse;
+  text-align: right;
 }
 
 [dir="rtl"] .nav-item:hover {
@@ -344,6 +346,14 @@
 [dir="rtl"] .mobile-menu-btn {
   left: auto;
   right: var(--spacing-lg);
+}
+
+[dir="rtl"] .user-info {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .user-details {
+  text-align: right;
 }
 
 /* RTL Mobile Responsive */
