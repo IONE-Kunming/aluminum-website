@@ -1,4 +1,12 @@
 // Main Application Entry Point
+// Import CSS files for Vite to bundle
+import '../css/main.css';
+import '../css/LandingPage.css';
+import '../css/AuthPages.css';
+import '../css/Layout.css';
+import '../css/Dashboard.css';
+import '../css/Pages.css';
+
 import router from './router.js';
 import authManager from './auth.js';
 
