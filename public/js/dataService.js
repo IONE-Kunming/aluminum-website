@@ -218,19 +218,25 @@ class DataService {
         query = query.where('sellerId', '==', filters.sellerId);
       }
       
-      // Add ordering for consistent results
-      query = query.orderBy('createdAt', 'desc');
-      
-      // Apply pagination limit if specified
+      // Apply pagination limit if specified (before ordering to avoid index requirements)
       if (filters.limit) {
         query = query.limit(filters.limit);
       }
 
       const snapshot = await query.get();
-      return snapshot.docs.map(doc => ({
+      const products = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+      
+      // Sort in memory to avoid Firestore index requirements
+      products.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0);
+        const dateB = new Date(b.createdAt || 0);
+        return dateB - dateA; // descending order
+      });
+      
+      return products;
     } catch (error) {
       console.error('Error fetching products:', error);
       return [];
