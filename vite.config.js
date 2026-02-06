@@ -30,5 +30,7 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    // Enable SPA fallback for client-side routing
+    middlewareMode: false,
   },
 })

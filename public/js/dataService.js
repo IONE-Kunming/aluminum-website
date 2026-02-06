@@ -217,6 +217,14 @@ class DataService {
       if (filters.sellerId) {
         query = query.where('sellerId', '==', filters.sellerId);
       }
+      
+      // Add ordering for consistent results
+      query = query.orderBy('createdAt', 'desc');
+      
+      // Apply pagination limit if specified
+      if (filters.limit) {
+        query = query.limit(filters.limit);
+      }
 
       const snapshot = await query.get();
       return snapshot.docs.map(doc => ({

@@ -1,25 +1,46 @@
 // Main Application Entry Point
 import router from './router.js';
 import authManager from './auth.js';
+
+// Eagerly load landing and auth pages (always needed)
 import { renderLandingPage } from '../pages/landing.js';
 import { renderLoginPage } from '../pages/login.js';
 import { renderSignupPage } from '../pages/signup.js';
 import { renderProfileSelection } from '../pages/profile-selection.js';
-import { renderBuyerDashboard } from '../pages/buyer-dashboard.js';
-import { renderSellerDashboard } from '../pages/seller-dashboard.js';
-import { renderCatalog } from '../pages/catalog.js';
-import { renderCart } from '../pages/cart.js';
-import { renderOrders } from '../pages/orders.js';
-import { renderInvoices } from '../pages/invoices.js';
-import { renderSellers } from '../pages/sellers.js';
-import { renderProducts } from '../pages/products.js';
-import { renderSellerOrders } from '../pages/seller-orders.js';
-import { renderSellerInvoices } from '../pages/seller-invoices.js';
-import { renderBranches } from '../pages/branches.js';
-import { renderProfile } from '../pages/profile.js';
-import { renderSupport } from '../pages/support.js';
-import { renderNotifications } from '../pages/notifications.js';
-import { renderAdminDashboard } from '../pages/admin-dashboard.js';
+
+// Lazy load dashboard pages (loaded on demand)
+const lazyPages = {
+  buyerDashboard: () => import('../pages/buyer-dashboard.js').then(m => m.renderBuyerDashboard),
+  sellerDashboard: () => import('../pages/seller-dashboard.js').then(m => m.renderSellerDashboard),
+  catalog: () => import('../pages/catalog.js').then(m => m.renderCatalog),
+  cart: () => import('../pages/cart.js').then(m => m.renderCart),
+  orders: () => import('../pages/orders.js').then(m => m.renderOrders),
+  invoices: () => import('../pages/invoices.js').then(m => m.renderInvoices),
+  sellers: () => import('../pages/sellers.js').then(m => m.renderSellers),
+  products: () => import('../pages/products.js').then(m => m.renderProducts),
+  sellerOrders: () => import('../pages/seller-orders.js').then(m => m.renderSellerOrders),
+  sellerInvoices: () => import('../pages/seller-invoices.js').then(m => m.renderSellerInvoices),
+  branches: () => import('../pages/branches.js').then(m => m.renderBranches),
+  profile: () => import('../pages/profile.js').then(m => m.renderProfile),
+  support: () => import('../pages/support.js').then(m => m.renderSupport),
+  notifications: () => import('../pages/notifications.js').then(m => m.renderNotifications),
+  adminDashboard: () => import('../pages/admin-dashboard.js').then(m => m.renderAdminDashboard),
+};
+
+// Helper to create lazy route handler
+function lazyRoute(pageLoader) {
+  return async () => {
+    try {
+      const renderFn = await pageLoader();
+      await renderFn();
+    } catch (error) {
+      console.error('Error loading page:', error);
+      if (window.toast) {
+        window.toast.error('Failed to load page');
+      }
+    }
+  };
+}
 
 // Toast notification system
 const toast = {
@@ -81,29 +102,29 @@ async function initApp() {
     renderProfileSelection();
   });
   
-  // Register buyer routes
-  router.register('/buyer/dashboard', protectedRoute(renderBuyerDashboard, 'buyer'));
-  router.register('/buyer/catalog', protectedRoute(renderCatalog, 'buyer'));
-  router.register('/buyer/cart', protectedRoute(renderCart, 'buyer'));
-  router.register('/buyer/orders', protectedRoute(renderOrders, 'buyer'));
-  router.register('/buyer/invoices', protectedRoute(renderInvoices, 'buyer'));
-  router.register('/buyer/sellers', protectedRoute(renderSellers, 'buyer'));
-  router.register('/buyer/support', protectedRoute(renderSupport, 'buyer'));
-  router.register('/buyer/notifications', protectedRoute(renderNotifications, 'buyer'));
-  router.register('/buyer/profile', protectedRoute(renderProfile, 'buyer'));
+  // Register buyer routes (lazy loaded)
+  router.register('/buyer/dashboard', protectedRoute(lazyRoute(lazyPages.buyerDashboard), 'buyer'));
+  router.register('/buyer/catalog', protectedRoute(lazyRoute(lazyPages.catalog), 'buyer'));
+  router.register('/buyer/cart', protectedRoute(lazyRoute(lazyPages.cart), 'buyer'));
+  router.register('/buyer/orders', protectedRoute(lazyRoute(lazyPages.orders), 'buyer'));
+  router.register('/buyer/invoices', protectedRoute(lazyRoute(lazyPages.invoices), 'buyer'));
+  router.register('/buyer/sellers', protectedRoute(lazyRoute(lazyPages.sellers), 'buyer'));
+  router.register('/buyer/support', protectedRoute(lazyRoute(lazyPages.support), 'buyer'));
+  router.register('/buyer/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'buyer'));
+  router.register('/buyer/profile', protectedRoute(lazyRoute(lazyPages.profile), 'buyer'));
   
-  // Register seller routes
-  router.register('/seller/dashboard', protectedRoute(renderSellerDashboard, 'seller'));
-  router.register('/seller/products', protectedRoute(renderProducts, 'seller'));
-  router.register('/seller/orders', protectedRoute(renderSellerOrders, 'seller'));
-  router.register('/seller/invoices', protectedRoute(renderSellerInvoices, 'seller'));
-  router.register('/seller/branches', protectedRoute(renderBranches, 'seller'));
-  router.register('/seller/support', protectedRoute(renderSupport, 'seller'));
-  router.register('/seller/notifications', protectedRoute(renderNotifications, 'seller'));
-  router.register('/seller/profile', protectedRoute(renderProfile, 'seller'));
+  // Register seller routes (lazy loaded)
+  router.register('/seller/dashboard', protectedRoute(lazyRoute(lazyPages.sellerDashboard), 'seller'));
+  router.register('/seller/products', protectedRoute(lazyRoute(lazyPages.products), 'seller'));
+  router.register('/seller/orders', protectedRoute(lazyRoute(lazyPages.sellerOrders), 'seller'));
+  router.register('/seller/invoices', protectedRoute(lazyRoute(lazyPages.sellerInvoices), 'seller'));
+  router.register('/seller/branches', protectedRoute(lazyRoute(lazyPages.branches), 'seller'));
+  router.register('/seller/support', protectedRoute(lazyRoute(lazyPages.support), 'seller'));
+  router.register('/seller/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'seller'));
+  router.register('/seller/profile', protectedRoute(lazyRoute(lazyPages.profile), 'seller'));
   
-  // Register admin routes
-  router.register('/admin/dashboard', protectedRoute(renderAdminDashboard, 'admin'));
+  // Register admin routes (lazy loaded)
+  router.register('/admin/dashboard', protectedRoute(lazyRoute(lazyPages.adminDashboard), 'admin'));
   
   // Fallback route
   router.register('*', renderLandingPage);
