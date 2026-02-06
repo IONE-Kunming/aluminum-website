@@ -15,7 +15,7 @@ export function renderProfile() {
 
       <div class="profile-card card">
         <div class="profile-avatar">
-          ${escapeHtml(profile?.displayName?.charAt(0).toUpperCase() || 'U')}
+          ${(profile?.displayName ? escapeHtml(profile.displayName).charAt(0).toUpperCase() : 'U')}
         </div>
         <div class="profile-info">
           <h2>${escapeHtml(profile?.displayName || 'User')}</h2>
