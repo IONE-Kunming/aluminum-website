@@ -1,5 +1,4 @@
 import { renderPageWithLayout } from '../js/layout.js';
-import { db, storage } from '../js/firebase-config.js';
 import authManager from '../js/auth.js';
 
 export function renderProducts() {
@@ -181,6 +180,10 @@ function initializeBulkImport() {
     document.getElementById('import-progress').style.display = 'block';
     
     try {
+      // Get Firebase instances
+      const db = firebase.firestore();
+      const storage = firebase.storage();
+      
       const totalProducts = excelData.length;
       let importedCount = 0;
       
