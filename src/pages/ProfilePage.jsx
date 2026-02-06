@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { User, Mail, Building, Phone, Save, Camera } from 'lucide-react';
 import { toast } from 'sonner';
+import '../styles/Pages.css';
 
 const ProfilePage = () => {
   const { userProfile, updateUserProfile } = useAuth();

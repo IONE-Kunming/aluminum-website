@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ShoppingBag, Search, Filter, Eye, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import '../styles/Pages.css';
 
 // Mock orders data for seller
 const mockSellerOrders = [

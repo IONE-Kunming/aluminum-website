@@ -1,4 +1,3 @@
-import { useAuth } from '../context/AuthContext';
 import { 
   Users, 
   ShoppingBag, 
@@ -71,8 +70,6 @@ const mockSystemMetrics = [
 ];
 
 const AdminDashboard = () => {
-  const { userProfile } = useAuth();
-
   const getActivityIcon = (type) => {
     switch (type) {
       case 'user':

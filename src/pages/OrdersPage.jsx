@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Package, Search, Filter, Eye, Download } from 'lucide-react';
+import '../styles/Pages.css';
 
 // Mock orders data
 const mockOrders = [
