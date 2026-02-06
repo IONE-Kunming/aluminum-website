@@ -168,22 +168,6 @@ export default {
     addFirstBranch: '添加您的第一个分支位置',
     addBranch: '添加分支'
   },
-    pending: '待处理',
-    processing: '处理中',
-    shipped: '已发货',
-    delivered: '已送达',
-    cancelled: '已取消'
-  },
-  
-  // 购物车
-  cart: {
-    title: '购物车',
-    emptyCart: '您的购物车是空的',
-    total: '总计',
-    checkout: '结账',
-    continueShopping: '继续购物',
-    removeItem: '删除商品'
-  },
   
   // 认证
   auth: {
