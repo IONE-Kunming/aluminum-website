@@ -36,7 +36,8 @@ export default {
     back: '返回',
     next: '下一步',
     previous: '上一步',
-    close: '关闭'
+    close: '关闭',
+    or: '或'
   },
   
   // 产品
@@ -106,7 +107,13 @@ export default {
     dontHaveAccount: '还没有账户？',
     alreadyHaveAccount: '已有账户？',
     signIn: '登录',
-    createAccount: '创建账户'
+    createAccount: '创建账户',
+    welcomeBack: '欢迎回来',
+    signInDescription: '登录以访问您的账户',
+    companyName: '公司名称',
+    phoneNumber: '电话号码',
+    passwordMinLength: '密码必须至少6个字符',
+    continueWithGoogle: '使用Google继续'
   },
   
   // 个人资料
@@ -119,5 +126,139 @@ export default {
     seller: '卖家',
     updateProfile: '更新资料',
     changePassword: '更改密码'
+  },
+  
+  // 着陆页
+  landing: {
+    nav: {
+      features: '功能',
+      howItWorks: '工作原理',
+      benefits: '优势',
+      login: '登录',
+      getStarted: '开始使用'
+    },
+    hero: {
+      title: '改变您的',
+      titleHighlight: '铝交易',
+      titleEnd: '体验',
+      description: '在最先进的铝交易平台上连接买家和卖家。简化运营，提高效率，发展业务。',
+      startTrading: '开始交易',
+      learnMore: '了解更多',
+      stats: {
+        activeUsers: '活跃用户',
+        transactions: '交易',
+        uptime: '正常运行时间'
+      },
+      cards: {
+        realtime: {
+          title: '实时交易',
+          description: '即时订单处理和跟踪'
+        },
+        secure: {
+          title: '安全交易',
+          description: '银行级安全保护所有交易'
+        },
+        analytics: {
+          title: '分析仪表板',
+          description: '实时跟踪性能'
+        }
+      }
+    },
+    features: {
+      title: '强大的功能',
+      subtitle: '铝交易成功所需的一切',
+      easyOrdering: {
+        title: '轻松订购',
+        description: '浏览目录、比较价格，只需点击几下即可下订单。'
+      },
+      sellerManagement: {
+        title: '卖家管理',
+        description: '轻松管理库存、跟踪订单并扩大客户群。'
+      },
+      securePlatform: {
+        title: '安全平台',
+        description: '企业级安全保护每笔交易和数据点。'
+      },
+      lightningFast: {
+        title: '闪电般快速',
+        description: '优化性能确保快速加载时间和流畅交互。'
+      },
+      invoiceManagement: {
+        title: '发票管理',
+        description: '自动开票和付款跟踪，实现无缝交易。'
+      },
+      multiUser: {
+        title: '多用户支持',
+        description: '为买家、卖家和管理员提供基于角色的访问。'
+      }
+    },
+    howItWorks: {
+      title: '工作原理',
+      subtitle: '三个简单步骤即可开始',
+      step1: {
+        title: '创建账户',
+        description: '注册并选择您的角色 - 买家或卖家。几分钟内完成您的资料。'
+      },
+      step2: {
+        title: '浏览或列出',
+        description: '买家浏览目录，卖家列出产品。与交易伙伴建立联系。'
+      },
+      step3: {
+        title: '安全交易',
+        description: '充满信心地完成交易。轻松跟踪订单和管理发票。'
+      }
+    },
+    benefits: {
+      title: '为什么选择 I ONE Construction？',
+      industryLeading: {
+        title: '行业领先',
+        description: '受到全球顶级铝贸易商的信赖'
+      },
+      support247: {
+        title: '全天候支持',
+        description: '随时提供专家协助'
+      },
+      businessGrowth: {
+        title: '业务增长',
+        description: '分析和工具帮助您扩展运营'
+      },
+      secureReliable: {
+        title: '安全可靠',
+        description: '企业级安全和99.9%正常运行时间'
+      },
+      stats: {
+        fasterProcessing: '更快处理',
+        costReduction: '成本降低',
+        satisfactionRate: '满意度'
+      }
+    },
+    cta: {
+      title: '准备好改变您的交易了吗？',
+      description: '加入 I ONE Construction 平台上的数千名成功交易者',
+      getStarted: '免费开始'
+    },
+    footer: {
+      companyName: 'I ONE Construction',
+      description: '铝交易的首选平台，连接全球买家和卖家。',
+      product: '产品',
+      company: '公司',
+      support: '支持',
+      aboutUs: '关于我们',
+      contact: '联系',
+      careers: '职业',
+      privacyPolicy: '隐私政策',
+      helpCenter: '帮助中心',
+      documentation: '文档',
+      community: '社区',
+      status: '状态',
+      copyright: '© 2024 I ONE Construction。保留所有权利。'
+    }
+  },
+  
+  // 语言名称
+  languages: {
+    en: 'English',
+    ar: 'العربية',
+    zh: '中文'
   }
 };

@@ -36,7 +36,8 @@ export default {
     back: 'رجوع',
     next: 'التالي',
     previous: 'السابق',
-    close: 'إغلاق'
+    close: 'إغلاق',
+    or: 'أو'
   },
   
   // المنتجات
@@ -106,7 +107,13 @@ export default {
     dontHaveAccount: 'ليس لديك حساب؟',
     alreadyHaveAccount: 'لديك حساب بالفعل؟',
     signIn: 'تسجيل الدخول',
-    createAccount: 'إنشاء حساب'
+    createAccount: 'إنشاء حساب',
+    welcomeBack: 'مرحباً بعودتك',
+    signInDescription: 'قم بتسجيل الدخول للوصول إلى حسابك',
+    companyName: 'اسم الشركة',
+    phoneNumber: 'رقم الهاتف',
+    passwordMinLength: 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
+    continueWithGoogle: 'المتابعة مع Google'
   },
   
   // الملف الشخصي
@@ -119,5 +126,139 @@ export default {
     seller: 'بائع',
     updateProfile: 'تحديث الملف الشخصي',
     changePassword: 'تغيير كلمة المرور'
+  },
+  
+  // الصفحة الرئيسية
+  landing: {
+    nav: {
+      features: 'المميزات',
+      howItWorks: 'كيف يعمل',
+      benefits: 'الفوائد',
+      login: 'تسجيل الدخول',
+      getStarted: 'ابدأ الآن'
+    },
+    hero: {
+      title: 'حوّل',
+      titleHighlight: 'تجارة الألمنيوم',
+      titleEnd: 'الخاصة بك',
+      description: 'اربط المشترين والبائعين على أحدث منصة لتجارة الألمنيوم. بسّط العمليات، وعزز الكفاءة، ونمّ عملك.',
+      startTrading: 'ابدأ التداول',
+      learnMore: 'اعرف المزيد',
+      stats: {
+        activeUsers: 'مستخدم نشط',
+        transactions: 'معاملات',
+        uptime: 'وقت التشغيل'
+      },
+      cards: {
+        realtime: {
+          title: 'التداول في الوقت الفعلي',
+          description: 'معالجة وتتبع فوري للطلبات'
+        },
+        secure: {
+          title: 'معاملات آمنة',
+          description: 'أمان على مستوى البنوك لجميع الصفقات'
+        },
+        analytics: {
+          title: 'لوحة التحليلات',
+          description: 'تتبع الأداء في الوقت الفعلي'
+        }
+      }
+    },
+    features: {
+      title: 'ميزات قوية',
+      subtitle: 'كل ما تحتاجه للنجاح في تجارة الألمنيوم',
+      easyOrdering: {
+        title: 'طلب سهل',
+        description: 'تصفح الكتالوجات، وقارن الأسعار، وقدم الطلبات ببضع نقرات فقط.'
+      },
+      sellerManagement: {
+        title: 'إدارة البائعين',
+        description: 'إدارة المخزون، وتتبع الطلبات، وتنمية قاعدة العملاء بسهولة.'
+      },
+      securePlatform: {
+        title: 'منصة آمنة',
+        description: 'أمان على مستوى المؤسسات يحمي كل معاملة ونقطة بيانات.'
+      },
+      lightningFast: {
+        title: 'سريع كالبرق',
+        description: 'أداء محسّن يضمن أوقات تحميل سريعة وتفاعلات سلسة.'
+      },
+      invoiceManagement: {
+        title: 'إدارة الفواتير',
+        description: 'إصدار فواتير آلي وتتبع المدفوعات لمعاملات سلسة.'
+      },
+      multiUser: {
+        title: 'دعم متعدد المستخدمين',
+        description: 'وصول قائم على الأدوار للمشترين والبائعين والمسؤولين.'
+      }
+    },
+    howItWorks: {
+      title: 'كيف يعمل',
+      subtitle: 'ابدأ في ثلاث خطوات بسيطة',
+      step1: {
+        title: 'إنشاء حساب',
+        description: 'سجّل واختر دورك - مشترٍ أو بائع. أكمل ملفك الشخصي في دقائق.'
+      },
+      step2: {
+        title: 'تصفح أو قائمة',
+        description: 'يتصفح المشترون الكتالوجات، ويدرج البائعون المنتجات. اتصل بشركاء التداول.'
+      },
+      step3: {
+        title: 'تداول بأمان',
+        description: 'أكمل المعاملات بثقة. تتبع الطلبات وإدارة الفواتير بسهولة.'
+      }
+    },
+    benefits: {
+      title: 'لماذا تختار I ONE Construction؟',
+      industryLeading: {
+        title: 'رائد الصناعة',
+        description: 'موثوق به من قبل كبار تجار الألمنيوم في جميع أنحاء العالم'
+      },
+      support247: {
+        title: 'دعم على مدار الساعة',
+        description: 'مساعدة الخبراء عندما تحتاج إليها'
+      },
+      businessGrowth: {
+        title: 'نمو الأعمال',
+        description: 'تحليلات وأدوات لتوسيع عملياتك'
+      },
+      secureReliable: {
+        title: 'آمن وموثوق',
+        description: 'أمان على مستوى المؤسسات ووقت تشغيل بنسبة 99.9%'
+      },
+      stats: {
+        fasterProcessing: 'معالجة أسرع',
+        costReduction: 'تخفيض التكلفة',
+        satisfactionRate: 'معدل الرضا'
+      }
+    },
+    cta: {
+      title: 'هل أنت مستعد لتحويل تداولك؟',
+      description: 'انضم إلى آلاف التجار الناجحين على منصة I ONE Construction',
+      getStarted: 'ابدأ مجانًا'
+    },
+    footer: {
+      companyName: 'I ONE Construction',
+      description: 'المنصة الأولى لتجارة الألمنيوم، والتي تربط المشترين والبائعين في جميع أنحاء العالم.',
+      product: 'المنتج',
+      company: 'الشركة',
+      support: 'الدعم',
+      aboutUs: 'من نحن',
+      contact: 'اتصل بنا',
+      careers: 'الوظائف',
+      privacyPolicy: 'سياسة الخصوصية',
+      helpCenter: 'مركز المساعدة',
+      documentation: 'الوثائق',
+      community: 'المجتمع',
+      status: 'الحالة',
+      copyright: '© 2024 I ONE Construction. جميع الحقوق محفوظة.'
+    }
+  },
+  
+  // أسماء اللغات
+  languages: {
+    en: 'English',
+    ar: 'العربية',
+    zh: '中文'
   }
 };

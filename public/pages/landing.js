@@ -1,7 +1,9 @@
 import router from '../js/router.js';
+import languageManager from '../js/language.js';
 
 export function renderLandingPage() {
   const app = document.getElementById('app');
+  const t = languageManager.t.bind(languageManager);
   
   app.innerHTML = `
     <div class="landing-page">
@@ -9,15 +11,25 @@ export function renderLandingPage() {
       <nav class="landing-nav">
         <div class="nav-container">
           <div class="nav-logo">
-            <h1 class="logo-text">I ONE</h1>
-            <span class="logo-subtitle">Construction</span>
+            <img src="/aluminum-website/logo.svg" alt="I ONE Construction" class="logo-image" />
           </div>
           <div class="nav-links">
-            <a href="#features" class="nav-link">Features</a>
-            <a href="#how-it-works" class="nav-link">How It Works</a>
-            <a href="#benefits" class="nav-link">Benefits</a>
-            <button class="btn btn-secondary" data-nav="login">Login</button>
-            <button class="btn btn-primary" data-nav="signup">Get Started</button>
+            <a href="#features" class="nav-link">${t('landing.nav.features')}</a>
+            <a href="#how-it-works" class="nav-link">${t('landing.nav.howItWorks')}</a>
+            <a href="#benefits" class="nav-link">${t('landing.nav.benefits')}</a>
+            <div class="language-dropdown">
+              <button class="btn btn-secondary language-dropdown-btn" id="landing-language-toggle">
+                ${t('languages.' + languageManager.getLanguage())}
+                <i data-lucide="chevron-down" style="width: 16px; height: 16px;"></i>
+              </button>
+              <div class="language-dropdown-menu" id="landing-language-menu">
+                <button class="language-option" data-lang="en">${t('languages.en')}</button>
+                <button class="language-option" data-lang="ar">${t('languages.ar')}</button>
+                <button class="language-option" data-lang="zh">${t('languages.zh')}</button>
+              </div>
+            </div>
+            <button class="btn btn-secondary" data-nav="login">${t('landing.nav.login')}</button>
+            <button class="btn btn-primary" data-nav="signup">${t('landing.nav.getStarted')}</button>
           </div>
         </div>
       </nav>
@@ -27,34 +39,33 @@ export function renderLandingPage() {
         <div class="hero-content">
           <div class="hero-text">
             <h1 class="hero-title">
-              Transform Your
-              <span class="gradient-text"> Aluminum Trading</span>
-              <br />Experience
+              ${t('landing.hero.title')}
+              <span class="gradient-text"> ${t('landing.hero.titleHighlight')}</span>
+              <br />${t('landing.hero.titleEnd')}
             </h1>
             <p class="hero-description">
-              Connect buyers and sellers on the most advanced aluminum trading platform. 
-              Streamline operations, boost efficiency, and grow your business.
+              ${t('landing.hero.description')}
             </p>
             <div class="hero-buttons">
               <button class="btn btn-primary btn-lg" data-nav="signup">
-                Start Trading <i data-lucide="arrow-right"></i>
+                ${t('landing.hero.startTrading')} <i data-lucide="arrow-right"></i>
               </button>
               <a href="#how-it-works" class="btn btn-secondary btn-lg">
-                Learn More
+                ${t('landing.hero.learnMore')}
               </a>
             </div>
             <div class="hero-stats">
               <div class="stat-item">
                 <span class="stat-number">1000+</span>
-                <span class="stat-label">Active Users</span>
+                <span class="stat-label">${t('landing.hero.stats.activeUsers')}</span>
               </div>
               <div class="stat-item">
                 <span class="stat-number">$50M+</span>
-                <span class="stat-label">Transactions</span>
+                <span class="stat-label">${t('landing.hero.stats.transactions')}</span>
               </div>
               <div class="stat-item">
                 <span class="stat-number">99.9%</span>
-                <span class="stat-label">Uptime</span>
+                <span class="stat-label">${t('landing.hero.stats.uptime')}</span>
               </div>
             </div>
           </div>
@@ -63,22 +74,22 @@ export function renderLandingPage() {
               <div class="floating-card-icon">
                 <i data-lucide="package" style="width: 32px; height: 32px;" class="icon-float"></i>
               </div>
-              <h3>Real-time Trading</h3>
-              <p>Instant order processing and tracking</p>
+              <h3>${t('landing.hero.cards.realtime.title')}</h3>
+              <p>${t('landing.hero.cards.realtime.description')}</p>
             </div>
             <div class="floating-card card-glass" style="animation-delay: 0.2s;">
               <div class="floating-card-icon">
                 <i data-lucide="shield" style="width: 32px; height: 32px;" class="icon-float"></i>
               </div>
-              <h3>Secure Transactions</h3>
-              <p>Bank-level security for all trades</p>
+              <h3>${t('landing.hero.cards.secure.title')}</h3>
+              <p>${t('landing.hero.cards.secure.description')}</p>
             </div>
             <div class="floating-card card-glass" style="animation-delay: 0.4s;">
               <div class="floating-card-icon">
                 <i data-lucide="trending-up" style="width: 32px; height: 32px;" class="icon-float"></i>
               </div>
-              <h3>Analytics Dashboard</h3>
-              <p>Track performance in real-time</p>
+              <h3>${t('landing.hero.cards.analytics.title')}</h3>
+              <p>${t('landing.hero.cards.analytics.description')}</p>
             </div>
           </div>
         </div>
@@ -88,62 +99,62 @@ export function renderLandingPage() {
       <section id="features" class="features-section">
         <div class="section-container">
           <div class="section-header">
-            <h2 class="section-title">Powerful Features</h2>
-            <p class="section-subtitle">Everything you need to succeed in aluminum trading</p>
+            <h2 class="section-title">${t('landing.features.title')}</h2>
+            <p class="section-subtitle">${t('landing.features.subtitle')}</p>
           </div>
           <div class="features-grid">
             <div class="feature-card card card-elevated">
               <div class="feature-icon">
                 <i data-lucide="shopping-cart" style="width: 32px; height: 32px;" class="icon-interactive"></i>
               </div>
-              <h3 class="feature-title">Easy Ordering</h3>
+              <h3 class="feature-title">${t('landing.features.easyOrdering.title')}</h3>
               <p class="feature-description">
-                Browse catalogs, compare prices, and place orders with just a few clicks.
+                ${t('landing.features.easyOrdering.description')}
               </p>
             </div>
             <div class="feature-card card card-elevated">
               <div class="feature-icon">
                 <i data-lucide="store" style="width: 32px; height: 32px;" class="icon-interactive"></i>
               </div>
-              <h3 class="feature-title">Seller Management</h3>
+              <h3 class="feature-title">${t('landing.features.sellerManagement.title')}</h3>
               <p class="feature-description">
-                Manage inventory, track orders, and grow your customer base effortlessly.
+                ${t('landing.features.sellerManagement.description')}
               </p>
             </div>
             <div class="feature-card card card-elevated">
               <div class="feature-icon">
                 <i data-lucide="shield" style="width: 32px; height: 32px;" class="icon-interactive"></i>
               </div>
-              <h3 class="feature-title">Secure Platform</h3>
+              <h3 class="feature-title">${t('landing.features.securePlatform.title')}</h3>
               <p class="feature-description">
-                Enterprise-grade security protecting every transaction and data point.
+                ${t('landing.features.securePlatform.description')}
               </p>
             </div>
             <div class="feature-card card card-elevated">
               <div class="feature-icon">
                 <i data-lucide="zap" style="width: 32px; height: 32px;" class="icon-interactive"></i>
               </div>
-              <h3 class="feature-title">Lightning Fast</h3>
+              <h3 class="feature-title">${t('landing.features.lightningFast.title')}</h3>
               <p class="feature-description">
-                Optimized performance ensuring quick load times and smooth interactions.
+                ${t('landing.features.lightningFast.description')}
               </p>
             </div>
             <div class="feature-card card card-elevated">
               <div class="feature-icon">
                 <i data-lucide="file-text" style="width: 32px; height: 32px;" class="icon-interactive"></i>
               </div>
-              <h3 class="feature-title">Invoice Management</h3>
+              <h3 class="feature-title">${t('landing.features.invoiceManagement.title')}</h3>
               <p class="feature-description">
-                Automated invoicing and payment tracking for seamless transactions.
+                ${t('landing.features.invoiceManagement.description')}
               </p>
             </div>
             <div class="feature-card card card-elevated">
               <div class="feature-icon">
                 <i data-lucide="users" style="width: 32px; height: 32px;" class="icon-interactive"></i>
               </div>
-              <h3 class="feature-title">Multi-User Support</h3>
+              <h3 class="feature-title">${t('landing.features.multiUser.title')}</h3>
               <p class="feature-description">
-                Role-based access for buyers, sellers, and administrators.
+                ${t('landing.features.multiUser.description')}
               </p>
             </div>
           </div>
@@ -154,8 +165,8 @@ export function renderLandingPage() {
       <section id="how-it-works" class="how-it-works-section">
         <div class="section-container">
           <div class="section-header">
-            <h2 class="section-title">How It Works</h2>
-            <p class="section-subtitle">Get started in three simple steps</p>
+            <h2 class="section-title">${t('landing.howItWorks.title')}</h2>
+            <p class="section-subtitle">${t('landing.howItWorks.subtitle')}</p>
           </div>
           <div class="steps-grid">
             <div class="step-card card card-glass">
@@ -163,9 +174,9 @@ export function renderLandingPage() {
               <div class="step-icon">
                 <i data-lucide="users" style="width: 40px; height: 40px;"></i>
               </div>
-              <h3 class="step-title">Create Account</h3>
+              <h3 class="step-title">${t('landing.howItWorks.step1.title')}</h3>
               <p class="step-description">
-                Sign up and choose your role - buyer or seller. Complete your profile in minutes.
+                ${t('landing.howItWorks.step1.description')}
               </p>
             </div>
             <div class="step-card card card-glass">
@@ -173,9 +184,9 @@ export function renderLandingPage() {
               <div class="step-icon">
                 <i data-lucide="package" style="width: 40px; height: 40px;"></i>
               </div>
-              <h3 class="step-title">Browse or List</h3>
+              <h3 class="step-title">${t('landing.howItWorks.step2.title')}</h3>
               <p class="step-description">
-                Buyers browse catalogs, sellers list products. Connect with trading partners.
+                ${t('landing.howItWorks.step2.description')}
               </p>
             </div>
             <div class="step-card card card-glass">
@@ -183,9 +194,9 @@ export function renderLandingPage() {
               <div class="step-icon">
                 <i data-lucide="check-circle" style="width: 40px; height: 40px;"></i>
               </div>
-              <h3 class="step-title">Trade Securely</h3>
+              <h3 class="step-title">${t('landing.howItWorks.step3.title')}</h3>
               <p class="step-description">
-                Complete transactions with confidence. Track orders and manage invoices easily.
+                ${t('landing.howItWorks.step3.description')}
               </p>
             </div>
           </div>
@@ -197,15 +208,15 @@ export function renderLandingPage() {
         <div class="section-container">
           <div class="benefits-content">
             <div class="benefits-text">
-              <h2 class="section-title">Why Choose I ONE Construction?</h2>
+              <h2 class="section-title">${t('landing.benefits.title')}</h2>
               <div class="benefits-list">
                 <div class="benefit-item">
                   <div class="benefit-icon">
                     <i data-lucide="award" style="width: 24px; height: 24px;"></i>
                   </div>
                   <div class="benefit-text">
-                    <h4>Industry Leading</h4>
-                    <p>Trusted by top aluminum traders worldwide</p>
+                    <h4>${t('landing.benefits.industryLeading.title')}</h4>
+                    <p>${t('landing.benefits.industryLeading.description')}</p>
                   </div>
                 </div>
                 <div class="benefit-item">
@@ -213,8 +224,8 @@ export function renderLandingPage() {
                     <i data-lucide="clock" style="width: 24px; height: 24px;"></i>
                   </div>
                   <div class="benefit-text">
-                    <h4>24/7 Support</h4>
-                    <p>Expert assistance whenever you need it</p>
+                    <h4>${t('landing.benefits.support247.title')}</h4>
+                    <p>${t('landing.benefits.support247.description')}</p>
                   </div>
                 </div>
                 <div class="benefit-item">
@@ -222,8 +233,8 @@ export function renderLandingPage() {
                     <i data-lucide="trending-up" style="width: 24px; height: 24px;"></i>
                   </div>
                   <div class="benefit-text">
-                    <h4>Business Growth</h4>
-                    <p>Analytics and tools to scale your operations</p>
+                    <h4>${t('landing.benefits.businessGrowth.title')}</h4>
+                    <p>${t('landing.benefits.businessGrowth.description')}</p>
                   </div>
                 </div>
                 <div class="benefit-item">
@@ -231,8 +242,8 @@ export function renderLandingPage() {
                     <i data-lucide="shield" style="width: 24px; height: 24px;"></i>
                   </div>
                   <div class="benefit-text">
-                    <h4>Secure & Reliable</h4>
-                    <p>Enterprise-grade security and 99.9% uptime</p>
+                    <h4>${t('landing.benefits.secureReliable.title')}</h4>
+                    <p>${t('landing.benefits.secureReliable.description')}</p>
                   </div>
                 </div>
               </div>
@@ -241,19 +252,19 @@ export function renderLandingPage() {
               <div class="benefit-card card card-elevated">
                 <div class="benefit-stat">
                   <span class="benefit-stat-number">50%</span>
-                  <span class="benefit-stat-label">Faster Processing</span>
+                  <span class="benefit-stat-label">${t('landing.benefits.stats.fasterProcessing')}</span>
                 </div>
               </div>
               <div class="benefit-card card card-elevated">
                 <div class="benefit-stat">
                   <span class="benefit-stat-number">90%</span>
-                  <span class="benefit-stat-label">Cost Reduction</span>
+                  <span class="benefit-stat-label">${t('landing.benefits.stats.costReduction')}</span>
                 </div>
               </div>
               <div class="benefit-card card card-elevated">
                 <div class="benefit-stat">
                   <span class="benefit-stat-number">100%</span>
-                  <span class="benefit-stat-label">Satisfaction Rate</span>
+                  <span class="benefit-stat-label">${t('landing.benefits.stats.satisfactionRate')}</span>
                 </div>
               </div>
             </div>
@@ -264,13 +275,13 @@ export function renderLandingPage() {
       <!-- CTA Section -->
       <section class="cta-section">
         <div class="cta-card card card-glass">
-          <h2 class="cta-title">Ready to Transform Your Trading?</h2>
+          <h2 class="cta-title">${t('landing.cta.title')}</h2>
           <p class="cta-description">
-            Join thousands of successful traders on the I ONE Construction platform
+            ${t('landing.cta.description')}
           </p>
           <div class="cta-buttons">
             <button class="btn btn-primary btn-lg" data-nav="signup">
-              Get Started Free <i data-lucide="arrow-right"></i>
+              ${t('landing.cta.getStarted')} <i data-lucide="arrow-right"></i>
             </button>
           </div>
         </div>
@@ -281,41 +292,41 @@ export function renderLandingPage() {
         <div class="footer-container">
           <div class="footer-content">
             <div class="footer-section">
-              <h3 class="footer-logo">I ONE Construction</h3>
+              <h3 class="footer-logo">${t('landing.footer.companyName')}</h3>
               <p class="footer-description">
-                The premier platform for aluminum trading, connecting buyers and sellers worldwide.
+                ${t('landing.footer.description')}
               </p>
             </div>
             <div class="footer-section">
-              <h4 class="footer-title">Product</h4>
+              <h4 class="footer-title">${t('landing.footer.product')}</h4>
               <ul class="footer-links">
-                <li><a href="#features">Features</a></li>
-                <li><a href="#how-it-works">How It Works</a></li>
-                <li><button class="footer-link-btn" data-nav="login">Login</button></li>
-                <li><button class="footer-link-btn" data-nav="signup">Sign Up</button></li>
+                <li><a href="#features">${t('landing.nav.features')}</a></li>
+                <li><a href="#how-it-works">${t('landing.nav.howItWorks')}</a></li>
+                <li><button class="footer-link-btn" data-nav="login">${t('landing.nav.login')}</button></li>
+                <li><button class="footer-link-btn" data-nav="signup">${t('auth.signup')}</button></li>
               </ul>
             </div>
             <div class="footer-section">
-              <h4 class="footer-title">Company</h4>
+              <h4 class="footer-title">${t('landing.footer.company')}</h4>
               <ul class="footer-links">
-                <li><a href="#about">About Us</a></li>
-                <li><a href="#contact">Contact</a></li>
-                <li><a href="#careers">Careers</a></li>
-                <li><a href="#privacy">Privacy Policy</a></li>
+                <li><a href="#about">${t('landing.footer.aboutUs')}</a></li>
+                <li><a href="#contact">${t('landing.footer.contact')}</a></li>
+                <li><a href="#careers">${t('landing.footer.careers')}</a></li>
+                <li><a href="#privacy">${t('landing.footer.privacyPolicy')}</a></li>
               </ul>
             </div>
             <div class="footer-section">
-              <h4 class="footer-title">Support</h4>
+              <h4 class="footer-title">${t('landing.footer.support')}</h4>
               <ul class="footer-links">
-                <li><a href="#help">Help Center</a></li>
-                <li><a href="#docs">Documentation</a></li>
-                <li><a href="#community">Community</a></li>
-                <li><a href="#status">Status</a></li>
+                <li><a href="#help">${t('landing.footer.helpCenter')}</a></li>
+                <li><a href="#docs">${t('landing.footer.documentation')}</a></li>
+                <li><a href="#community">${t('landing.footer.community')}</a></li>
+                <li><a href="#status">${t('landing.footer.status')}</a></li>
               </ul>
             </div>
           </div>
           <div class="footer-bottom">
-            <p>&copy; 2024 I ONE Construction. All rights reserved.</p>
+            <p>${t('landing.footer.copyright')}</p>
           </div>
         </div>
       </footer>
@@ -330,6 +341,31 @@ export function renderLandingPage() {
       router.navigate(`/${page}`);
     });
   });
+
+  // Language dropdown toggle
+  const langToggle = document.getElementById('landing-language-toggle');
+  const langMenu = document.getElementById('landing-language-menu');
+  
+  if (langToggle && langMenu) {
+    langToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      langMenu.classList.toggle('active');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => {
+      langMenu.classList.remove('active');
+    });
+
+    // Language selection
+    langMenu.querySelectorAll('.language-option').forEach(option => {
+      option.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const lang = option.getAttribute('data-lang');
+        languageManager.setLanguage(lang);
+      });
+    });
+  }
 
   // Initialize Lucide icons
   if (window.lucide) {
