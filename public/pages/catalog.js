@@ -81,7 +81,7 @@ export async function renderCatalog() {
     document.querySelectorAll('[data-product-id]').forEach(btn => {
       btn.addEventListener('click', () => {
         const productId = btn.getAttribute('data-product-id');
-        const product = productsToRender.find(p => p.id === productId);
+        const product = productsToRender.find(p => String(p.id) === productId);
         
         if (product) {
           // Normalize product data for cart

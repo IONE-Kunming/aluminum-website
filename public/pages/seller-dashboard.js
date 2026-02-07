@@ -5,6 +5,8 @@ import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
 
+const PRODUCT_ID_DISPLAY_LENGTH = 8;
+
 function getStockStatus(stock) {
   if (stock > 400) return { label: 'In Stock', className: 'status-delivered' };
   if (stock > 200) return { label: 'Low Stock', className: 'status-transit' };
@@ -110,7 +112,7 @@ export async function renderSellerDashboard() {
                   const stockStatus = getStockStatus(product.stock || 0);
                   return `
                     <tr>
-                      <td class="font-medium">${escapeHtml(product.id?.substring(0, 8) || 'N/A')}</td>
+                      <td class="font-medium">${escapeHtml(product.id?.substring(0, PRODUCT_ID_DISPLAY_LENGTH) || 'N/A')}</td>
                       <td>${escapeHtml(product.modelNumber || product.name || 'N/A')}</td>
                       <td>${escapeHtml(product.category || 'N/A')}</td>
                       <td>${product.stock || 0} ${escapeHtml(product.unit || 'units')}</td>
