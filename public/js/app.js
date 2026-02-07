@@ -95,6 +95,8 @@ function protectedRoute(handler, requireRole = null) {
 
 // Initialize application
 async function initApp() {
+  let firebaseLoaded = false;
+  
   // Wait for Firebase to be loaded with timeout
   if (typeof firebase === 'undefined') {
     try {
@@ -112,18 +114,24 @@ async function initApp() {
           }
         }, 100);
       });
+      firebaseLoaded = true;
     } catch (error) {
       console.error('Error loading Firebase:', error);
-      if (window.toast) {
-        window.toast.error('Failed to load required scripts. Please refresh the page.');
-      }
-      // Don't throw - allow app to load without Firebase (will redirect to login on protected routes)
-      return;
+      // Continue initialization without Firebase - app will work in limited mode
+      firebaseLoaded = false;
     }
+  } else {
+    firebaseLoaded = true;
   }
   
-  // Initialize Firebase
-  await authManager.init();
+  // Initialize Firebase if loaded
+  if (firebaseLoaded) {
+    try {
+      await authManager.init();
+    } catch (error) {
+      console.error('Error initializing Firebase:', error);
+    }
+  }
   
   // Register public routes
   router.register('/', renderLandingPage);
@@ -173,6 +181,9 @@ async function initApp() {
   // Export toast and router globally
   window.toast = toast;
   window.router = router;
+  
+  // Trigger initial route after all routes are registered
+  router.handleRoute();
   
   // Initialize Lucide icons
   if (window.lucide) {
