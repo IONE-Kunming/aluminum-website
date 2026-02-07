@@ -95,6 +95,18 @@ function protectedRoute(handler, requireRole = null) {
 
 // Initialize application
 async function initApp() {
+  // Wait for Firebase to be loaded
+  if (typeof firebase === 'undefined') {
+    await new Promise((resolve) => {
+      const checkFirebase = setInterval(() => {
+        if (typeof firebase !== 'undefined') {
+          clearInterval(checkFirebase);
+          resolve();
+        }
+      }, 50);
+    });
+  }
+  
   // Initialize Firebase
   await authManager.init();
   
@@ -153,7 +165,7 @@ async function initApp() {
   }
 }
 
-// Wait for Firebase scripts to load
+// Initialize app when DOM is ready and Firebase is loaded
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
 } else {

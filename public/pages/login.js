@@ -170,17 +170,16 @@ export function renderLoginPage() {
     if (result.success) {
       window.toast.success('Successfully logged in!');
       
-      // Wait a moment for profile to load
-      setTimeout(() => {
-        const profile = authManager.getUserProfile();
-        if (profile?.role === 'seller') {
-          router.navigate('/seller/dashboard');
-        } else if (profile?.role === 'buyer') {
-          router.navigate('/buyer/dashboard');
-        } else {
-          router.navigate('/profile-selection');
-        }
-      }, 500);
+      // Wait for profile to load before navigation
+      const profile = await authManager.waitForProfile();
+      
+      if (profile?.role === 'seller') {
+        router.navigate('/seller/dashboard');
+      } else if (profile?.role === 'buyer') {
+        router.navigate('/buyer/dashboard');
+      } else {
+        router.navigate('/profile-selection');
+      }
     } else {
       showError(result.error || 'Failed to login. Please check your credentials.');
       setLoading(false);
@@ -196,18 +195,16 @@ export function renderLoginPage() {
     if (result.success) {
       window.toast.success('Successfully logged in with Google!');
       
-      setTimeout(() => {
-        const profile = authManager.getUserProfile();
-        if (profile?.role) {
-          if (profile.role === 'seller') {
-            router.navigate('/seller/dashboard');
-          } else {
-            router.navigate('/buyer/dashboard');
-          }
-        } else {
-          router.navigate('/profile-selection');
-        }
-      }, 500);
+      // Wait for profile to load before navigation
+      const profile = await authManager.waitForProfile();
+      
+      if (profile?.role === 'seller') {
+        router.navigate('/seller/dashboard');
+      } else if (profile?.role === 'buyer') {
+        router.navigate('/buyer/dashboard');
+      } else {
+        router.navigate('/profile-selection');
+      }
     } else {
       showError(result.error || 'Failed to sign in with Google.');
       setLoading(false);

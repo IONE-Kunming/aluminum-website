@@ -45,6 +45,17 @@ class AuthManager {
     }
   }
 
+  // Wait for user profile to be loaded
+  async waitForProfile(maxWaitTime = 3000) {
+    const startTime = Date.now();
+    
+    while (!this.userProfile && this.user && (Date.now() - startTime < maxWaitTime)) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    return this.userProfile;
+  }
+
   onAuthStateChanged(callback) {
     this.listeners.push(callback);
     // Call immediately with current state
