@@ -180,11 +180,20 @@ class AuthManager {
 
       const updateData = {};
       
-      // Only allow updating specific fields
-      if (updates.email !== undefined) {
-        // Update Firebase Auth email
-        await this.user.updateEmail(updates.email);
-        updateData.email = updates.email;
+      // Handle email update (requires re-authentication for security)
+      if (updates.email !== undefined && updates.email !== this.user.email) {
+        // Note: Email updates require recent authentication
+        // Firebase will throw an error if the user hasn't recently signed in
+        try {
+          await this.user.updateEmail(updates.email);
+          updateData.email = updates.email;
+        } catch (error) {
+          // If re-authentication is required, throw a specific error
+          if (error.code === 'auth/requires-recent-login') {
+            throw new Error('For security reasons, please log out and log back in before changing your email address.');
+          }
+          throw error;
+        }
       }
       
       if (updates.phoneNumber !== undefined) {
