@@ -3,52 +3,7 @@ import router from '../js/router.js';
 import authManager from '../js/auth.js';
 import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
-
-const mockStats = {
-  totalProducts: 48,
-  totalOrders: 156,
-  revenue: 485000,
-  activeOrders: 12
-};
-
-const mockProducts = [
-  {
-    id: 'PROD-001',
-    name: 'Aluminum Sheet 6061-T6',
-    category: 'Sheets',
-    stock: 500,
-    price: 25,
-    unit: 'kg',
-    sales: 1200
-  },
-  {
-    id: 'PROD-002',
-    name: 'Aluminum Extrusion Profile',
-    category: 'Extrusions',
-    stock: 800,
-    price: 35,
-    unit: 'unit',
-    sales: 950
-  },
-  {
-    id: 'PROD-003',
-    name: 'Aluminum Rod 2024-T4',
-    category: 'Rods',
-    stock: 250,
-    price: 45,
-    unit: 'kg',
-    sales: 680
-  },
-  {
-    id: 'PROD-004',
-    name: 'Aluminum Plate 7075',
-    category: 'Plates',
-    stock: 150,
-    price: 55,
-    unit: 'kg',
-    sales: 520
-  }
-];
+import dataService from '../js/dataService.js';
 
 function getStockStatus(stock) {
   if (stock > 400) return { label: 'In Stock', className: 'status-delivered' };
@@ -56,9 +11,13 @@ function getStockStatus(stock) {
   return { label: 'Very Low', className: 'status-pending' };
 }
 
-export function renderSellerDashboard() {
+export async function renderSellerDashboard() {
   const profile = authManager.getUserProfile();
   const t = languageManager.t.bind(languageManager);
+  
+  // Fetch real stats and products from Firebase
+  const stats = await dataService.getDashboardStats('seller');
+  const topProducts = await dataService.getTopProducts(authManager.getCurrentUser()?.uid, 4);
   
   const content = `
     <div class="dashboard-page">
@@ -77,7 +36,7 @@ export function renderSellerDashboard() {
           </div>
           <div class="stat-content">
             <h3>${t('dashboard.totalProducts')}</h3>
-            <p class="stat-value">${mockStats.totalProducts}</p>
+            <p class="stat-value">${stats.totalProducts || 0}</p>
             <span class="stat-label">${t('dashboard.activeListings')}</span>
           </div>
         </div>
@@ -88,11 +47,8 @@ export function renderSellerDashboard() {
           </div>
           <div class="stat-content">
             <h3>${t('dashboard.totalOrders')}</h3>
-            <p class="stat-value">${mockStats.totalOrders}</p>
-            <span class="stat-change positive">
-              <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
-              +15% ${t('dashboard.fromLastMonth')}
-            </span>
+            <p class="stat-value">${stats.totalOrders || 0}</p>
+            <span class="stat-label">${t('dashboard.allTimeOrders')}</span>
           </div>
         </div>
 
@@ -102,11 +58,8 @@ export function renderSellerDashboard() {
           </div>
           <div class="stat-content">
             <h3>${t('dashboard.revenue')}</h3>
-            <p class="stat-value">$${mockStats.revenue.toLocaleString()}</p>
-            <span class="stat-change positive">
-              <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
-              +22% ${t('dashboard.fromLastMonth')}
-            </span>
+            <p class="stat-value">$${(stats.revenue || 0).toLocaleString()}</p>
+            <span class="stat-label">${t('dashboard.totalRevenue')}</span>
           </div>
         </div>
 
@@ -116,7 +69,7 @@ export function renderSellerDashboard() {
           </div>
           <div class="stat-content">
             <h3>${t('dashboard.activeOrders')}</h3>
-            <p class="stat-value">${mockStats.activeOrders}</p>
+            <p class="stat-value">${stats.activeOrders || 0}</p>
             <span class="stat-label">${t('dashboard.needsAttention')}</span>
           </div>
         </div>
@@ -130,39 +83,50 @@ export function renderSellerDashboard() {
         </div>
 
         <div class="table-container">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Product ID</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Stock</th>
-                <th>Price</th>
-                <th>Sales</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${mockProducts.map(product => {
-                const stockStatus = getStockStatus(product.stock);
-                return `
-                  <tr>
-                    <td class="font-medium">${escapeHtml(product.id)}</td>
-                    <td>${escapeHtml(product.name)}</td>
-                    <td>${escapeHtml(product.category)}</td>
-                    <td>${product.stock} ${escapeHtml(product.unit)}</td>
-                    <td class="font-medium">$${product.price}/${escapeHtml(product.unit)}</td>
-                    <td>${product.sales} units</td>
-                    <td>
-                      <span class="status-badge ${stockStatus.className}">
-                        ${escapeHtml(stockStatus.label)}
-                      </span>
-                    </td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
+          ${topProducts.length === 0 ? `
+            <div class="empty-state">
+              <i data-lucide="package-open" style="width: 64px; height: 64px; opacity: 0.3; margin-bottom: 16px;"></i>
+              <p>No products yet. Start by adding products to your inventory.</p>
+              <button class="btn btn-primary" data-nav="/seller/products" style="margin-top: 16px;">
+                <i data-lucide="plus"></i>
+                Add Products
+              </button>
+            </div>
+          ` : `
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Product ID</th>
+                  <th>Name</th>
+                  <th>Category</th>
+                  <th>Stock</th>
+                  <th>Price</th>
+                  <th>Sales</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${topProducts.map(product => {
+                  const stockStatus = getStockStatus(product.stock || 0);
+                  return `
+                    <tr>
+                      <td class="font-medium">${escapeHtml(product.id?.substring(0, 8) || 'N/A')}</td>
+                      <td>${escapeHtml(product.modelNumber || product.name || 'N/A')}</td>
+                      <td>${escapeHtml(product.category || 'N/A')}</td>
+                      <td>${product.stock || 0} ${escapeHtml(product.unit || 'units')}</td>
+                      <td class="font-medium">$${product.pricePerMeter || product.price || 0}/${escapeHtml(product.unit || 'unit')}</td>
+                      <td>${product.sales || 0} units</td>
+                      <td>
+                        <span class="status-badge ${stockStatus.className}">
+                          ${escapeHtml(stockStatus.label)}
+                        </span>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          `}
         </div>
       </div>
 
