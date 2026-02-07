@@ -237,9 +237,6 @@ export function renderSignupPage() {
     const result = await authManager.signUp(email, password, displayName);
 
     if (result.success) {
-      // Wait a moment for auth state to settle
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
       // Create user profile
       const user = authManager.getCurrentUser();
       if (user) {
@@ -255,14 +252,15 @@ export function renderSignupPage() {
         if (profileResult.success) {
           window.toast.success('Account created successfully!');
           
-          // Navigate based on role
-          setTimeout(() => {
-            if (role === 'seller') {
-              router.navigate('/seller/dashboard');
-            } else {
-              router.navigate('/buyer/dashboard');
-            }
-          }, 500);
+          // Wait for the profile to be fully synced with auth state
+          await authManager.waitForProfile(3000);
+          
+          // Navigate based on role after profile is loaded
+          if (role === 'seller') {
+            router.navigate('/seller/dashboard');
+          } else {
+            router.navigate('/buyer/dashboard');
+          }
         } else {
           showError('Account created but failed to save profile');
           setLoading(false);

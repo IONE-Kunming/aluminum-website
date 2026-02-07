@@ -359,6 +359,66 @@ class DataService {
     }
     return {};
   }
+
+  // Create a new order
+  async createOrder(orderData) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      const orderRef = await this.db.collection('orders').add(orderData);
+      
+      return {
+        success: true,
+        orderId: orderRef.id
+      };
+    } catch (error) {
+      console.error('Error creating order:', error);
+      throw error;
+    }
+  }
+
+  // Get orders for a specific user
+  async getOrders(filters = {}) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        return [];
+      }
+      
+      let query = this.db.collection('orders');
+      
+      // Apply filters
+      if (filters.buyerId) {
+        query = query.where('buyerId', '==', filters.buyerId);
+      }
+      
+      if (filters.sellerId) {
+        query = query.where('sellerId', '==', filters.sellerId);
+      }
+      
+      if (filters.status) {
+        query = query.where('status', '==', filters.status);
+      }
+      
+      // Order by creation date descending
+      query = query.orderBy('createdAt', 'desc');
+      
+      const snapshot = await query.get();
+      
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      return [];
+    }
+  }
 }
 
 export default new DataService();

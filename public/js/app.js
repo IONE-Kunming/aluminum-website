@@ -22,6 +22,7 @@ const lazyPages = {
   sellerDashboard: () => import('../pages/seller-dashboard.js').then(m => m.renderSellerDashboard),
   catalog: () => import('../pages/catalog.js').then(m => m.renderCatalog),
   cart: () => import('../pages/cart.js').then(m => m.renderCart),
+  checkout: () => import('../pages/checkout.js').then(m => m.renderCheckout),
   orders: () => import('../pages/orders.js').then(m => m.renderOrders),
   invoices: () => import('../pages/invoices.js').then(m => m.renderInvoices),
   sellers: () => import('../pages/sellers.js').then(m => m.renderSellers),
@@ -77,16 +78,34 @@ function showToast(message, type = 'info') {
 
 // Protected route wrapper
 function protectedRoute(handler, requireRole = null) {
-  return () => {
+  return async () => {
     if (!authManager.isAuthenticated()) {
       router.navigate('/login');
       return;
     }
     
-    if (requireRole && !authManager.hasRole(requireRole)) {
-      toast.error('You do not have permission to access this page');
-      router.navigate('/');
-      return;
+    // Wait for user profile to load if a role is required
+    if (requireRole) {
+      const profile = await authManager.waitForProfile(5000);
+      
+      if (!profile || !profile.role) {
+        // User has no role set, redirect to profile selection
+        router.navigate('/profile-selection');
+        return;
+      }
+      
+      if (profile.role !== requireRole) {
+        toast.error('You do not have permission to access this page');
+        // Redirect to the correct dashboard based on their role
+        if (profile.role === 'seller') {
+          router.navigate('/seller/dashboard');
+        } else if (profile.role === 'buyer') {
+          router.navigate('/buyer/dashboard');
+        } else {
+          router.navigate('/');
+        }
+        return;
+      }
     }
     
     handler();
@@ -151,6 +170,7 @@ async function initApp() {
   router.register('/buyer/dashboard', protectedRoute(lazyRoute(lazyPages.buyerDashboard), 'buyer'));
   router.register('/buyer/catalog', protectedRoute(lazyRoute(lazyPages.catalog), 'buyer'));
   router.register('/buyer/cart', protectedRoute(lazyRoute(lazyPages.cart), 'buyer'));
+  router.register('/buyer/checkout', protectedRoute(lazyRoute(lazyPages.checkout), 'buyer'));
   router.register('/buyer/orders', protectedRoute(lazyRoute(lazyPages.orders), 'buyer'));
   router.register('/buyer/invoices', protectedRoute(lazyRoute(lazyPages.invoices), 'buyer'));
   router.register('/buyer/sellers', protectedRoute(lazyRoute(lazyPages.sellers), 'buyer'));
