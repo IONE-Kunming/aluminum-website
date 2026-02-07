@@ -93,6 +93,18 @@ export function renderCart() {
 
   renderPageWithLayout(content, 'buyer');
 
+  // Helper function to update cart summary without full re-render
+  function updateCartSummary() {
+    const total = cartManager.getCartTotal();
+    const subtotalEl = document.querySelector('.cart-summary .summary-row:nth-child(2) span:last-child');
+    const taxEl = document.querySelector('.cart-summary .summary-row:nth-child(3) span:last-child');
+    const totalEl = document.querySelector('.cart-summary .summary-total span:last-child');
+    
+    if (subtotalEl) subtotalEl.textContent = `$${total.toFixed(2)}`;
+    if (taxEl) taxEl.textContent = `$${(total * 0.1).toFixed(2)}`;
+    if (totalEl) totalEl.textContent = `$${(total * 1.1).toFixed(2)}`;
+  }
+
   // Navigation buttons
   document.querySelectorAll('[data-nav]').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -113,37 +125,71 @@ export function renderCart() {
 
   // Quantity controls
   document.querySelectorAll('.quantity-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
       const action = btn.getAttribute('data-action');
       const itemId = parseInt(btn.getAttribute('data-item-id'));
+      const cartItems = cartManager.getCart();
       const item = cartItems.find(i => i.id === itemId);
       
       if (item) {
+        const step = item.minOrder || 1;
         if (action === 'increase') {
-          cartManager.updateQuantity(itemId, item.quantity + item.minOrder);
+          cartManager.updateQuantity(itemId, item.quantity + step);
+          renderCart(); // Re-render
         } else if (action === 'decrease') {
-          const newQty = item.quantity - item.minOrder;
-          if (newQty >= item.minOrder) {
+          const newQty = item.quantity - step;
+          if (newQty >= step) {
             cartManager.updateQuantity(itemId, newQty);
+            renderCart(); // Re-render
+          } else {
+            window.toast.warning(`Minimum order quantity is ${step}`);
           }
         }
-        renderCart(); // Re-render
       }
     });
   });
 
   // Quantity input changes
   document.querySelectorAll('.quantity-input').forEach(input => {
-    input.addEventListener('change', () => {
+    input.addEventListener('change', (e) => {
       const itemId = parseInt(input.getAttribute('data-item-id'));
       const newQty = parseInt(input.value);
+      const cartItems = cartManager.getCart();
       const item = cartItems.find(i => i.id === itemId);
       
-      if (item && newQty >= item.minOrder) {
-        cartManager.updateQuantity(itemId, newQty);
-        renderCart(); // Re-render
-      } else {
-        input.value = item.quantity; // Reset to current value
+      if (item) {
+        const minQty = item.minOrder || 1;
+        if (newQty >= minQty && !isNaN(newQty)) {
+          cartManager.updateQuantity(itemId, newQty);
+          renderCart(); // Re-render
+        } else {
+          window.toast.warning(`Minimum order quantity is ${minQty}`);
+          input.value = item.quantity; // Reset to current value
+        }
+      }
+    });
+    
+    // Also handle input event for real-time updates
+    input.addEventListener('input', (e) => {
+      const itemId = parseInt(input.getAttribute('data-item-id'));
+      const newQty = parseInt(input.value);
+      const cartItems = cartManager.getCart();
+      const item = cartItems.find(i => i.id === itemId);
+      
+      if (item) {
+        const minQty = item.minOrder || 1;
+        if (newQty >= minQty && !isNaN(newQty)) {
+          // Update quantity without re-rendering to avoid losing focus
+          cartManager.updateQuantity(itemId, newQty);
+          // Just update the subtotal for this item
+          const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
+          if (subtotalEl) {
+            subtotalEl.textContent = `$${(item.price * newQty).toFixed(2)}`;
+          }
+          // Update the cart summary
+          updateCartSummary();
+        }
       }
     });
   });
@@ -152,8 +198,7 @@ export function renderCart() {
   const checkoutBtn = document.getElementById('checkout-btn');
   if (checkoutBtn) {
     checkoutBtn.addEventListener('click', () => {
-      window.toast.info('Checkout functionality coming soon!');
-      router.navigate('/buyer/orders');
+      router.navigate('/buyer/checkout');
     });
   }
 

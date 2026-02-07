@@ -2,6 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
+import { escapeHtml } from '../js/utils.js';
 
 export async function renderProducts() {
   const t = languageManager.t.bind(languageManager);
@@ -220,12 +221,12 @@ function displayProducts(products) {
     </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px 0;">
       ${products.map(product => `
-        <div class="product-card" data-product-id="${product.id}" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background: white; position: relative;">
+        <div class="product-card" data-product-id="${product.id}" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background: white; position: relative; display: flex; flex-direction: column;">
           <div style="position: absolute; top: 12px; right: 12px; z-index: 10;">
             <input type="checkbox" class="product-checkbox" data-id="${product.id}" style="width: 20px; height: 20px; cursor: pointer;" />
           </div>
           ${product.imageUrl ? `
-            <img src="${product.imageUrl}" alt="${product.modelNumber || 'Product'}" 
+            <img src="${product.imageUrl}" alt="${escapeHtml(product.modelNumber || 'Product')}" 
                  onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
                  style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 12px;" />
             <div style="width: 100%; height: 180px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; margin-bottom: 12px; display: none; align-items: center; justify-content: center; flex-direction: column; color: white;">
@@ -238,20 +239,20 @@ function displayProducts(products) {
               <span style="font-size: 12px; opacity: 0.8;">No image</span>
             </div>
           `}
-          <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #111827;">
-            ${product.modelNumber || 'Unnamed Product'}
+          <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 8px 0; color: #111827; word-wrap: break-word; overflow-wrap: break-word;">
+            ${escapeHtml(product.modelNumber || 'Unnamed Product')}
           </h3>
-          <p style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">
-            ${product.category || 'No category'}
+          <p style="font-size: 14px; color: #6b7280; margin: 0 0 8px 0; word-wrap: break-word; overflow-wrap: break-word;">
+            ${escapeHtml(product.category || 'No category')}
           </p>
-          <p style="font-size: 18px; font-weight: 700; color: #047857; margin-bottom: 12px;">
+          <p style="font-size: 18px; font-weight: 700; color: #047857; margin: 0 0 12px 0;">
             $${product.pricePerMeter ? product.pricePerMeter.toFixed(2) : '0.00'}/m
           </p>
           ${product.description ? `
-            <p style="font-size: 14px; color: #6b7280; margin-bottom: 12px; line-height: 1.4;">
-              ${product.description.substring(0, 100)}${product.description.length > 100 ? '...' : ''}
+            <p style="font-size: 14px; color: #6b7280; margin: 0 0 12px 0; line-height: 1.5; word-wrap: break-word; overflow-wrap: break-word; flex-grow: 1;">
+              ${escapeHtml(product.description.substring(0, 100))}${product.description.length > 100 ? '...' : ''}
             </p>
-          ` : ''}
+          ` : '<div style="flex-grow: 1;"></div>'}
           <div style="display: flex; gap: 8px; margin-top: auto;">
             <button class="btn btn-sm btn-secondary edit-product-btn" data-id="${product.id}" style="flex: 1; font-size: 14px; padding: 6px 12px;">
               <i data-lucide="edit-2" style="width: 14px; height: 14px;"></i>

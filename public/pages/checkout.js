@@ -1,0 +1,329 @@
+import { renderPageWithLayout } from '../js/layout.js';
+import router from '../js/router.js';
+import cartManager from '../js/cart.js';
+import authManager from '../js/auth.js';
+import dataService from '../js/dataService.js';
+import { escapeHtml } from '../js/utils.js';
+
+export function renderCheckout() {
+  const cartItems = cartManager.getCart();
+  const cartTotal = cartManager.getCartTotal();
+  
+  if (cartItems.length === 0) {
+    router.navigate('/buyer/cart');
+    return;
+  }
+  
+  const content = `
+    <div class="checkout-page">
+      <div class="page-header">
+        <h1>Checkout</h1>
+        <p>Complete your order</p>
+      </div>
+
+      <div class="checkout-container">
+        <!-- Order Summary -->
+        <div class="checkout-section card">
+          <h2>Order Summary</h2>
+          <div class="checkout-items">
+            ${cartItems.map(item => `
+              <div class="checkout-item">
+                <div class="checkout-item-info">
+                  <h4>${escapeHtml(item.name)}</h4>
+                  <p class="text-muted">${escapeHtml(item.seller)}</p>
+                </div>
+                <div class="checkout-item-details">
+                  <span>${item.quantity} ${escapeHtml(item.unit || 'units')}</span>
+                  <span class="checkout-item-price">$${(item.price * item.quantity).toFixed(2)}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="checkout-totals">
+            <div class="checkout-total-row">
+              <span>Subtotal:</span>
+              <span>$${cartTotal.toFixed(2)}</span>
+            </div>
+            <div class="checkout-total-row">
+              <span>Tax (10%):</span>
+              <span>$${(cartTotal * 0.1).toFixed(2)}</span>
+            </div>
+            <div class="checkout-total-row total">
+              <span>Total:</span>
+              <span id="order-total">$${(cartTotal * 1.1).toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deposit Selection -->
+        <div class="checkout-section card">
+          <h2>Deposit Amount <span class="required-badge">Required</span></h2>
+          <p class="section-description">Select the deposit percentage you'd like to pay now</p>
+          
+          <div class="deposit-options">
+            <label class="deposit-option">
+              <input type="radio" name="deposit" value="5" data-percentage="5" />
+              <div class="deposit-card">
+                <div class="deposit-percentage">5%</div>
+                <div class="deposit-amount">$${(cartTotal * 1.1 * 0.05).toFixed(2)}</div>
+                <div class="deposit-label">Minimum Deposit</div>
+              </div>
+            </label>
+            
+            <label class="deposit-option">
+              <input type="radio" name="deposit" value="30" data-percentage="30" />
+              <div class="deposit-card">
+                <div class="deposit-percentage">30%</div>
+                <div class="deposit-amount">$${(cartTotal * 1.1 * 0.30).toFixed(2)}</div>
+                <div class="deposit-label">Standard Deposit</div>
+              </div>
+            </label>
+            
+            <label class="deposit-option">
+              <input type="radio" name="deposit" value="65" data-percentage="65" />
+              <div class="deposit-card">
+                <div class="deposit-percentage">65%</div>
+                <div class="deposit-amount">$${(cartTotal * 1.1 * 0.65).toFixed(2)}</div>
+                <div class="deposit-label">Premium Deposit</div>
+              </div>
+            </label>
+          </div>
+          
+          <div id="deposit-summary" class="deposit-summary" style="display: none;">
+            <div class="summary-row">
+              <span>Deposit Amount:</span>
+              <span id="deposit-amount-display">$0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Remaining Balance:</span>
+              <span id="remaining-balance-display">$${(cartTotal * 1.1).toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="checkout-section card">
+          <h2>Payment Method <span class="required-badge">Required</span></h2>
+          <p class="section-description">Choose your preferred payment method</p>
+          
+          <div class="payment-methods">
+            <label class="payment-method">
+              <input type="radio" name="payment" value="alipay" />
+              <div class="payment-card">
+                <div class="payment-icon">
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <rect width="40" height="40" rx="8" fill="#1677FF"/>
+                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="18" font-weight="bold">支</text>
+                  </svg>
+                </div>
+                <div class="payment-name">Alipay</div>
+              </div>
+            </label>
+            
+            <label class="payment-method">
+              <input type="radio" name="payment" value="wechat" />
+              <div class="payment-card">
+                <div class="payment-icon">
+                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <rect width="40" height="40" rx="8" fill="#09B83E"/>
+                    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="18" font-weight="bold">微</text>
+                  </svg>
+                </div>
+                <div class="payment-name">WeChat Pay</div>
+              </div>
+            </label>
+            
+            <label class="payment-method">
+              <input type="radio" name="payment" value="bank" />
+              <div class="payment-card">
+                <div class="payment-icon">
+                  <i data-lucide="landmark" style="width: 24px; height: 24px; color: #6366f1;"></i>
+                </div>
+                <div class="payment-name">Bank Transfer</div>
+              </div>
+            </label>
+            
+            <label class="payment-method">
+              <input type="radio" name="payment" value="card" />
+              <div class="payment-card">
+                <div class="payment-icon">
+                  <i data-lucide="credit-card" style="width: 24px; height: 24px; color: #6366f1;"></i>
+                </div>
+                <div class="payment-name">Card Payment</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="checkout-actions">
+          <button class="btn btn-secondary" id="back-to-cart-btn">
+            <i data-lucide="arrow-left"></i>
+            Back to Cart
+          </button>
+          <button class="btn btn-primary" id="confirm-order-btn" disabled>
+            <i data-lucide="check-circle"></i>
+            Confirm Order
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  renderPageWithLayout(content, 'buyer');
+  
+  if (window.lucide) window.lucide.createIcons();
+  
+  // Initialize checkout functionality
+  initializeCheckout(cartItems, cartTotal);
+}
+
+function initializeCheckout(cartItems, cartTotal) {
+  const depositOptions = document.querySelectorAll('input[name="deposit"]');
+  const paymentOptions = document.querySelectorAll('input[name="payment"]');
+  const confirmBtn = document.getElementById('confirm-order-btn');
+  const backBtn = document.getElementById('back-to-cart-btn');
+  const depositSummary = document.getElementById('deposit-summary');
+  const depositAmountDisplay = document.getElementById('deposit-amount-display');
+  const remainingBalanceDisplay = document.getElementById('remaining-balance-display');
+  
+  let selectedDeposit = null;
+  let selectedPayment = null;
+  
+  const orderTotal = cartTotal * 1.1;
+  
+  // Handle deposit selection
+  depositOptions.forEach(option => {
+    option.addEventListener('change', () => {
+      selectedDeposit = parseInt(option.value);
+      const depositAmount = orderTotal * (selectedDeposit / 100);
+      const remainingBalance = orderTotal - depositAmount;
+      
+      depositAmountDisplay.textContent = `$${depositAmount.toFixed(2)}`;
+      remainingBalanceDisplay.textContent = `$${remainingBalance.toFixed(2)}`;
+      depositSummary.style.display = 'block';
+      
+      // Highlight selected option
+      document.querySelectorAll('.deposit-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      option.closest('.deposit-option').classList.add('selected');
+      
+      checkFormComplete();
+    });
+  });
+  
+  // Handle payment method selection
+  paymentOptions.forEach(option => {
+    option.addEventListener('change', () => {
+      selectedPayment = option.value;
+      
+      // Highlight selected option
+      document.querySelectorAll('.payment-method').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      option.closest('.payment-method').classList.add('selected');
+      
+      checkFormComplete();
+    });
+  });
+  
+  // Check if form is complete
+  function checkFormComplete() {
+    if (selectedDeposit && selectedPayment) {
+      confirmBtn.disabled = false;
+    } else {
+      confirmBtn.disabled = true;
+    }
+  }
+  
+  // Back to cart
+  backBtn.addEventListener('click', () => {
+    router.navigate('/buyer/cart');
+  });
+  
+  // Confirm order
+  confirmBtn.addEventListener('click', async () => {
+    if (!selectedDeposit || !selectedPayment) {
+      window.toast.warning('Please select deposit amount and payment method');
+      return;
+    }
+    
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i data-lucide="loader"></i> Processing...';
+    if (window.lucide) window.lucide.createIcons();
+    
+    try {
+      // Simulate payment processing (mock)
+      await processPayment(selectedPayment, orderTotal, selectedDeposit);
+      
+      // Create order in database
+      const user = authManager.getCurrentUser();
+      const userProfile = authManager.getUserProfile();
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
+      const orderData = {
+        buyerId: user.uid,
+        buyerName: userProfile?.displayName || user.displayName || 'Unknown',
+        buyerEmail: userProfile?.email || user.email,
+        buyerCompany: userProfile?.companyName || 'N/A',
+        items: cartItems.map(item => ({
+          productId: item.id,
+          productName: item.name,
+          seller: item.seller,
+          sellerId: item.sellerId || '',
+          quantity: item.quantity,
+          unit: item.unit || 'units',
+          pricePerUnit: item.price,
+          subtotal: item.price * item.quantity
+        })),
+        subtotal: cartTotal,
+        tax: cartTotal * 0.1,
+        total: orderTotal,
+        depositPercentage: selectedDeposit,
+        depositAmount: orderTotal * (selectedDeposit / 100),
+        remainingBalance: orderTotal - (orderTotal * (selectedDeposit / 100)),
+        paymentMethod: selectedPayment,
+        status: 'pending',
+        paymentStatus: 'deposit_paid',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Save order to Firestore
+      await dataService.createOrder(orderData);
+      
+      // Clear cart
+      cartManager.clearCart();
+      
+      // Show success message
+      window.toast.success('Order placed successfully!');
+      
+      // Redirect to orders page
+      setTimeout(() => {
+        router.navigate('/buyer/orders');
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Error placing order:', error);
+      window.toast.error('Failed to place order. Please try again.');
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = '<i data-lucide="check-circle"></i> Confirm Order';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  });
+}
+
+// Mock payment processing
+async function processPayment(method, amount, depositPercentage) {
+  // Simulate payment gateway delay
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log(`Processing ${method} payment for $${(amount * depositPercentage / 100).toFixed(2)}`);
+      resolve({ success: true, transactionId: `TXN${Date.now()}` });
+    }, 1500);
+  });
+}
