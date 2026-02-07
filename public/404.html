@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script>
+    // GitHub Pages SPA redirect solution
+    // This script takes the current path and query string and stores them in sessionStorage
+    // Then redirects to the index.html page
+    sessionStorage.redirect = location.href;
+  </script>
+  <!-- 
+    Note: Update this base path if the repository name changes.
+    Should match VITE_BASE_PATH in the build workflow.
+  -->
+  <meta http-equiv="refresh" content="0;URL='/'">
+</head>
+<body>
+  <!-- GitHub Pages SPA fallback -->
+</body>
+</html>

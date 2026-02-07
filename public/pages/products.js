@@ -11,7 +11,7 @@ export async function renderProducts() {
       <div class="page-header">
         <h1>${t('products.myProducts')}</h1>
         <p>${t('products.manageProductListings')}</p>
-        <div style="display: flex; gap: 12px;">
+        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
           <button class="btn btn-primary" id="add-product-btn">
             <i data-lucide="plus"></i>
             ${t('products.addProduct')}
@@ -20,6 +20,14 @@ export async function renderProducts() {
             <i data-lucide="upload"></i>
             ${t('products.bulkImport')}
           </button>
+          <div id="bulk-actions-container" style="display: none; margin-left: auto; gap: 12px; align-items: center;">
+            <span id="selected-count" style="font-size: 14px; color: #6b7280;">0 selected</span>
+            <button class="btn btn-danger" id="bulk-delete-btn">
+              <i data-lucide="trash-2"></i>
+              Delete Selected
+            </button>
+            <button class="btn btn-text" id="cancel-selection-btn">Cancel</button>
+          </div>
         </div>
       </div>
 
@@ -167,9 +175,18 @@ function displayProducts(products) {
   gridEl.style.display = 'grid';
   
   gridEl.innerHTML = `
+    <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
+        <input type="checkbox" id="select-all-checkbox" style="width: 18px; height: 18px; cursor: pointer;" />
+        <span style="font-size: 14px; font-weight: 500; color: #374151;">Select All</span>
+      </label>
+    </div>
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px 0;">
       ${products.map(product => `
-        <div class="product-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background: white;">
+        <div class="product-card" data-product-id="${product.id}" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background: white; position: relative;">
+          <div style="position: absolute; top: 12px; right: 12px; z-index: 10;">
+            <input type="checkbox" class="product-checkbox" data-id="${product.id}" style="width: 20px; height: 20px; cursor: pointer;" />
+          </div>
           ${product.imageUrl ? `
             <img src="${product.imageUrl}" alt="${product.modelNumber || 'Product'}" 
                  onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
@@ -214,6 +231,9 @@ function displayProducts(products) {
   `;
   
   if (window.lucide) window.lucide.createIcons();
+  
+  // Initialize bulk selection
+  initializeBulkSelection();
   
   // Add event listeners for edit and delete buttons
   document.querySelectorAll('.edit-product-btn').forEach(btn => {
@@ -423,4 +443,145 @@ function initializeBulkImport() {
       document.getElementById('import-progress').style.display = 'none';
     }
   });
+}
+
+// Initialize bulk selection functionality
+function initializeBulkSelection() {
+  const selectAllCheckbox = document.getElementById('select-all-checkbox');
+  const productCheckboxes = document.querySelectorAll('.product-checkbox');
+  const bulkActionsContainer = document.getElementById('bulk-actions-container');
+  const selectedCountEl = document.getElementById('selected-count');
+  const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+  const cancelSelectionBtn = document.getElementById('cancel-selection-btn');
+  
+  // Track selected products
+  let selectedProducts = new Set();
+  
+  // Update UI based on selection
+  function updateSelectionUI() {
+    const count = selectedProducts.size;
+    selectedCountEl.textContent = `${count} selected`;
+    
+    if (count > 0) {
+      bulkActionsContainer.style.display = 'flex';
+    } else {
+      bulkActionsContainer.style.display = 'none';
+    }
+    
+    // Update select all checkbox state
+    if (selectAllCheckbox) {
+      selectAllCheckbox.checked = count === productCheckboxes.length && count > 0;
+      selectAllCheckbox.indeterminate = count > 0 && count < productCheckboxes.length;
+    }
+  }
+  
+  // Select all functionality
+  if (selectAllCheckbox) {
+    selectAllCheckbox.addEventListener('change', (e) => {
+      const isChecked = e.target.checked;
+      productCheckboxes.forEach(checkbox => {
+        checkbox.checked = isChecked;
+        const productId = checkbox.getAttribute('data-id');
+        if (isChecked) {
+          selectedProducts.add(productId);
+        } else {
+          selectedProducts.delete(productId);
+        }
+      });
+      updateSelectionUI();
+    });
+  }
+  
+  // Individual checkbox functionality
+  productCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', (e) => {
+      const productId = e.target.getAttribute('data-id');
+      if (e.target.checked) {
+        selectedProducts.add(productId);
+      } else {
+        selectedProducts.delete(productId);
+      }
+      updateSelectionUI();
+    });
+  });
+  
+  // Bulk delete functionality
+  if (bulkDeleteBtn) {
+    bulkDeleteBtn.addEventListener('click', async () => {
+      if (selectedProducts.size === 0) {
+        if (window.toast) {
+          window.toast.error('No products selected');
+        }
+        return;
+      }
+      
+      const count = selectedProducts.size;
+      if (!confirm(`Are you sure you want to delete ${count} product${count > 1 ? 's' : ''}?`)) {
+        return;
+      }
+      
+      try {
+        // Show loading state
+        bulkDeleteBtn.disabled = true;
+        bulkDeleteBtn.innerHTML = '<span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span> Deleting...';
+        
+        // Delete all selected products with error handling for each
+        const deletePromises = Array.from(selectedProducts).map(async (productId) => {
+          try {
+            await dataService.deleteProduct(productId);
+            return { success: true, productId };
+          } catch (error) {
+            return { success: false, productId, error };
+          }
+        });
+        
+        const results = await Promise.all(deletePromises);
+        
+        // Count successes and failures
+        const successCount = results.filter(r => r.success).length;
+        const failureCount = results.filter(r => !r.success).length;
+        
+        if (failureCount === 0) {
+          if (window.toast) {
+            window.toast.success(`Successfully deleted ${successCount} product${successCount > 1 ? 's' : ''}`);
+          }
+        } else if (successCount === 0) {
+          if (window.toast) {
+            window.toast.error(`Failed to delete all ${count} product${count > 1 ? 's' : ''}`);
+          }
+        } else {
+          if (window.toast) {
+            window.toast.warning(`Deleted ${successCount} product${successCount > 1 ? 's' : ''}, but ${failureCount} failed`);
+          }
+        }
+        
+        // Clear selection and reload products
+        selectedProducts.clear();
+        await loadProducts();
+      } catch (error) {
+        console.error('Error deleting products:', error);
+        if (window.toast) {
+          window.toast.error('Failed to delete some products');
+        }
+        bulkDeleteBtn.disabled = false;
+        bulkDeleteBtn.innerHTML = '<i data-lucide="trash-2"></i> Delete Selected';
+        if (window.lucide) window.lucide.createIcons();
+      }
+    });
+  }
+  
+  // Cancel selection
+  if (cancelSelectionBtn) {
+    cancelSelectionBtn.addEventListener('click', () => {
+      selectedProducts.clear();
+      productCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      if (selectAllCheckbox) {
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+      }
+      updateSelectionUI();
+    });
+  }
 }
