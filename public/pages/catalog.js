@@ -66,6 +66,20 @@ export function renderCatalog() {
       <div class="products-grid">
         ${mockProducts.map(product => `
           <div class="product-card card">
+            ${product.imageUrl ? `
+              <img src="${product.imageUrl}" alt="${escapeHtml(product.name)}" 
+                   onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                   style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0; margin: -16px -16px 16px -16px;" />
+              <div style="width: calc(100% + 32px); height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px 8px 0 0; margin: -16px -16px 16px -16px; display: none; align-items: center; justify-content: center; flex-direction: column; color: white;">
+                <i data-lucide="image-off" style="width: 48px; height: 48px; opacity: 0.8; margin-bottom: 8px;"></i>
+                <span style="font-size: 12px; opacity: 0.8;">Image not available</span>
+              </div>
+            ` : `
+              <div style="width: calc(100% + 32px); height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px 8px 0 0; margin: -16px -16px 16px -16px; display: flex; align-items: center; justify-content: center; flex-direction: column; color: white;">
+                <i data-lucide="package" style="width: 48px; height: 48px; opacity: 0.8; margin-bottom: 8px;"></i>
+                <span style="font-size: 12px; opacity: 0.8;">No image</span>
+              </div>
+            `}
             <div class="product-header">
               <h3>${escapeHtml(product.name)}</h3>
               <span class="product-category">${escapeHtml(product.category)}</span>
