@@ -523,17 +523,36 @@ function initializeBulkSelection() {
       try {
         // Show loading state
         bulkDeleteBtn.disabled = true;
-        bulkDeleteBtn.innerHTML = '<i data-lucide="loader" style="width: 14px; height: 14px; animation: spin 1s linear infinite;"></i> Deleting...';
+        bulkDeleteBtn.innerHTML = '<span style="display: inline-block; animation: spin 1s linear infinite;">⏳</span> Deleting...';
         
-        // Delete all selected products
-        const deletePromises = Array.from(selectedProducts).map(productId => 
-          dataService.deleteProduct(productId)
-        );
+        // Delete all selected products with error handling for each
+        const deletePromises = Array.from(selectedProducts).map(async (productId) => {
+          try {
+            await dataService.deleteProduct(productId);
+            return { success: true, productId };
+          } catch (error) {
+            return { success: false, productId, error };
+          }
+        });
         
-        await Promise.all(deletePromises);
+        const results = await Promise.all(deletePromises);
         
-        if (window.toast) {
-          window.toast.success(`Successfully deleted ${count} product${count > 1 ? 's' : ''}`);
+        // Count successes and failures
+        const successCount = results.filter(r => r.success).length;
+        const failureCount = results.filter(r => !r.success).length;
+        
+        if (failureCount === 0) {
+          if (window.toast) {
+            window.toast.success(`Successfully deleted ${successCount} product${successCount > 1 ? 's' : ''}`);
+          }
+        } else if (successCount === 0) {
+          if (window.toast) {
+            window.toast.error(`Failed to delete all ${count} product${count > 1 ? 's' : ''}`);
+          }
+        } else {
+          if (window.toast) {
+            window.toast.warning(`Deleted ${successCount} product${successCount > 1 ? 's' : ''}, but ${failureCount} failed`);
+          }
         }
         
         // Clear selection and reload products

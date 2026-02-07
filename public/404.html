@@ -9,7 +9,11 @@
     // Then redirects to the index.html page
     sessionStorage.redirect = location.href;
   </script>
-  <meta http-equiv="refresh" content="0;URL='/aluminum-website/'">
+  <!-- 
+    Note: Update this base path if the repository name changes.
+    Should match VITE_BASE_PATH in the build workflow.
+  -->
+  <meta http-equiv="refresh" content="0;URL='/'">
 </head>
 <body>
   <!-- GitHub Pages SPA fallback -->
