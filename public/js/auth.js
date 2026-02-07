@@ -166,6 +166,55 @@ class AuthManager {
   hasRole(role) {
     return this.userProfile && this.userProfile.role === role;
   }
+
+  /**
+   * Update user profile information
+   * @param {Object} updates - Object containing fields to update (email, phoneNumber)
+   * @returns {Promise<Object>} Result object with success status
+   */
+  async updateUserProfile(updates) {
+    try {
+      if (!this.user) {
+        throw new Error('User not authenticated');
+      }
+
+      const updateData = {};
+      
+      // Handle email update (requires re-authentication for security)
+      if (updates.email !== undefined && updates.email !== this.user.email) {
+        // Note: Email updates require recent authentication
+        // Firebase will throw an error if the user hasn't recently signed in
+        try {
+          await this.user.updateEmail(updates.email);
+          updateData.email = updates.email;
+        } catch (error) {
+          // If re-authentication is required, throw a specific error
+          if (error.code === 'auth/requires-recent-login') {
+            throw new Error('For security reasons, please log out and log back in before changing your email address.');
+          }
+          throw error;
+        }
+      }
+      
+      if (updates.phoneNumber !== undefined) {
+        updateData.phoneNumber = updates.phoneNumber;
+      }
+      
+      // Update Firestore user document if there are changes
+      if (Object.keys(updateData).length > 0) {
+        await this.db.collection('users').doc(this.user.uid).update(updateData);
+        
+        // Update local profile
+        this.userProfile = { ...this.userProfile, ...updateData };
+        this.notifyListeners();
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 const authManager = new AuthManager();

@@ -141,7 +141,7 @@ export default {
   // Catalog
   catalog: {
     title: 'Product Catalog',
-    subtitle: 'Browse our selection of premium aluminum products',
+    subtitle: 'Browse our selection of premium construction products',
     seller: 'Seller:',
     price: 'Price:',
     minOrder: 'Min Order:',
@@ -154,7 +154,7 @@ export default {
   // Sellers
   sellers: {
     title: 'Sellers Directory',
-    subtitle: 'Browse and connect with aluminum suppliers',
+    subtitle: 'Browse and connect with construction product suppliers',
     loading: 'Loading sellers...',
     noSellers: 'No sellers available',
     directory: 'Seller directory will appear here'
@@ -215,9 +215,9 @@ export default {
     },
     hero: {
       title: 'Transform Your',
-      titleHighlight: 'Aluminum Trading',
+      titleHighlight: 'Construction Trading',
       titleEnd: 'Experience',
-      description: 'Connect buyers and sellers on the most advanced aluminum trading platform. Streamline operations, boost efficiency, and grow your business.',
+      description: 'Connect buyers and sellers on the most advanced construction products trading platform. Streamline operations, boost efficiency, and grow your business.',
       startTrading: 'Start Trading',
       learnMore: 'Learn More',
       stats: {
@@ -242,7 +242,7 @@ export default {
     },
     features: {
       title: 'Powerful Features',
-      subtitle: 'Everything you need to succeed in aluminum trading',
+      subtitle: 'Everything you need to succeed in construction products trading',
       easyOrdering: {
         title: 'Easy Ordering',
         description: 'Browse catalogs, compare prices, and place orders with just a few clicks.'

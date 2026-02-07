@@ -20,6 +20,10 @@ export async function renderProducts() {
             <i data-lucide="upload"></i>
             ${t('products.bulkImport')}
           </button>
+          <button class="btn btn-secondary" id="delete-by-category-btn">
+            <i data-lucide="folder-minus"></i>
+            Delete by Category
+          </button>
           <div id="bulk-actions-container" style="display: none; margin-left: auto; gap: 12px; align-items: center;">
             <span id="selected-count" style="font-size: 14px; color: #6b7280;">0 selected</span>
             <button class="btn btn-danger" id="bulk-delete-btn">
@@ -27,6 +31,46 @@ export async function renderProducts() {
               Delete Selected
             </button>
             <button class="btn btn-text" id="cancel-selection-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete by Category Modal -->
+      <div id="delete-category-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px;">
+          <div class="modal-header">
+            <h2>Delete Products by Category</h2>
+            <button class="modal-close" id="close-category-modal-btn">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p style="margin-bottom: 16px; color: #6b7280;">
+              Select a category to delete all your products in that category. This action cannot be undone.
+            </p>
+            
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; margin-bottom: 8px; font-weight: 500;">Category</label>
+              <select id="category-select" class="form-control" style="width: 100%;">
+                <option value="">-- Select a category --</option>
+                <option value="Sheets">Sheets</option>
+                <option value="Extrusions">Extrusions</option>
+                <option value="Rods">Rods</option>
+                <option value="Plates">Plates</option>
+                <option value="Bars">Bars</option>
+                <option value="Tubes">Tubes</option>
+                <option value="Coils">Coils</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+              <button class="btn btn-text" id="cancel-category-delete-btn">Cancel</button>
+              <button class="btn btn-danger" id="confirm-category-delete-btn">
+                <i data-lucide="trash-2"></i>
+                Delete All in Category
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -582,6 +626,88 @@ function initializeBulkSelection() {
         selectAllCheckbox.indeterminate = false;
       }
       updateSelectionUI();
+    });
+  }
+  
+  // Initialize delete by category functionality
+  const deleteByCategoryBtn = document.getElementById('delete-by-category-btn');
+  const deleteCategoryModal = document.getElementById('delete-category-modal');
+  const closeCategoryModalBtn = document.getElementById('close-category-modal-btn');
+  const cancelCategoryDeleteBtn = document.getElementById('cancel-category-delete-btn');
+  const confirmCategoryDeleteBtn = document.getElementById('confirm-category-delete-btn');
+  const categorySelect = document.getElementById('category-select');
+  
+  if (deleteByCategoryBtn) {
+    deleteByCategoryBtn.addEventListener('click', () => {
+      deleteCategoryModal.style.display = 'flex';
+      if (window.lucide) window.lucide.createIcons();
+    });
+  }
+  
+  const closeCategoryModal = () => {
+    deleteCategoryModal.style.display = 'none';
+    categorySelect.value = '';
+  };
+  
+  if (closeCategoryModalBtn) {
+    closeCategoryModalBtn.addEventListener('click', closeCategoryModal);
+  }
+  
+  if (cancelCategoryDeleteBtn) {
+    cancelCategoryDeleteBtn.addEventListener('click', closeCategoryModal);
+  }
+  
+  if (confirmCategoryDeleteBtn) {
+    confirmCategoryDeleteBtn.addEventListener('click', async () => {
+      const category = categorySelect.value;
+      
+      if (!category) {
+        if (window.toast) {
+          window.toast.error('Please select a category');
+        }
+        return;
+      }
+      
+      // Confirm deletion
+      const confirmed = confirm(`Are you sure you want to delete ALL products in the "${category}" category? This action cannot be undone.`);
+      
+      if (!confirmed) {
+        return;
+      }
+      
+      try {
+        const user = authManager.getCurrentUser();
+        if (!user) {
+          throw new Error('User not authenticated');
+        }
+        
+        // Disable button while deleting
+        confirmCategoryDeleteBtn.disabled = true;
+        confirmCategoryDeleteBtn.innerHTML = '<i data-lucide="loader"></i> Deleting...';
+        if (window.lucide) window.lucide.createIcons();
+        
+        const result = await dataService.deleteProductsByCategory(category, user.uid);
+        
+        if (result.success) {
+          if (window.toast) {
+            window.toast.success(`Successfully deleted ${result.deletedCount} product(s) from ${category} category`);
+          }
+          
+          closeCategoryModal();
+          
+          // Reload products
+          await loadProducts();
+        }
+      } catch (error) {
+        console.error('Error deleting products by category:', error);
+        if (window.toast) {
+          window.toast.error('Failed to delete products: ' + error.message);
+        }
+      } finally {
+        confirmCategoryDeleteBtn.disabled = false;
+        confirmCategoryDeleteBtn.innerHTML = '<i data-lucide="trash-2"></i> Delete All in Category';
+        if (window.lucide) window.lucide.createIcons();
+      }
     });
   }
 }
