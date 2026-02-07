@@ -47,13 +47,44 @@ class AuthManager {
 
   // Wait for user profile to be loaded
   async waitForProfile(maxWaitTime = 3000) {
-    const startTime = Date.now();
-    
-    while (!this.userProfile && this.user && (Date.now() - startTime < maxWaitTime)) {
-      await new Promise(resolve => setTimeout(resolve, 100));
+    // If profile is already loaded, return immediately
+    if (this.userProfile) {
+      return this.userProfile;
     }
     
-    return this.userProfile;
+    // If user is not authenticated, return null
+    if (!this.user) {
+      return null;
+    }
+    
+    // Create a promise that resolves when profile is loaded
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        resolve(this.userProfile);
+      }, maxWaitTime);
+      
+      // Listen for profile changes
+      const checkProfile = () => {
+        if (this.userProfile) {
+          clearTimeout(timeout);
+          resolve(this.userProfile);
+        }
+      };
+      
+      // Add one-time listener
+      const listener = (user, profile) => {
+        if (profile) {
+          clearTimeout(timeout);
+          this.listeners = this.listeners.filter(l => l !== listener);
+          resolve(profile);
+        }
+      };
+      
+      this.listeners.push(listener);
+      
+      // Check immediately in case profile loaded while we were setting up
+      checkProfile();
+    });
   }
 
   onAuthStateChanged(callback) {

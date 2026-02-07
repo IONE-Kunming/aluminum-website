@@ -95,15 +95,26 @@ function protectedRoute(handler, requireRole = null) {
 
 // Initialize application
 async function initApp() {
-  // Wait for Firebase to be loaded
+  // Wait for Firebase to be loaded with timeout
   if (typeof firebase === 'undefined') {
-    await new Promise((resolve) => {
+    await new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Firebase failed to load'));
+      }, 10000); // 10 second timeout
+      
       const checkFirebase = setInterval(() => {
         if (typeof firebase !== 'undefined') {
           clearInterval(checkFirebase);
+          clearTimeout(timeout);
           resolve();
         }
       }, 50);
+    }).catch(error => {
+      console.error('Error loading Firebase:', error);
+      if (window.toast) {
+        window.toast.error('Failed to load Firebase. Please refresh the page.');
+      }
+      throw error;
     });
   }
   
