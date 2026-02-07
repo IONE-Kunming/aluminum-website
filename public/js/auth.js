@@ -45,7 +45,11 @@ class AuthManager {
     }
   }
 
-  // Wait for user profile to be loaded
+  /**
+   * Wait for user profile to be loaded from Firestore
+   * @param {number} maxWaitTime - Maximum time to wait in milliseconds (default: 3000ms)
+   * @returns {Promise<Object|null>} The user profile or null if not loaded within timeout
+   */
   async waitForProfile(maxWaitTime = 3000) {
     // If profile is already loaded, return immediately
     if (this.userProfile) {
@@ -60,19 +64,14 @@ class AuthManager {
     // Create a promise that resolves when profile is loaded
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
+        // Remove listener if still present
+        this.listeners = this.listeners.filter(l => l !== listener);
         resolve(this.userProfile);
       }, maxWaitTime);
       
-      // Listen for profile changes
-      const checkProfile = () => {
-        if (this.userProfile) {
-          clearTimeout(timeout);
-          resolve(this.userProfile);
-        }
-      };
-      
       // Add one-time listener
       const listener = (user, profile) => {
+        // Only resolve if profile is loaded
         if (profile) {
           clearTimeout(timeout);
           this.listeners = this.listeners.filter(l => l !== listener);
@@ -83,7 +82,11 @@ class AuthManager {
       this.listeners.push(listener);
       
       // Check immediately in case profile loaded while we were setting up
-      checkProfile();
+      if (this.userProfile) {
+        clearTimeout(timeout);
+        this.listeners = this.listeners.filter(l => l !== listener);
+        resolve(this.userProfile);
+      }
     });
   }
 

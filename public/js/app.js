@@ -97,25 +97,29 @@ function protectedRoute(handler, requireRole = null) {
 async function initApp() {
   // Wait for Firebase to be loaded with timeout
   if (typeof firebase === 'undefined') {
-    await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        reject(new Error('Firebase failed to load'));
-      }, 10000); // 10 second timeout
-      
-      const checkFirebase = setInterval(() => {
-        if (typeof firebase !== 'undefined') {
-          clearInterval(checkFirebase);
-          clearTimeout(timeout);
-          resolve();
-        }
-      }, 50);
-    }).catch(error => {
+    try {
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Firebase scripts failed to load within 10 seconds'));
+        }, 10000); // 10 second timeout
+        
+        // Check every 100ms for Firebase availability
+        const checkFirebase = setInterval(() => {
+          if (typeof firebase !== 'undefined') {
+            clearInterval(checkFirebase);
+            clearTimeout(timeout);
+            resolve();
+          }
+        }, 100);
+      });
+    } catch (error) {
       console.error('Error loading Firebase:', error);
       if (window.toast) {
-        window.toast.error('Failed to load Firebase. Please refresh the page.');
+        window.toast.error('Failed to load required scripts. Please refresh the page.');
       }
-      throw error;
-    });
+      // Don't throw - allow app to load without Firebase (will redirect to login on protected routes)
+      return;
+    }
   }
   
   // Initialize Firebase
