@@ -141,7 +141,7 @@ export default {
   // 目录
   catalog: {
     title: '产品目录',
-    subtitle: '浏览我们精选的优质铝制品',
+    subtitle: '浏览我们精选的优质建筑产品',
     seller: '卖家：',
     price: '价格：',
     minOrder: '最小订单：',
@@ -154,7 +154,7 @@ export default {
   // 卖家
   sellers: {
     title: '卖家目录',
-    subtitle: '浏览并联系铝材供应商',
+    subtitle: '浏览并联系建筑产品供应商',
     loading: '加载卖家中...',
     noSellers: '暂无卖家',
     directory: '卖家目录将显示在这里'
@@ -216,9 +216,9 @@ export default {
     },
     hero: {
       title: '改变您的',
-      titleHighlight: '铝交易',
+      titleHighlight: '建筑交易',
       titleEnd: '体验',
-      description: '在最先进的铝交易平台上连接买家和卖家。简化运营，提高效率，发展业务。',
+      description: '在最先进的建筑产品交易平台上连接买家和卖家。简化运营，提高效率，发展业务。',
       startTrading: '开始交易',
       learnMore: '了解更多',
       stats: {
@@ -243,7 +243,7 @@ export default {
     },
     features: {
       title: '强大的功能',
-      subtitle: '铝交易成功所需的一切',
+      subtitle: '建筑产品交易成功所需的一切',
       easyOrdering: {
         title: '轻松订购',
         description: '浏览目录、比较价格，只需点击几下即可下订单。'

@@ -10,7 +10,7 @@ export function renderSignupPage() {
     <div class="auth-page">
       <div class="auth-container">
         <div class="auth-header">
-          <img src="logo.svg" alt="I ONE Construction" class="auth-logo-image" />
+          <img src="/logo.svg" alt="I ONE Construction" class="auth-logo-image" />
           <h2 class="auth-title">${t('auth.createAccount')}</h2>
           <p class="auth-description">${t('landing.hero.description')}</p>
         </div>
