@@ -260,6 +260,44 @@ class DataService {
     }
   }
 
+  // Delete products by category
+  async deleteProductsByCategory(category, sellerId) {
+    await this.init();
+
+    try {
+      if (!this.db || !category) {
+        throw new Error('Invalid category or database not initialized');
+      }
+
+      // Build query
+      let query = this.db.collection('products').where('category', '==', category);
+      
+      // If sellerId provided, only delete that seller's products
+      if (sellerId) {
+        query = query.where('sellerId', '==', sellerId);
+      }
+
+      const snapshot = await query.get();
+      
+      if (snapshot.empty) {
+        return { success: true, deletedCount: 0 };
+      }
+
+      // Delete all matching products in a batch
+      const batch = this.db.batch();
+      snapshot.docs.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+      
+      await batch.commit();
+      
+      return { success: true, deletedCount: snapshot.size };
+    } catch (error) {
+      console.error('Error deleting products by category:', error);
+      throw error;
+    }
+  }
+
   // Mock data fallback methods
   getMockDashboardStats(role) {
     if (role === 'buyer') {
