@@ -270,16 +270,27 @@ function initializeCheckout(cartItems, cartTotal) {
         buyerName: userProfile?.displayName || user.displayName || 'Unknown',
         buyerEmail: userProfile?.email || user.email,
         buyerCompany: userProfile?.companyName || 'N/A',
-        items: cartItems.map(item => ({
-          productId: item.id,
-          productName: item.name,
-          seller: item.seller,
-          sellerId: item.sellerId || '',
-          quantity: item.quantity,
-          unit: item.unit || 'units',
-          pricePerUnit: item.price,
-          subtotal: item.price * item.quantity
-        })),
+        items: cartItems.map(item => {
+          // Validate and sanitize cart item data
+          const quantity = Number(item.quantity) || 0;
+          const pricePerUnit = Number(item.price) || 0;
+          const sellerId = item.sellerId || item.seller || '';
+          
+          if (quantity <= 0 || pricePerUnit < 0) {
+            throw new Error('Invalid cart item data');
+          }
+          
+          return {
+            productId: item.id,
+            productName: item.name,
+            seller: item.seller,
+            sellerId: sellerId,
+            quantity: quantity,
+            unit: item.unit || 'units',
+            pricePerUnit: pricePerUnit,
+            subtotal: pricePerUnit * quantity
+          };
+        }),
         subtotal: cartTotal,
         tax: cartTotal * 0.1,
         total: orderTotal,

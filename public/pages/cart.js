@@ -174,21 +174,29 @@ export function renderCart() {
     input.addEventListener('input', (e) => {
       const itemId = parseInt(input.getAttribute('data-item-id'));
       const newQty = parseInt(input.value);
-      const cartItems = cartManager.getCart();
-      const item = cartItems.find(i => i.id === itemId);
       
-      if (item) {
-        const minQty = item.minOrder || 1;
-        if (newQty >= minQty && !isNaN(newQty)) {
-          // Update quantity without re-rendering to avoid losing focus
-          cartManager.updateQuantity(itemId, newQty);
-          // Just update the subtotal for this item
-          const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
-          if (subtotalEl) {
-            subtotalEl.textContent = `$${(item.price * newQty).toFixed(2)}`;
+      if (!isNaN(newQty) && newQty > 0) {
+        const cartItems = cartManager.getCart();
+        const item = cartItems.find(i => i.id === itemId);
+        
+        if (item) {
+          const minQty = item.minOrder || 1;
+          if (newQty >= minQty) {
+            // Update quantity without re-rendering to avoid losing focus
+            cartManager.updateQuantity(itemId, newQty);
+            // Get the updated item after quantity change
+            const updatedCartItems = cartManager.getCart();
+            const updatedItem = updatedCartItems.find(i => i.id === itemId);
+            if (updatedItem) {
+              // Just update the subtotal for this item
+              const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
+              if (subtotalEl) {
+                subtotalEl.textContent = `$${(updatedItem.price * updatedItem.quantity).toFixed(2)}`;
+              }
+              // Update the cart summary
+              updateCartSummary();
+            }
           }
-          // Update the cart summary
-          updateCartSummary();
         }
       }
     });
