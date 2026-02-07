@@ -118,6 +118,8 @@ async function initApp() {
     } catch (error) {
       console.error('Error loading Firebase:', error);
       // Continue initialization without Firebase - app will work in limited mode
+      // Limited mode: Landing, login, and signup pages work, but protected routes
+      // will redirect to login. No data fetching from Firestore will be available.
       firebaseLoaded = false;
     }
   } else {

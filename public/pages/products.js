@@ -651,6 +651,9 @@ function initializeBulkSelection() {
           
           if (categories.length === 0) {
             categorySelect.innerHTML = '<option value="">No categories found</option>';
+            categorySelect.disabled = true;
+          } else {
+            categorySelect.disabled = false;
           }
         } catch (error) {
           console.error('Error loading categories:', error);
