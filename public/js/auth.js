@@ -166,6 +166,46 @@ class AuthManager {
   hasRole(role) {
     return this.userProfile && this.userProfile.role === role;
   }
+
+  /**
+   * Update user profile information
+   * @param {Object} updates - Object containing fields to update (email, phoneNumber)
+   * @returns {Promise<Object>} Result object with success status
+   */
+  async updateUserProfile(updates) {
+    try {
+      if (!this.user) {
+        throw new Error('User not authenticated');
+      }
+
+      const updateData = {};
+      
+      // Only allow updating specific fields
+      if (updates.email !== undefined) {
+        // Update Firebase Auth email
+        await this.user.updateEmail(updates.email);
+        updateData.email = updates.email;
+      }
+      
+      if (updates.phoneNumber !== undefined) {
+        updateData.phoneNumber = updates.phoneNumber;
+      }
+      
+      // Update Firestore user document if there are changes
+      if (Object.keys(updateData).length > 0) {
+        await this.db.collection('users').doc(this.user.uid).update(updateData);
+        
+        // Update local profile
+        this.userProfile = { ...this.userProfile, ...updateData };
+        this.notifyListeners();
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 const authManager = new AuthManager();
