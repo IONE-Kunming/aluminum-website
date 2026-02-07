@@ -11,7 +11,7 @@ export function renderLandingPage() {
       <nav class="landing-nav">
         <div class="nav-container">
           <div class="nav-logo">
-            <img src="/logo.svg" alt="I ONE Construction" class="logo-image" />
+            <img src="./logo.svg" alt="I ONE Construction" class="logo-image" />
           </div>
           <div class="nav-links">
             <a href="#features" class="nav-link">${t('landing.nav.features')}</a>
