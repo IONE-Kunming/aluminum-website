@@ -95,11 +95,21 @@ Once the admin account is created:
 ⚠️ **IMPORTANT SECURITY RECOMMENDATIONS:**
 
 1. **Change the password immediately after first login**
-2. **Enable Two-Factor Authentication (if available)**
-3. **Keep these credentials secure and private**
-4. **Do not share the password via insecure channels**
-5. **Consider using a password manager**
-6. **Delete the `create-admin.js` file and `ADMIN_ACCOUNT_CREDENTIALS.md` after creation**
+2. **DELETE these sensitive files from your repository after creating the admin account:**
+   ```bash
+   git rm create-admin.js
+   git rm public/create-admin.html
+   git rm ADMIN_ACCOUNT_CREDENTIALS.md
+   git commit -m "Remove admin creation files for security"
+   git push
+   ```
+3. **These files contain hardcoded Firebase credentials and admin passwords** - They should NEVER remain in production
+4. **Enable Two-Factor Authentication (if available)**
+5. **Keep these credentials secure and private**
+6. **Do not share the password via insecure channels**
+7. **Consider using a password manager**
+
+⚠️ **CRITICAL**: The `create-admin.html` file is publicly accessible at your website URL. Anyone can access it and see the Firebase configuration and admin credentials. **DELETE IT IMMEDIATELY AFTER USE**.
 
 ---
 

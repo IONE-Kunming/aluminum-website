@@ -161,13 +161,23 @@ npm run create-admin  # Run the script
 ⚠️ **CRITICAL:** After creating the admin account:
 
 1. **Change the default password immediately**
-2. **Delete these files from production:**
-   - `create-admin.js`
-   - `public/create-admin.html`
-   - `ADMIN_ACCOUNT_CREDENTIALS.md` (or keep it private)
-3. **Enable Firebase Authentication security rules**
-4. **Consider enabling Two-Factor Authentication**
-5. **Store credentials in a secure password manager**
+2. **DELETE these sensitive files from your repository:**
+   - `create-admin.js` - Contains hardcoded credentials
+   - `public/create-admin.html` - Publicly accessible with credentials
+   - `ADMIN_ACCOUNT_CREDENTIALS.md` - Contains login credentials (or keep it in a secure location, NOT in the repo)
+3. **Run these commands to remove the files:**
+   ```bash
+   git rm create-admin.js
+   git rm public/create-admin.html
+   git rm ADMIN_ACCOUNT_CREDENTIALS.md
+   git commit -m "Remove admin creation files after use"
+   git push
+   ```
+4. **Enable Firebase Authentication security rules**
+5. **Consider enabling Two-Factor Authentication**
+6. **Store credentials in a secure password manager**
+
+⚠️ **WARNING**: The `create-admin.html` file is publicly accessible and contains Firebase credentials. Delete it immediately after creating the admin account.
 
 ---
 

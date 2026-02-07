@@ -1,6 +1,19 @@
 /**
  * Script to create an admin account in Firebase
  * Run this with: node create-admin.js
+ * 
+ * ⚠️⚠️⚠️ SECURITY WARNING ⚠️⚠️⚠️
+ * 
+ * This file contains hardcoded Firebase credentials and admin passwords.
+ * 
+ * *** DELETE THIS FILE IMMEDIATELY AFTER CREATING THE ADMIN ACCOUNT ***
+ * 
+ * To remove this file from your repository:
+ * 1. git rm create-admin.js
+ * 2. git commit -m "Remove admin creation script for security"
+ * 3. git push
+ * 
+ * This file should NEVER remain in your repository after use.
  */
 
 import { initializeApp } from 'firebase/app';
