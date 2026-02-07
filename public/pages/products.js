@@ -172,10 +172,16 @@ function displayProducts(products) {
         <div class="product-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background: white;">
           ${product.imageUrl ? `
             <img src="${product.imageUrl}" alt="${product.modelNumber || 'Product'}" 
+                 onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
                  style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 12px;" />
+            <div style="width: 100%; height: 180px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; margin-bottom: 12px; display: none; align-items: center; justify-content: center; flex-direction: column; color: white;">
+              <i data-lucide="image-off" style="width: 48px; height: 48px; opacity: 0.8; margin-bottom: 8px;"></i>
+              <span style="font-size: 12px; opacity: 0.8;">Image not available</span>
+            </div>
           ` : `
-            <div style="width: 100%; height: 180px; background: #f3f4f6; border-radius: 4px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center;">
-              <i data-lucide="package" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+            <div style="width: 100%; height: 180px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column; color: white;">
+              <i data-lucide="package" style="width: 48px; height: 48px; opacity: 0.8; margin-bottom: 8px;"></i>
+              <span style="font-size: 12px; opacity: 0.8;">No image</span>
             </div>
           `}
           <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #111827;">
