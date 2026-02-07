@@ -32,5 +32,12 @@ export default defineConfig({
     port: 5173,
     // Enable SPA fallback for client-side routing
     middlewareMode: false,
+    // This is critical for SPA routing - all routes fall back to index.html
+    historyApiFallback: true,
+  },
+  preview: {
+    port: 4173,
+    // Also enable for preview mode
+    historyApiFallback: true,
   },
 })
