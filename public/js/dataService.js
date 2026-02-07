@@ -260,6 +260,41 @@ class DataService {
     }
   }
 
+  // Get unique categories from products
+  async getCategories(sellerId = null) {
+    await this.init();
+
+    try {
+      if (!this.db) {
+        return [];
+      }
+
+      let query = this.db.collection('products');
+      
+      // If sellerId provided, only get that seller's categories
+      if (sellerId) {
+        query = query.where('sellerId', '==', sellerId);
+      }
+
+      const snapshot = await query.get();
+      
+      // Extract unique categories
+      const categoriesSet = new Set();
+      snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        if (data.category) {
+          categoriesSet.add(data.category);
+        }
+      });
+      
+      // Convert to array and sort alphabetically
+      return Array.from(categoriesSet).sort();
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      return [];
+    }
+  }
+
   // Delete products by category
   async deleteProductsByCategory(category, sellerId) {
     await this.init();

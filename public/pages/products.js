@@ -53,14 +53,7 @@ export async function renderProducts() {
               <label style="display: block; margin-bottom: 8px; font-weight: 500;">Category</label>
               <select id="category-select" class="form-control" style="width: 100%;">
                 <option value="">-- Select a category --</option>
-                <option value="Sheets">Sheets</option>
-                <option value="Extrusions">Extrusions</option>
-                <option value="Rods">Rods</option>
-                <option value="Plates">Plates</option>
-                <option value="Bars">Bars</option>
-                <option value="Tubes">Tubes</option>
-                <option value="Coils">Coils</option>
-                <option value="Other">Other</option>
+                <!-- Categories will be populated dynamically -->
               </select>
             </div>
             
@@ -638,8 +631,35 @@ function initializeBulkSelection() {
   const categorySelect = document.getElementById('category-select');
   
   if (deleteByCategoryBtn) {
-    deleteByCategoryBtn.addEventListener('click', () => {
+    deleteByCategoryBtn.addEventListener('click', async () => {
       deleteCategoryModal.style.display = 'flex';
+      
+      // Fetch and populate categories for current seller
+      const user = authManager.getCurrentUser();
+      if (user) {
+        try {
+          const categories = await dataService.getCategories(user.uid);
+          
+          // Populate the category select
+          categorySelect.innerHTML = '<option value="">-- Select a category --</option>';
+          categories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat;
+            option.textContent = cat;
+            categorySelect.appendChild(option);
+          });
+          
+          if (categories.length === 0) {
+            categorySelect.innerHTML = '<option value="">No categories found</option>';
+          }
+        } catch (error) {
+          console.error('Error loading categories:', error);
+          if (window.toast) {
+            window.toast.error('Failed to load categories');
+          }
+        }
+      }
+      
       if (window.lucide) window.lucide.createIcons();
     });
   }

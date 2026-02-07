@@ -10,9 +10,10 @@ export async function renderCatalog() {
   const profile = authManager.getUserProfile();
   const t = languageManager.t.bind(languageManager);
   
-  // Fetch real products from Firebase
+  // Fetch real products and categories from Firebase
   let products = await dataService.getProducts();
   let allProducts = products; // Keep a copy for filtering
+  let categories = await dataService.getCategories(); // Fetch unique categories
   
   const renderProducts = (productsToRender) => {
     const productsGrid = document.querySelector('.products-grid');
@@ -115,10 +116,7 @@ export async function renderCatalog() {
         <input type="text" id="search-input" placeholder="${t('common.search')}..." class="form-control">
         <select id="category-filter" class="form-control">
           <option value="">All Categories</option>
-          <option value="Sheets">Sheets</option>
-          <option value="Extrusions">Extrusions</option>
-          <option value="Rods">Rods</option>
-          <option value="Plates">Plates</option>
+          ${categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('')}
         </select>
       </div>
 
