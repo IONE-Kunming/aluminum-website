@@ -8,6 +8,7 @@
     <!-- GitHub Pages SPA redirect handler -->
     <script>
       // Handle redirects from 404.html for GitHub Pages SPA routing
+      // Only runs if sessionStorage.redirect is set (by GitHub Pages 404.html)
       (function() {
         var redirect = sessionStorage.redirect;
         delete sessionStorage.redirect;
