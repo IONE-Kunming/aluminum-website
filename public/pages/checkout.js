@@ -40,8 +40,18 @@ export async function renderCheckout() {
           <div class="checkout-items">
             ${cartItems.map(item => `
               <div class="checkout-item">
+                ${item.imageUrl ? `
+                  <img src="${item.imageUrl}" alt="${escapeHtml(item.modelNumber || item.name)}" 
+                       class="checkout-item-image"
+                       onerror="this.style.display='none'"
+                       style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 16px;" />
+                ` : `
+                  <div class="checkout-item-placeholder" style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; margin-right: 16px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="package" style="width: 32px; height: 32px; color: white; opacity: 0.8;"></i>
+                  </div>
+                `}
                 <div class="checkout-item-info">
-                  <h4>${escapeHtml(item.name)}</h4>
+                  <h4>${escapeHtml(item.modelNumber || item.name)}</h4>
                   <p class="text-muted">${escapeHtml(item.seller)}</p>
                 </div>
                 <div class="checkout-item-details">
