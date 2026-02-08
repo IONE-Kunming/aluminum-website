@@ -243,10 +243,34 @@ The repository includes comprehensive documentation:
 
 ## 🔐 Firebase Security
 
-Don't forget to deploy Firestore security rules:
+### Deploy Security Rules
+
+Deploy both Firestore and Storage security rules:
 
 ```bash
+# Deploy both Firestore and Storage rules
+firebase deploy --only firestore:rules,storage
+
+# Or deploy individually
 firebase deploy --only firestore:rules
+firebase deploy --only storage
+```
+
+### Security Documentation
+
+- **`storage.rules`** - Firebase Storage security rules (seller-specific folders, no generic paths)
+- **`STORAGE_RULES_GUIDE.md`** - Complete storage rules documentation
+- **`STORAGE_RULES_SOLUTION.md`** - How storage rules work with dynamic categories
+- **`FIRESTORE_SECURITY_RULES.md`** - Firestore rules documentation
+- **`FIREBASE_RULES_UPDATE.md`** - Latest rules updates and recommendations
+
+### Key Security Features
+
+- ✅ **Seller Isolation** - Each seller can only upload to their own folder
+- ✅ **No Generic Paths** - Generic uploads blocked at the rules level
+- ✅ **Dynamic Categories** - Categories stored in Firestore, not storage paths
+- ✅ **File Validation** - Type and size limits enforced
+- ✅ **Role-Based Access** - Proper authentication and authorization
 ```
 
 ## 🧪 Testing

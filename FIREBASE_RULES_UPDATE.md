@@ -113,5 +113,8 @@ To update the Firestore rules in Firebase Console:
 
 To update the Storage rules in Firebase Console:
 1. Go to Firebase Console → Storage → Rules
-2. The current storage rules are fine, no changes needed
-3. Ensure the rules allow public read for product images
+2. Copy the rules from the `storage.rules` file in the repository root
+3. Click "Publish"
+4. The new rules enforce seller-specific folders and remove generic access patterns
+
+For detailed information about storage rules, see `STORAGE_RULES_GUIDE.md`
