@@ -68,9 +68,12 @@ class CartManager {
         items: cart,
         updatedAt: new Date().toISOString()
       });
+      
+      // Also save to localStorage as backup
+      this.saveCartToLocalStorage(cart);
     } catch (error) {
-      console.error('Error saving cart to Firestore:', error);
-      // Fallback to localStorage
+      console.warn('Error saving cart to Firestore, using localStorage:', error);
+      // Always save to localStorage as fallback
       this.saveCartToLocalStorage(cart);
     }
   }
@@ -121,10 +124,19 @@ class CartManager {
   }
 
   async removeFromCart(productId) {
-    let cart = this.getCart();
-    cart = cart.filter(item => item.id !== productId);
-    await this.saveCart(cart);
-    this.notifyListeners();
+    try {
+      let cart = this.getCart();
+      cart = cart.filter(item => item.id !== productId);
+      await this.saveCart(cart);
+      this.notifyListeners();
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+      // Try to at least update the cache
+      this.cartCache = this.cartCache.filter(item => item.id !== productId);
+      this.saveCartToLocalStorage(this.cartCache);
+      this.notifyListeners();
+      throw error; // Re-throw so UI can handle it
+    }
   }
 
   async updateQuantity(productId, quantity) {
