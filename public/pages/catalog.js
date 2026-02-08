@@ -30,7 +30,9 @@ export async function renderCatalog() {
       productsGrid.innerHTML = productsToRender.map(product => `
         <div class="product-card card">
           ${product.imageUrl ? `
-            <img src="${product.imageUrl}" alt="${escapeHtml(product.modelNumber || product.name || 'Product')}" 
+            <img src="${product.imageUrl}" 
+                 alt="${escapeHtml(product.modelNumber || product.name || 'Product')}" 
+                 loading="lazy"
                  onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
                  style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px 8px 0 0; margin: -16px -16px 16px -16px;" />
             <div style="width: calc(100% + 32px); height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px 8px 0 0; margin: -16px -16px 16px -16px; display: none; align-items: center; justify-content: center; flex-direction: column; color: white;">
