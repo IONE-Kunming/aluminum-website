@@ -143,19 +143,21 @@ class CartManager {
   }
 
   async clearCart() {
-    this.cartCache = [];
-    
-    // Clear from Firestore
+    // Clear from Firestore first
     if (this.db && this.currentUserId) {
       try {
         await this.db.collection('carts').doc(this.currentUserId).delete();
       } catch (error) {
         console.error('Error clearing cart from Firestore:', error);
+        // Continue to clear local cache even if Firestore fails
       }
     }
     
     // Clear from localStorage
     localStorage.removeItem(this.getUserStorageKey());
+    
+    // Clear cache last (after both operations attempted)
+    this.cartCache = [];
     this.notifyListeners();
   }
 

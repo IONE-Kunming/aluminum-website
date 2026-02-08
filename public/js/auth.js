@@ -168,11 +168,11 @@ class AuthManager {
   }
 
   /**
-   * Update user profile information
+   * Update user profile information (email, phone, etc.)
    * @param {Object} updates - Object containing fields to update (email, phoneNumber)
    * @returns {Promise<Object>} Result object with success status
    */
-  async updateUserProfile(updates) {
+  async updateProfileFields(updates) {
     try {
       if (!this.user) {
         throw new Error('User not authenticated');
