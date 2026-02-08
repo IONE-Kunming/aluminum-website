@@ -419,6 +419,58 @@ class DataService {
       return [];
     }
   }
+
+  // Get a single product by ID
+  async getProductById(productId) {
+    await this.init();
+    
+    try {
+      if (!this.db || !productId) {
+        return null;
+      }
+      
+      const doc = await this.db.collection('products').doc(productId).get();
+      
+      if (doc.exists) {
+        return {
+          id: doc.id,
+          ...doc.data()
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching product:', error);
+      return null;
+    }
+  }
+
+  // Validate multiple products exist in the database
+  async validateProducts(productIds) {
+    await this.init();
+    
+    try {
+      if (!this.db || !productIds || productIds.length === 0) {
+        return {};
+      }
+      
+      const validationResults = {};
+      
+      // Fetch all products in parallel
+      const promises = productIds.map(async (id) => {
+        const product = await this.getProductById(id);
+        validationResults[id] = product !== null;
+        return { id, exists: product !== null, product };
+      });
+      
+      await Promise.all(promises);
+      
+      return validationResults;
+    } catch (error) {
+      console.error('Error validating products:', error);
+      return {};
+    }
+  }
 }
 
 export default new DataService();

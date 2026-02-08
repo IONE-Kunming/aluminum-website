@@ -1,11 +1,22 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
 import cartManager from '../js/cart.js';
+import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
 
-export function renderCart() {
+export async function renderCart() {
   const cartItems = cartManager.getCart();
   const cartTotal = cartManager.getCartTotal();
+  
+  // Validate product availability
+  let productValidation = {};
+  let hasUnavailableItems = false;
+  
+  if (cartItems.length > 0) {
+    const productIds = cartItems.map(item => item.id.toString());
+    productValidation = await dataService.validateProducts(productIds);
+    hasUnavailableItems = Object.values(productValidation).some(isValid => !isValid);
+  }
   
   const content = `
     <div class="cart-page">
@@ -24,13 +35,27 @@ export function renderCart() {
           </button>
         </div>
       ` : `
+        ${hasUnavailableItems ? `
+          <div class="alert alert-warning">
+            <i data-lucide="alert-triangle"></i>
+            <div>
+              <strong>Some items are no longer available</strong>
+              <p>Products marked as "Out of Stock" have been removed by the seller. Please remove them from your cart to proceed.</p>
+            </div>
+          </div>
+        ` : ''}
+        
         <div class="cart-items">
-          ${cartItems.map(item => `
-            <div class="cart-item card" data-item-id="${item.id}">
+          ${cartItems.map(item => {
+            const isAvailable = productValidation[item.id] !== false;
+            return `
+            <div class="cart-item card ${!isAvailable ? 'cart-item-unavailable' : ''}" data-item-id="${item.id}">
+              ${!isAvailable ? '<div class="out-of-stock-badge">Out of Stock</div>' : ''}
               <div class="cart-item-info">
                 <h3>${escapeHtml(item.name)}</h3>
                 <p class="cart-item-seller">${escapeHtml(item.seller)}</p>
                 <p class="cart-item-description">${escapeHtml(item.description)}</p>
+                ${!isAvailable ? '<p class="text-danger"><strong>This product is no longer available</strong></p>' : ''}
               </div>
               <div class="cart-item-details">
                 <div class="cart-item-price">
@@ -40,7 +65,7 @@ export function renderCart() {
                 <div class="cart-item-quantity">
                   <label>Quantity:</label>
                   <div class="quantity-controls">
-                    <button class="quantity-btn" data-action="decrease" data-item-id="${item.id}">
+                    <button class="quantity-btn" data-action="decrease" data-item-id="${item.id}" ${!isAvailable ? 'disabled' : ''}>
                       <i data-lucide="minus"></i>
                     </button>
                     <input 
@@ -50,15 +75,16 @@ export function renderCart() {
                       step="${item.minOrder}"
                       class="quantity-input"
                       data-item-id="${item.id}"
+                      ${!isAvailable ? 'disabled' : ''}
                     />
-                    <button class="quantity-btn" data-action="increase" data-item-id="${item.id}">
+                    <button class="quantity-btn" data-action="increase" data-item-id="${item.id}" ${!isAvailable ? 'disabled' : ''}>
                       <i data-lucide="plus"></i>
                     </button>
                   </div>
                 </div>
                 <div class="cart-item-subtotal">
                   <span class="label">Subtotal:</span>
-                  <span class="value">$${(item.price * item.quantity).toFixed(2)}</span>
+                  <span class="value ${!isAvailable ? 'text-muted' : ''}">$${(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               </div>
               <button class="cart-item-remove" data-item-id="${item.id}">
@@ -66,7 +92,8 @@ export function renderCart() {
                 Remove
               </button>
             </div>
-          `).join('')}
+          `;
+          }).join('')}
         </div>
 
         <div class="cart-summary card">
@@ -83,9 +110,10 @@ export function renderCart() {
             <span>Total:</span>
             <span>$${(cartTotal * 1.1).toFixed(2)}</span>
           </div>
-          <button class="btn btn-primary" id="checkout-btn">
+          <button class="btn btn-primary" id="checkout-btn" ${hasUnavailableItems ? 'disabled' : ''}>
             Proceed to Checkout
           </button>
+          ${hasUnavailableItems ? '<p class="text-danger" style="margin-top: 0.5rem; font-size: 0.875rem;">Remove unavailable items to proceed</p>' : ''}
         </div>
       `}
     </div>

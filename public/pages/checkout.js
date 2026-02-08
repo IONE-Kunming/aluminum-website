@@ -5,11 +5,23 @@ import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
 
-export function renderCheckout() {
+export async function renderCheckout() {
   const cartItems = cartManager.getCart();
   const cartTotal = cartManager.getCartTotal();
   
   if (cartItems.length === 0) {
+    router.navigate('/buyer/cart');
+    return;
+  }
+  
+  // Validate all products before checkout
+  const productIds = cartItems.map(item => item.id.toString());
+  const productValidation = await dataService.validateProducts(productIds);
+  const hasUnavailableItems = Object.values(productValidation).some(isValid => !isValid);
+  
+  // If there are unavailable items, redirect back to cart with a message
+  if (hasUnavailableItems) {
+    window.toast.error('Some items in your cart are no longer available. Please review your cart.');
     router.navigate('/buyer/cart');
     return;
   }
