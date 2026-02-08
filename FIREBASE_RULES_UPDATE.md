@@ -22,7 +22,7 @@
 ## Recommended Firebase Rules Updates
 
 ### Current Rules - Orders Collection
-**Note**: The current rules have a syntax issue where multiple `allow read` statements are defined. Firebase Rules engine will only honor the last matching rule, which means buyers may not be able to read their own orders if they don't have the seller role.
+**Note**: The current rules have an issue where the seller read rule (lines 33-34) is overly permissive, allowing ANY authenticated seller to read ALL orders, not just their own. Firebase Rules use OR logic, so if any allow rule evaluates to true, access is granted.
 
 ```javascript
 // Orders collection
@@ -32,7 +32,7 @@ match /orders/{orderId} {
                  resource.data.buyerId == request.auth.uid;
   // Buyers can create orders
   allow create: if hasRole('buyer');
-  // Sellers can read orders containing their products - PROBLEMATIC: overwrites buyer read rule
+  // SECURITY ISSUE: This allows ANY seller to read ALL orders
   allow read: if isAuthenticated() && 
                  hasRole('seller');
   // Sellers can update order status
