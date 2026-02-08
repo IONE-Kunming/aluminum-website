@@ -16,7 +16,11 @@ export async function renderCart() {
   let validationFailed = false;
   
   if (cartItems.length > 0) {
-    const productIds = cartItems.map(item => item.id.toString());
+    // Get unique product IDs (not cart item IDs)
+    const productIds = [...new Set(cartItems.map(item => {
+      const productId = item.productId || item.id;
+      return productId.toString();
+    }))];
     productValidation = await dataService.validateProducts(productIds);
     
     // Check if validation actually ran (returns empty object on error)
@@ -67,9 +71,11 @@ export async function renderCart() {
         
         <div class="cart-items">
           ${cartItems.map(item => {
-            const isAvailable = productValidation[item.id] !== false;
+            const itemId = item.cartItemId || item.id;
+            const productId = item.productId || item.id;
+            const isAvailable = productValidation[productId] !== false;
             return `
-            <div class="cart-item card ${!isAvailable ? 'cart-item-unavailable' : ''}" data-item-id="${item.id}">
+            <div class="cart-item card ${!isAvailable ? 'cart-item-unavailable' : ''}" data-item-id="${itemId}">
               ${!isAvailable ? `<div class="out-of-stock-badge">${t('cart.outOfStock')}</div>` : ''}
               ${item.imageUrl ? `
                 <img src="${item.imageUrl}" alt="${escapeHtml(item.modelNumber || item.name)}" 
@@ -104,7 +110,7 @@ export async function renderCart() {
                 <div class="cart-item-quantity">
                   <label>${t('cart.quantity')}:</label>
                   <div class="quantity-controls">
-                    <button type="button" class="quantity-btn" data-action="decrease" data-item-id="${item.id}" ${!isAvailable ? 'disabled' : ''}>
+                    <button type="button" class="quantity-btn" data-action="decrease" data-item-id="${itemId}" ${!isAvailable ? 'disabled' : ''}>
                       <i data-lucide="minus"></i>
                     </button>
                     <input 
@@ -113,10 +119,10 @@ export async function renderCart() {
                       min="${item.minOrder}"
                       step="${item.minOrder}"
                       class="quantity-input"
-                      data-item-id="${item.id}"
+                      data-item-id="${itemId}"
                       ${!isAvailable ? 'disabled' : ''}
                     />
-                    <button type="button" class="quantity-btn" data-action="increase" data-item-id="${item.id}" ${!isAvailable ? 'disabled' : ''}>
+                    <button type="button" class="quantity-btn" data-action="increase" data-item-id="${itemId}" ${!isAvailable ? 'disabled' : ''}>
                       <i data-lucide="plus"></i>
                     </button>
                   </div>
@@ -126,7 +132,7 @@ export async function renderCart() {
                   <span class="value ${!isAvailable ? 'text-muted' : ''}">$${(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               </div>
-              <button class="cart-item-remove" data-item-id="${item.id}">
+              <button class="cart-item-remove" data-item-id="${itemId}">
                 <i data-lucide="trash-2"></i>
                 ${t('cart.remove')}
               </button>

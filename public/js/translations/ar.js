@@ -162,7 +162,8 @@ export default {
     addDimensions: 'إضافة الأبعاد',
     goToCart: 'اذهب إلى السلة',
     itemAdded: 'تمت إضافة العنصر إلى السلة!',
-    enterDimensions: 'أدخل الأبعاد لهذا المنتج'
+    enterDimensions: 'أدخل الأبعاد لهذا المنتج',
+    pleaseEnterValidDimensions: 'يرجى إدخال أبعاد صالحة'
   },
   
   // الدفع

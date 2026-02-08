@@ -162,7 +162,8 @@ export default {
     addDimensions: 'طول و عرض شامل کریں',
     goToCart: 'ٹوکری میں جائیں',
     itemAdded: 'چیز ٹوکری میں شامل!',
-    enterDimensions: 'اس مصنوعات کے لیے طول و عرض درج کریں'
+    enterDimensions: 'اس مصنوعات کے لیے طول و عرض درج کریں',
+    pleaseEnterValidDimensions: 'براہ کرم درست طول و عرض درج کریں'
   },
   
   // چیک آؤٹ

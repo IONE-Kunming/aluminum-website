@@ -162,7 +162,8 @@ export default {
     addDimensions: 'Add Dimensions',
     goToCart: 'Go to Cart',
     itemAdded: 'Item added to cart!',
-    enterDimensions: 'Enter dimensions for this product'
+    enterDimensions: 'Enter dimensions for this product',
+    pleaseEnterValidDimensions: 'Please enter valid dimensions'
   },
   
   // Checkout

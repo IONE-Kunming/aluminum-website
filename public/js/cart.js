@@ -105,24 +105,13 @@ class CartManager {
   async addToCart(product, quantity = 1) {
     const cart = this.getCart();
     
-    // Check if product already exists in cart with same dimensions
-    // Products with different dimensions should be treated as separate items
+    // Use cartItemId if available, otherwise fall back to product id
+    const itemId = product.cartItemId || product.id;
+    
+    // Check if this exact item (including dimensions) already exists in cart
     const existingItem = cart.find(item => {
-      if (item.id !== product.id) return false;
-      
-      // If both have dimensions, compare them
-      if (item.dimensions && product.dimensions) {
-        return item.dimensions.length === product.dimensions.length && 
-               item.dimensions.width === product.dimensions.width;
-      }
-      
-      // If neither has dimensions, they're the same
-      if (!item.dimensions && !product.dimensions) {
-        return true;
-      }
-      
-      // If one has dimensions and the other doesn't, they're different
-      return false;
+      const existingItemId = item.cartItemId || item.id;
+      return existingItemId === itemId;
     });
     
     if (existingItem) {
@@ -140,29 +129,38 @@ class CartManager {
     return true;
   }
 
-  async removeFromCart(productId) {
+  async removeFromCart(itemId) {
     try {
       let cart = this.getCart();
-      cart = cart.filter(item => item.id !== productId);
+      cart = cart.filter(item => {
+        const currentItemId = item.cartItemId || item.id;
+        return currentItemId !== itemId;
+      });
       await this.saveCart(cart);
       this.notifyListeners();
     } catch (error) {
       console.error('Error removing item from cart:', error);
       // Try to at least update the cache
-      this.cartCache = this.cartCache.filter(item => item.id !== productId);
+      this.cartCache = this.cartCache.filter(item => {
+        const currentItemId = item.cartItemId || item.id;
+        return currentItemId !== itemId;
+      });
       this.saveCartToLocalStorage(this.cartCache);
       this.notifyListeners();
       throw error; // Re-throw so UI can handle it
     }
   }
 
-  async updateQuantity(productId, quantity) {
+  async updateQuantity(itemId, quantity) {
     const cart = this.getCart();
-    const item = cart.find(item => item.id === productId);
+    const item = cart.find(item => {
+      const currentItemId = item.cartItemId || item.id;
+      return currentItemId === itemId;
+    });
     
     if (item) {
       if (quantity <= 0) {
-        await this.removeFromCart(productId);
+        await this.removeFromCart(itemId);
       } else {
         item.quantity = quantity;
         await this.saveCart(cart);

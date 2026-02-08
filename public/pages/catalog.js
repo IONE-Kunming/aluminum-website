@@ -226,13 +226,18 @@ export async function renderCatalog() {
       const width = parseFloat(widthInput.value);
       
       if (!length || length <= 0 || !width || width <= 0) {
-        window.toast.error('Please enter valid dimensions');
+        window.toast.error(t('cart.pleaseEnterValidDimensions'));
         return;
       }
+      
+      // Create a unique cart item ID that includes dimensions
+      const cartItemId = `${product.id}_${length}_${width}`;
       
       // Normalize product data for cart
       const cartProduct = {
         ...product,
+        cartItemId: cartItemId, // Unique identifier for cart item
+        productId: product.id, // Original product ID
         name: product.modelNumber || product.name || 'Product',
         seller: product.sellerName || 'Unknown Seller',
         sellerId: product.sellerId,

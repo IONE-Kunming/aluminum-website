@@ -162,7 +162,8 @@ export default {
     addDimensions: '添加尺寸',
     goToCart: '前往购物车',
     itemAdded: '商品已添加到购物车！',
-    enterDimensions: '输入此产品的尺寸'
+    enterDimensions: '输入此产品的尺寸',
+    pleaseEnterValidDimensions: '请输入有效的尺寸'
   },
   
   // 结账
