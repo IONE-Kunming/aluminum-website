@@ -2,7 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import languageManager from '../js/language.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
-import { escapeHtml } from '../js/utils.js';
+import { escapeHtml, formatDate } from '../js/utils.js';
 
 export async function renderOrders() {
   const t = languageManager.t.bind(languageManager);
@@ -51,7 +51,7 @@ export async function renderOrders() {
               <div class="order-header">
                 <div class="order-info">
                   <h3>Order #${order.id.substring(0, 8).toUpperCase()}</h3>
-                  <span class="order-date">${order.createdAt && order.createdAt.toDate ? new Date(order.createdAt.toDate()).toLocaleDateString() : new Date(order.createdAt).toLocaleDateString()}</span>
+                  <span class="order-date">${formatDate(order.createdAt)}</span>
                 </div>
                 <div class="order-status">
                   <span class="status-badge status-${order.status}">${order.status}</span>

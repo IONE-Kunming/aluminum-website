@@ -607,7 +607,7 @@ function initializeBulkImport() {
               const imageName = imagePath.split('/').pop().split('\\').pop();
               const imageFile = uploadedImages[imageName];
               if (imageFile) {
-                const imageRef = storage.ref(`products/${profile.uid}/${Date.now()}_${Math.random().toString(36).substring(7)}_${imageName}`);
+                const imageRef = storage.ref(`products/${profile.uid}/${Date.now()}_${crypto.randomUUID()}_${imageName}`);
                 await imageRef.put(imageFile);
                 imageUrl = await imageRef.getDownloadURL();
               }

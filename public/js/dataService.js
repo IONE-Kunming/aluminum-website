@@ -204,6 +204,11 @@ class DataService {
     }
   }
 
+  // Helper method to determine if cache should be used
+  shouldUseCache(filters) {
+    return !filters.category && !filters.sellerId && !filters.limit;
+  }
+
   // Get products from catalog with caching and pagination
   async getProducts(filters = {}) {
     await this.init();
@@ -214,8 +219,7 @@ class DataService {
       }
 
       // Check cache if no specific filters and cache is fresh
-      const cacheKey = JSON.stringify(filters);
-      if (!filters.category && !filters.sellerId && !filters.limit) {
+      if (this.shouldUseCache(filters)) {
         const cached = this.cache.products;
         if (cached.data && cached.timestamp && (Date.now() - cached.timestamp < cached.ttl)) {
           return cached.data;
@@ -250,7 +254,7 @@ class DataService {
       });
       
       // Cache results if no specific filters
-      if (!filters.category && !filters.sellerId && !filters.limit) {
+      if (this.shouldUseCache(filters)) {
         this.cache.products = {
           data: products,
           timestamp: Date.now(),
