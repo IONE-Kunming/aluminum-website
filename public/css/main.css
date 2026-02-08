@@ -34,6 +34,9 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+  
+  /* Mobile Touch Targets */
+  --min-touch-target: 44px;
 }
 
 /* Light Theme */
@@ -664,3 +667,49 @@ a, button, .card, .icon-interactive, .btn, .nav-link, .stat-card {
   }
 }
 
+
+/* ==========================================
+   MOBILE TOUCH OPTIMIZATIONS
+   ========================================== */
+
+/* Prevent double-tap zoom on buttons */
+button,
+.btn,
+a {
+  touch-action: manipulation;
+}
+
+/* Smooth scrolling on mobile */
+html {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Better tap highlight for mobile */
+* {
+  -webkit-tap-highlight-color: rgba(0, 128, 255, 0.1);
+}
+
+/* Ensure inputs don't cause zoom on iOS */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Better scroll behavior for modals on mobile */
+.modal-overlay {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent body scroll when modal is open */
+body.modal-open {
+  overflow: hidden;
+  height: 100%;
+}

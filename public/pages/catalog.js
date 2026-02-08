@@ -94,18 +94,8 @@ export async function renderCatalog() {
             return;
           }
           
-          // Normalize product data for cart
-          const cartProduct = {
-            ...product,
-            name: product.modelNumber || product.name || 'Product',
-            seller: product.sellerName || 'Unknown Seller',
-            sellerId: product.sellerId,
-            price: product.pricePerMeter || product.price || 0,
-            unit: product.unit || 'unit',
-            minOrder: product.minOrder || 1
-          };
-          await cartManager.addToCart(cartProduct, cartProduct.minOrder);
-          window.toast.success(`${cartProduct.name} added to cart!`);
+          // Show dimension input modal
+          showDimensionModal(product);
         }
       });
     });
@@ -176,5 +166,147 @@ export async function renderCatalog() {
 
   if (categoryFilter) {
     categoryFilter.addEventListener('change', filterProducts);
+  }
+
+  // Function to show dimension modal
+  function showDimensionModal(product) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>${t('cart.enterDimensions')}</h2>
+          <button class="modal-close" id="modal-close">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p style="margin-bottom: 16px;">${escapeHtml(product.modelNumber || product.name || 'Product')}</p>
+          <div class="form-group">
+            <label>${t('cart.length')} (m)</label>
+            <input type="number" id="dimension-length" class="form-control" min="0" step="0.01" placeholder="0.00" required>
+          </div>
+          <div class="form-group">
+            <label>${t('cart.width')} (m)</label>
+            <input type="number" id="dimension-width" class="form-control" min="0" step="0.01" placeholder="0.00" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="modal-cancel">${t('common.cancel')}</button>
+          <button class="btn btn-primary" id="modal-add-to-cart">${t('catalog.addToCart')}</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.classList.add('modal-open');
+    
+    // Initialize Lucide icons
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+    
+    const lengthInput = document.getElementById('dimension-length');
+    const widthInput = document.getElementById('dimension-width');
+    const addBtn = document.getElementById('modal-add-to-cart');
+    const closeBtn = document.getElementById('modal-close');
+    const cancelBtn = document.getElementById('modal-cancel');
+    
+    const closeModal = () => {
+      document.body.removeChild(modal);
+      document.body.classList.remove('modal-open');
+    };
+    
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    
+    addBtn.addEventListener('click', async () => {
+      const length = parseFloat(lengthInput.value);
+      const width = parseFloat(widthInput.value);
+      
+      if (isNaN(length) || !isFinite(length) || length <= 0 || 
+          isNaN(width) || !isFinite(width) || width <= 0) {
+        window.toast.error(t('cart.pleaseEnterValidDimensions'));
+        return;
+      }
+      
+      // Create a unique cart item ID that includes dimensions
+      const cartItemId = `${product.id}_${length}_${width}`;
+      
+      // Normalize product data for cart
+      const cartProduct = {
+        ...product,
+        cartItemId: cartItemId, // Unique identifier for cart item
+        productId: product.id, // Original product ID
+        name: product.modelNumber || product.name || 'Product',
+        seller: product.sellerName || 'Unknown Seller',
+        sellerId: product.sellerId,
+        price: product.pricePerMeter || product.price || 0,
+        unit: product.unit || 'unit',
+        minOrder: product.minOrder || 1,
+        dimensions: {
+          length: length,
+          width: width
+        }
+      };
+      
+      await cartManager.addToCart(cartProduct, cartProduct.minOrder);
+      closeModal();
+      showGoToCartOverlay(cartProduct);
+    });
+    
+    // Focus on first input
+    lengthInput.focus();
+  }
+  
+  // Function to show "Go to Cart" success overlay
+  function showGoToCartOverlay(product) {
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay success-overlay';
+    overlay.innerHTML = `
+      <div class="modal-content success-modal">
+        <div class="success-icon">
+          <i data-lucide="check-circle"></i>
+        </div>
+        <h2>${t('cart.itemAdded')}</h2>
+        <p>${escapeHtml(product.name)}</p>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="continue-shopping">${t('cart.continueShopping')}</button>
+          <button class="btn btn-primary" id="go-to-cart">${t('cart.goToCart')}</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    document.body.classList.add('modal-open');
+    
+    // Initialize Lucide icons
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+    
+    const closeOverlay = () => {
+      document.body.removeChild(overlay);
+      document.body.classList.remove('modal-open');
+    };
+    
+    const continueBtn = document.getElementById('continue-shopping');
+    const goToCartBtn = document.getElementById('go-to-cart');
+    
+    continueBtn.addEventListener('click', closeOverlay);
+    goToCartBtn.addEventListener('click', () => {
+      closeOverlay();
+      router.navigate('/buyer/cart');
+    });
+    
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeOverlay();
+    });
+    
+    // Auto-close after 5 seconds
+    setTimeout(closeOverlay, 5000);
   }
 }

@@ -155,7 +155,15 @@ export default {
     unableToVerify: 'تعذر التحقق من توفر المنتج',
     proceedWithCaution: 'حدث خطأ أثناء التحقق مما إذا كانت المنتجات لا تزال متاحة. يرجى المتابعة بحذر.',
     someItemsUnavailable: 'بعض العناصر لم تعد متاحة',
-    unavailableMessage: 'المنتجات المحددة بـ "غير متوفر" تم حذفها من قبل البائع. يرجى حذفها من سلة التسوق للمتابعة.'
+    unavailableMessage: 'المنتجات المحددة بـ "غير متوفر" تم حذفها من قبل البائع. يرجى حذفها من سلة التسوق للمتابعة.',
+    length: 'الطول',
+    width: 'العرض',
+    dimensions: 'الأبعاد',
+    addDimensions: 'إضافة الأبعاد',
+    goToCart: 'اذهب إلى السلة',
+    itemAdded: 'تمت إضافة العنصر إلى السلة!',
+    enterDimensions: 'أدخل الأبعاد لهذا المنتج',
+    pleaseEnterValidDimensions: 'يرجى إدخال أبعاد صالحة'
   },
   
   // الدفع
@@ -387,6 +395,7 @@ export default {
   languages: {
     en: 'English',
     ar: 'العربية',
-    zh: '中文'
+    zh: '中文',
+    ur: 'اردو'
   }
 };

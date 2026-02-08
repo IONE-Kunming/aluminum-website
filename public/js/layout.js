@@ -69,6 +69,7 @@ export function renderLayout(content, userRole = null) {
                 <button class="language-option" data-lang="en">${t('languages.en')}</button>
                 <button class="language-option" data-lang="ar">${t('languages.ar')}</button>
                 <button class="language-option" data-lang="zh">${t('languages.zh')}</button>
+                <button class="language-option" data-lang="ur">${t('languages.ur')}</button>
               </div>
             </div>
           </div>

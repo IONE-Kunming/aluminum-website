@@ -155,7 +155,15 @@ export default {
     unableToVerify: '无法验证产品可用性',
     proceedWithCaution: '检查产品是否仍然可用时出错。请谨慎继续。',
     someItemsUnavailable: '部分商品已不可用',
-    unavailableMessage: '标记为"缺货"的产品已被卖家移除。请将其从购物车中移除以继续。'
+    unavailableMessage: '标记为"缺货"的产品已被卖家移除。请将其从购物车中移除以继续。',
+    length: '长度',
+    width: '宽度',
+    dimensions: '尺寸',
+    addDimensions: '添加尺寸',
+    goToCart: '前往购物车',
+    itemAdded: '商品已添加到购物车！',
+    enterDimensions: '输入此产品的尺寸',
+    pleaseEnterValidDimensions: '请输入有效的尺寸'
   },
   
   // 结账
@@ -387,6 +395,7 @@ export default {
   languages: {
     en: 'English',
     ar: 'العربية',
-    zh: '中文'
+    zh: '中文',
+    ur: 'اردو'
   }
 };

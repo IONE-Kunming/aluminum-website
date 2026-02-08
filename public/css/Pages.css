@@ -1976,3 +1976,252 @@
     justify-content: space-between;
   }
 }
+
+/* ==========================================
+   MODAL STYLES
+   ========================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-in;
+}
+
+.modal-content {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: var(--background-secondary);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: var(--spacing-lg);
+}
+
+.modal-footer {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+  justify-content: flex-end;
+}
+
+/* Success Modal Styles */
+.success-overlay .modal-content {
+  text-align: center;
+  max-width: 400px;
+}
+
+.success-modal .modal-body {
+  padding: var(--spacing-xl);
+}
+
+.success-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto var(--spacing-lg);
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--success-color), #10b981);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scaleIn 0.5s ease-out;
+}
+
+.success-icon i {
+  width: 48px;
+  height: 48px;
+  color: white;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-modal h2 {
+  color: var(--success-color);
+  margin-bottom: var(--spacing-sm);
+}
+
+.success-modal p {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.success-modal .modal-footer {
+  border-top: none;
+  justify-content: center;
+}
+
+/* Cart Item Dimensions */
+.cart-item-dimensions {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--background-secondary);
+  border-radius: var(--radius-sm);
+  display: inline-block;
+}
+
+.cart-item-dimensions strong {
+  color: var(--text-primary);
+}
+
+/* ==========================================
+   MOBILE RESPONSIVE STYLES FOR MODALS
+   ========================================== */
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    max-height: 95vh;
+    margin: var(--spacing-md);
+  }
+  
+  .modal-header {
+    padding: var(--spacing-md);
+  }
+  
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .modal-body {
+    padding: var(--spacing-md);
+  }
+  
+  .modal-footer {
+    padding: var(--spacing-md);
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Success modal adjustments for mobile */
+  .success-icon {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .success-icon i {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .success-modal h2 {
+    font-size: 1.25rem;
+  }
+  
+  /* Dimension inputs on mobile - additional padding for better UX */
+  .form-group input[type="number"] {
+    padding: 12px;
+  }
+  
+  /* Cart item dimensions - better mobile display */
+  .cart-item-dimensions {
+    font-size: 0.85rem;
+    display: block;
+    margin-top: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .modal-body p,
+  .success-modal p {
+    font-size: 0.9rem;
+  }
+  
+  /* Ensure touch targets are at least 44px */
+  .modal-close {
+    min-width: var(--min-touch-target);
+    min-height: var(--min-touch-target);
+  }
+  
+  .quantity-btn {
+    min-width: var(--min-touch-target);
+    min-height: var(--min-touch-target);
+  }
+  
+  /* Stack cart item info vertically on small screens */
+  .cart-item {
+    flex-direction: column;
+  }
+  
+  .cart-item-info,
+  .cart-item-details {
+    width: 100%;
+  }
+}
