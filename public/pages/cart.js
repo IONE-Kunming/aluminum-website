@@ -220,14 +220,25 @@ export async function renderCart() {
     });
   });
 
-  // Quantity controls
-  document.querySelectorAll('.quantity-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
+  // Quantity controls - using event delegation on cart-items container
+  const cartItemsContainer = document.querySelector('.cart-items');
+  if (cartItemsContainer) {
+    cartItemsContainer.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.quantity-btn');
+      if (!btn) return;
+      
       e.preventDefault();
       e.stopPropagation();
       
       const action = btn.getAttribute('data-action');
       const itemId = parseInt(btn.getAttribute('data-item-id'));
+      
+      // Validate itemId
+      if (isNaN(itemId)) {
+        console.error('Invalid item ID on quantity button');
+        return;
+      }
+      
       let cartItems = cartManager.getCart();
       let item = cartItems.find(i => i.id === itemId);
       
@@ -280,7 +291,7 @@ export async function renderCart() {
       // Update the cart summary
       updateCartSummary();
     });
-  });
+  }
 
   // Quantity input changes
   document.querySelectorAll('.quantity-input').forEach(input => {
