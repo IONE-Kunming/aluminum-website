@@ -1209,10 +1209,11 @@
 
 .cart-item {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: auto 1fr auto auto;
   gap: var(--spacing-lg);
   align-items: center;
   padding: var(--spacing-lg);
+  position: relative;
 }
 
 .cart-item-info h3 {
