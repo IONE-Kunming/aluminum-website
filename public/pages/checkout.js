@@ -41,7 +41,7 @@ export async function renderCheckout() {
             ${cartItems.map(item => `
               <div class="checkout-item">
                 <div class="checkout-item-info">
-                  <h4>${escapeHtml(item.name)}</h4>
+                  <h4>${escapeHtml(item.modelNumber || item.name)}</h4>
                   <p class="text-muted">${escapeHtml(item.seller)}</p>
                 </div>
                 <div class="checkout-item-details">

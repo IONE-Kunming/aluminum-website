@@ -69,10 +69,22 @@ export async function renderCart() {
             return `
             <div class="cart-item card ${!isAvailable ? 'cart-item-unavailable' : ''}" data-item-id="${item.id}">
               ${!isAvailable ? '<div class="out-of-stock-badge">Out of Stock</div>' : ''}
+              ${item.imageUrl ? `
+                <img src="${item.imageUrl}" alt="${escapeHtml(item.modelNumber || item.name)}" 
+                     class="cart-item-image"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="cart-item-placeholder" style="display: none;">
+                  <i data-lucide="package" style="width: 48px; height: 48px; color: white; opacity: 0.8;"></i>
+                </div>
+              ` : `
+                <div class="cart-item-placeholder">
+                  <i data-lucide="package" style="width: 48px; height: 48px; color: white; opacity: 0.8;"></i>
+                </div>
+              `}
               <div class="cart-item-info">
-                <h3>${escapeHtml(item.name)}</h3>
+                <h3>${escapeHtml(item.modelNumber || item.name)}</h3>
                 <p class="cart-item-seller">${escapeHtml(item.seller)}</p>
-                <p class="cart-item-description">${escapeHtml(item.description)}</p>
+                <p class="cart-item-description">${escapeHtml(item.description || '')}</p>
                 ${!isAvailable ? '<p class="text-danger"><strong>This product is no longer available</strong></p>' : ''}
               </div>
               <div class="cart-item-details">

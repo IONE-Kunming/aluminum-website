@@ -283,7 +283,9 @@ function displayProducts(products) {
             <input type="checkbox" class="product-checkbox" data-id="${product.id}" style="width: 20px; height: 20px; cursor: pointer;" />
           </div>
           ${product.imageUrl ? `
-            <img src="${product.imageUrl}" alt="${escapeHtml(product.modelNumber || 'Product')}" 
+            <img src="${product.imageUrl}" 
+                 alt="${escapeHtml(product.modelNumber || 'Product')}" 
+                 loading="lazy"
                  onerror="this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='flex';"
                  style="width: 100%; height: 180px; object-fit: cover; border-radius: 4px; margin-bottom: 12px;" />
             <div style="width: 100%; height: 180px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 4px; margin-bottom: 12px; display: none; align-items: center; justify-content: center; flex-direction: column; color: white;">
@@ -581,47 +583,75 @@ function initializeBulkImport() {
       const totalProducts = excelData.length;
       let importedCount = 0;
       
-      for (const row of excelData) {
-        try {
-          // Map Excel columns to product fields
-          const modelNumber = row['Model Number'] || row['model_number'] || row['ModelNumber'];
-          const category = row['Category'] || row['category'];
-          const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
-          const imagePath = row['Image Path'] || row['image_path'] || row['ImagePath'];
-          
-          // Upload image if provided
-          let imageUrl = '';
-          if (imagePath && uploadedImages) {
-            const imageName = imagePath.split('/').pop().split('\\').pop();
-            const imageFile = uploadedImages[imageName];
-            if (imageFile) {
-              const imageRef = storage.ref(`products/${profile.uid}/${Date.now()}_${imageName}`);
-              await imageRef.put(imageFile);
-              imageUrl = await imageRef.getDownloadURL();
+      // Process products in batches for better performance
+      const BATCH_SIZE = 10; // Process 10 products at a time
+      const batches = [];
+      
+      for (let i = 0; i < excelData.length; i += BATCH_SIZE) {
+        batches.push(excelData.slice(i, i + BATCH_SIZE));
+      }
+      
+      for (const batch of batches) {
+        // Process batch items in parallel
+        const batchPromises = batch.map(async (row) => {
+          try {
+            // Map Excel columns to product fields
+            const modelNumber = row['Model Number'] || row['model_number'] || row['ModelNumber'];
+            const category = row['Category'] || row['category'];
+            const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
+            const imagePath = row['Image Path'] || row['image_path'] || row['ImagePath'];
+            
+            // Upload image if provided (parallel with other images in batch)
+            let imageUrl = '';
+            if (imagePath && uploadedImages) {
+              const imageName = imagePath.split('/').pop().split('\\').pop();
+              const imageFile = uploadedImages[imageName];
+              if (imageFile) {
+                const imageRef = storage.ref(`products/${profile.uid}/${Date.now()}_${crypto.randomUUID()}_${imageName}`);
+                await imageRef.put(imageFile);
+                imageUrl = await imageRef.getDownloadURL();
+              }
             }
+            
+            // Return product data for batch write
+            return {
+              sellerId: profile.uid,
+              sellerName: profile.displayName,
+              modelNumber: modelNumber,
+              category: category,
+              pricePerMeter: parseFloat(pricePerMeter),
+              imageUrl: imageUrl,
+              createdAt: new Date().toISOString(),
+              stock: 0,
+              description: ''
+            };
+          } catch (rowError) {
+            console.error('Error processing row:', row, rowError);
+            return null;
           }
-          
-          // Create product document
-          await db.collection('products').add({
-            sellerId: profile.uid,
-            sellerName: profile.displayName,
-            modelNumber: modelNumber,
-            category: category,
-            pricePerMeter: parseFloat(pricePerMeter),
-            imageUrl: imageUrl,
-            createdAt: new Date().toISOString(),
-            stock: 0,
-            description: ''
-          });
-          
-          importedCount++;
-          const progress = (importedCount / totalProducts) * 100;
-          document.getElementById('progress-fill').style.width = `${progress}%`;
-          document.getElementById('progress-text').textContent = 
-            `Importing products... ${importedCount} of ${totalProducts}`;
-        } catch (rowError) {
-          console.error('Error importing row:', row, rowError);
-        }
+        });
+        
+        // Wait for all items in batch to be processed
+        const batchResults = await Promise.all(batchPromises);
+        
+        // Use Firestore batch write for better performance
+        const firestoreBatch = db.batch();
+        batchResults.forEach(productData => {
+          if (productData) {
+            const docRef = db.collection('products').doc();
+            firestoreBatch.set(docRef, productData);
+            importedCount++;
+          }
+        });
+        
+        // Commit the batch
+        await firestoreBatch.commit();
+        
+        // Update progress
+        const progress = (importedCount / totalProducts) * 100;
+        document.getElementById('progress-fill').style.width = `${progress}%`;
+        document.getElementById('progress-text').textContent = 
+          `Importing products... ${importedCount} of ${totalProducts}`;
       }
       
       alert(`Successfully imported ${importedCount} products!`);

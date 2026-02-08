@@ -22,17 +22,25 @@ class AuthManager {
       
       // Listen to auth state changes
       this.auth.onAuthStateChanged(async (user) => {
+        const currentUserUid = user ? user.uid : null;
         this.user = user;
         
         if (user) {
           // Fetch user profile
           try {
             const userDoc = await this.db.collection('users').doc(user.uid).get();
-            if (userDoc.exists) {
-              this.userProfile = userDoc.data();
+            // Only update profile if this is still the current user
+            // This prevents race conditions when multiple users log in simultaneously
+            if (this.user && this.user.uid === currentUserUid && userDoc.exists) {
+              // Include the UID in the profile data for tracking
+              this.userProfile = { uid: user.uid, ...userDoc.data() };
             }
           } catch (error) {
             console.error('Error fetching user profile:', error);
+            // Set profile to null on error to avoid stale data
+            if (this.user && this.user.uid === currentUserUid) {
+              this.userProfile = null;
+            }
           }
         } else {
           this.userProfile = null;
@@ -99,28 +107,32 @@ class AuthManager {
    * @returns {Promise<Object|null>} The user profile or null if not loaded within timeout
    */
   async waitForProfile(maxWaitTime = 3000) {
-    // If profile is already loaded, return immediately
-    if (this.userProfile) {
-      return this.userProfile;
-    }
-    
     // If user is not authenticated, return null
     if (!this.user) {
       return null;
     }
     
-    // Create a promise that resolves when profile is loaded
+    // Store the current user UID to verify we get the correct profile
+    const expectedUid = this.user.uid;
+    
+    // If profile is already loaded for this user, return immediately
+    if (this.userProfile && this.userProfile.uid === expectedUid) {
+      return this.userProfile;
+    }
+    
+    // Create a promise that resolves when the correct profile is loaded
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
         // Remove listener if still present
         this.listeners = this.listeners.filter(l => l !== listener);
-        resolve(this.userProfile);
+        // Return the profile if it matches the expected user, null otherwise
+        resolve(this.userProfile && this.userProfile.uid === expectedUid ? this.userProfile : null);
       }, maxWaitTime);
       
       // Add one-time listener
       const listener = (user, profile) => {
-        // Only resolve if profile is loaded
-        if (profile) {
+        // Only resolve if profile is loaded and belongs to the expected user
+        if (profile && profile.uid === expectedUid) {
           clearTimeout(timeout);
           this.listeners = this.listeners.filter(l => l !== listener);
           resolve(profile);
@@ -130,7 +142,7 @@ class AuthManager {
       this.listeners.push(listener);
       
       // Check immediately in case profile loaded while we were setting up
-      if (this.userProfile) {
+      if (this.userProfile && this.userProfile.uid === expectedUid) {
         clearTimeout(timeout);
         this.listeners = this.listeners.filter(l => l !== listener);
         resolve(this.userProfile);
@@ -191,7 +203,8 @@ class AuthManager {
   async updateUserProfile(uid, profileData) {
     try {
       await this.db.collection('users').doc(uid).set(profileData, { merge: true });
-      this.userProfile = { ...this.userProfile, ...profileData };
+      // Preserve uid field when merging profile data
+      this.userProfile = { ...this.userProfile, ...profileData, uid: this.userProfile?.uid || uid };
       this.notifyListeners();
       return { success: true };
     } catch (error) {
@@ -263,8 +276,8 @@ class AuthManager {
       if (Object.keys(updateData).length > 0) {
         await this.db.collection('users').doc(this.user.uid).update(updateData);
         
-        // Update local profile
-        this.userProfile = { ...this.userProfile, ...updateData };
+        // Update local profile and preserve uid field
+        this.userProfile = { ...this.userProfile, ...updateData, uid: this.userProfile?.uid || this.user.uid };
         this.notifyListeners();
       }
       

@@ -7,6 +7,11 @@ class DataService {
   constructor() {
     this.db = null;
     this.initialized = false;
+    // Add caching mechanism
+    this.cache = {
+      products: { data: null, timestamp: null, ttl: 60000 }, // 1 minute TTL
+      categories: { data: null, timestamp: null, ttl: 300000 }, // 5 minutes TTL
+    };
   }
 
   // Initialize Firestore connection
@@ -199,13 +204,26 @@ class DataService {
     }
   }
 
-  // Get products from catalog
+  // Helper method to determine if cache should be used
+  shouldUseCache(filters) {
+    return !filters.category && !filters.sellerId && !filters.limit;
+  }
+
+  // Get products from catalog with caching and pagination
   async getProducts(filters = {}) {
     await this.init();
 
     try {
       if (!this.db) {
         return [];
+      }
+
+      // Check cache if no specific filters and cache is fresh
+      if (this.shouldUseCache(filters)) {
+        const cached = this.cache.products;
+        if (cached.data && cached.timestamp && (Date.now() - cached.timestamp < cached.ttl)) {
+          return cached.data;
+        }
       }
 
       let query = this.db.collection('products');
@@ -218,10 +236,9 @@ class DataService {
         query = query.where('sellerId', '==', filters.sellerId);
       }
       
-      // Apply pagination limit if specified (before ordering to avoid index requirements)
-      if (filters.limit) {
-        query = query.limit(filters.limit);
-      }
+      // Apply pagination limit (default to 50 for better performance)
+      const limit = filters.limit || 50;
+      query = query.limit(limit);
 
       const snapshot = await query.get();
       const products = snapshot.docs.map(doc => ({
@@ -236,10 +253,34 @@ class DataService {
         return dateB - dateA; // descending order
       });
       
+      // Cache results if no specific filters
+      if (this.shouldUseCache(filters)) {
+        this.cache.products = {
+          data: products,
+          timestamp: Date.now(),
+          ttl: 60000
+        };
+      }
+      
       return products;
     } catch (error) {
       console.error('Error fetching products:', error);
       return [];
+    }
+  }
+
+  // Clear cache manually if needed
+  clearCache(key = null) {
+    if (key) {
+      if (this.cache[key]) {
+        this.cache[key] = { data: null, timestamp: null, ttl: this.cache[key].ttl };
+      }
+    } else {
+      // Clear all caches
+      Object.keys(this.cache).forEach(k => {
+        this.cache[k].data = null;
+        this.cache[k].timestamp = null;
+      });
     }
   }
 
@@ -274,6 +315,10 @@ class DataService {
       };
 
       const docRef = await this.db.collection('products').add(product);
+      
+      // Clear products cache when new product is added
+      this.clearCache('products');
+      
       return { success: true, id: docRef.id, product };
     } catch (error) {
       console.error('Error adding product:', error);
