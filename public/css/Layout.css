@@ -74,7 +74,7 @@
   align-items: center;
   gap: var(--spacing-md);
   padding: 12px var(--spacing-lg);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   text-decoration: none;
   transition: all 0.3s ease;
   border-left: 3px solid transparent;
