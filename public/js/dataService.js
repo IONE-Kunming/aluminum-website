@@ -450,7 +450,7 @@ class DataService {
     try {
       if (!this.db) {
         console.error('Firestore not initialized when trying to create order');
-        throw new Error('Database not initialized. Please check your Firebase configuration.');
+        throw new Error('Unable to connect to the database. Please try again or contact support.');
       }
       
       console.log('Creating order with data:', {
@@ -519,9 +519,10 @@ class DataService {
           ...doc.data()
         }));
         
+        // Sort by createdAt, putting orders without timestamps at the end
         orders.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : new Date();
-          const dateB = b.createdAt ? new Date(b.createdAt) : new Date();
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
           return dateB - dateA;
         });
         

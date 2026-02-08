@@ -153,6 +153,11 @@ export async function renderCart() {
 
   renderPageWithLayout(content, 'buyer');
 
+  // Helper function to calculate item subtotal
+  function calculateItemSubtotal(item) {
+    return (item.price * item.quantity).toFixed(2);
+  }
+
   // Helper function to get minimum quantity for an item
   function getMinQuantity(item) {
     return item.minOrder || 1;
@@ -182,9 +187,13 @@ export async function renderCart() {
   document.querySelectorAll('.cart-item-remove').forEach(btn => {
     btn.addEventListener('click', async () => {
       const itemId = parseInt(btn.getAttribute('data-item-id'));
+      
+      // Show immediate feedback with toast
+      window.toast.success(t('cart.itemRemoved'));
+      
+      // Then remove and re-render
       await cartManager.removeFromCart(itemId);
-      await renderCart(); // Re-render first
-      window.toast.success(t('cart.itemRemoved')); // Then show message
+      await renderCart();
     });
   });
 
@@ -215,7 +224,7 @@ export async function renderCart() {
           const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
           
           if (quantityInput) quantityInput.value = newQuantity;
-          if (subtotalEl && item) subtotalEl.textContent = `$${(item.price * item.quantity).toFixed(2)}`;
+          if (subtotalEl && item) subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
           
           updateCartSummary();
         } else if (action === 'decrease') {
@@ -233,7 +242,7 @@ export async function renderCart() {
             const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
             
             if (quantityInput) quantityInput.value = newQuantity;
-            if (subtotalEl && item) subtotalEl.textContent = `$${(item.price * item.quantity).toFixed(2)}`;
+            if (subtotalEl && item) subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
             
             updateCartSummary();
           } else {
@@ -267,7 +276,7 @@ export async function renderCart() {
             // Update the subtotal for this item
             const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
             if (subtotalEl && item) {
-              subtotalEl.textContent = `$${(item.price * item.quantity).toFixed(2)}`;
+              subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
             }
             // Update the cart summary
             updateCartSummary();
@@ -298,7 +307,7 @@ export async function renderCart() {
           // Update the subtotal for this item
           const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
           if (subtotalEl && item) {
-            subtotalEl.textContent = `$${(item.price * item.quantity).toFixed(2)}`;
+            subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
           }
           // Update the cart summary
           updateCartSummary();
@@ -330,7 +339,7 @@ export async function renderCart() {
               // Just update the subtotal for this item
               const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
               if (subtotalEl) {
-                subtotalEl.textContent = `$${(item.price * item.quantity).toFixed(2)}`;
+                subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
               }
               // Update the cart summary
               updateCartSummary();
