@@ -51,7 +51,7 @@ export async function renderOrders() {
               <div class="order-header">
                 <div class="order-info">
                   <h3>Order #${order.id.substring(0, 8).toUpperCase()}</h3>
-                  <span class="order-date">${new Date(order.createdAt).toLocaleDateString()}</span>
+                  <span class="order-date">${order.createdAt && order.createdAt.toDate ? new Date(order.createdAt.toDate()).toLocaleDateString() : new Date(order.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div class="order-status">
                   <span class="status-badge status-${order.status}">${order.status}</span>

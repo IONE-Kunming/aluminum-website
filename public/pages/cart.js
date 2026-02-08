@@ -72,13 +72,12 @@ export async function renderCart() {
               ${item.imageUrl ? `
                 <img src="${item.imageUrl}" alt="${escapeHtml(item.modelNumber || item.name)}" 
                      class="cart-item-image"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                     style="width: 120px; height: 120px; object-fit: cover; border-radius: 8px; flex-shrink: 0;" />
-                <div class="cart-item-placeholder" style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: none; align-items: center; justify-content: center; flex-shrink: 0;">
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="cart-item-placeholder" style="display: none;">
                   <i data-lucide="package" style="width: 48px; height: 48px; color: white; opacity: 0.8;"></i>
                 </div>
               ` : `
-                <div class="cart-item-placeholder" style="width: 120px; height: 120px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <div class="cart-item-placeholder">
                   <i data-lucide="package" style="width: 48px; height: 48px; color: white; opacity: 0.8;"></i>
                 </div>
               `}
