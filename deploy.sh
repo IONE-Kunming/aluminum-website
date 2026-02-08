@@ -35,10 +35,12 @@ fi
 
 # Check if user is logged in to Firebase
 echo "🔑 Checking Firebase authentication..."
-firebase login:list &> /dev/null || {
+if firebase projects:list &> /dev/null; then
+    echo "✓ Firebase authentication verified"
+else
     echo "Please login to Firebase:"
     firebase login
-}
+fi
 
 echo "✓ Firebase authentication verified"
 

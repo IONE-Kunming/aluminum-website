@@ -28,8 +28,9 @@ service cloud.firestore {
       allow update: if isAuthenticated() && request.auth.uid == userId;
       // Admins can read all users
       allow read: if isAdmin();
-      // Allow sellers to query all users (needed for seller directory)
-      allow read: if hasRole('seller');
+      // Allow anyone to query users for seller directory (limited fields returned by application)
+      // Note: Application should only return public fields (companyName, email, role)
+      allow list: if isAuthenticated();
     }
     
     // Products collection
@@ -102,8 +103,9 @@ service cloud.firestore {
       // Users can read their own notifications
       allow read: if isAuthenticated() && 
                      resource.data.userId == request.auth.uid;
-      // System can create notifications (allow authenticated users to create)
-      allow create: if isAuthenticated();
+      // Users can only create notifications for themselves
+      allow create: if isAuthenticated() && 
+                       request.resource.data.userId == request.auth.uid;
       // Users can update their own notifications (mark as read)
       allow update: if isAuthenticated() && 
                        resource.data.userId == request.auth.uid;
