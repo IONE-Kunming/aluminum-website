@@ -9,6 +9,10 @@ export function renderLayout(content, userRole = null) {
   const role = userRole || profile?.role || 'buyer';
   const t = languageManager.t.bind(languageManager);
   
+  // Get base URL from Vite for proper logo path
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const logoPath = `${baseUrl}logo.svg`.replace('//', '/'); // Avoid double slashes
+  
   const buyerMenuItems = [
     { path: '/buyer/dashboard', icon: 'layout-dashboard', label: t('nav.dashboard') },
     { path: '/buyer/catalog', icon: 'package', label: t('nav.catalog') },
@@ -51,7 +55,7 @@ export function renderLayout(content, userRole = null) {
       <!-- Sidebar -->
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-          <img src="./logo.svg" alt="I ONE Construction" class="logo-svg" id="logo-link" style="cursor: pointer;" title="Go to Dashboard" />
+          <img src="${logoPath}" alt="I ONE Construction" class="logo-svg" id="logo-link" style="cursor: pointer;" title="Go to Dashboard" />
           <div class="header-controls">
             <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">
               <i data-lucide="${themeManager.getTheme() === 'dark' ? 'sun' : 'moon'}"></i>

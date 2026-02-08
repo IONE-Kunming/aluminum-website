@@ -6,11 +6,15 @@ export function renderSignupPage() {
   const app = document.getElementById('app');
   const t = languageManager.t.bind(languageManager);
   
+  // Get base URL from Vite for proper logo path
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const logoPath = `${baseUrl}logo.svg`.replace('//', '/'); // Avoid double slashes
+  
   app.innerHTML = `
     <div class="auth-page">
       <div class="auth-container">
         <div class="auth-header">
-          <img src="./logo.svg" alt="I ONE Construction" class="auth-logo-image" />
+          <img src="${logoPath}" alt="I ONE Construction" class="auth-logo-image" />
           <h2 class="auth-title">${t('auth.createAccount')}</h2>
           <p class="auth-description">${t('landing.hero.description')}</p>
         </div>

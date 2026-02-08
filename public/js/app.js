@@ -80,6 +80,10 @@ function showToast(message, type = 'info') {
 // Protected route wrapper
 function protectedRoute(handler, requireRole = null) {
   return async () => {
+    // Wait for Firebase to determine the initial auth state
+    // This prevents premature redirects to login on page refresh
+    await authManager.waitForAuthState(5000);
+    
     if (!authManager.isAuthenticated()) {
       router.navigate('/login');
       return;
@@ -170,6 +174,9 @@ async function initApp() {
   router.register('/login', renderLoginPage);
   router.register('/signup', renderSignupPage);
   router.register('/profile-selection', async () => {
+    // Wait for Firebase to determine the initial auth state
+    await authManager.waitForAuthState(5000);
+    
     if (!authManager.isAuthenticated()) {
       router.navigate('/login');
       return;

@@ -5,13 +5,17 @@ export function renderLandingPage() {
   const app = document.getElementById('app');
   const t = languageManager.t.bind(languageManager);
   
+  // Get base URL from Vite for proper logo path
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const logoPath = `${baseUrl}logo.svg`.replace('//', '/'); // Avoid double slashes
+  
   app.innerHTML = `
     <div class="landing-page">
       <!-- Navigation -->
       <nav class="landing-nav">
         <div class="nav-container">
           <div class="nav-logo">
-            <img src="./logo.svg" alt="I ONE Construction" class="logo-image" />
+            <img src="${logoPath}" alt="I ONE Construction" class="logo-image" />
           </div>
           <div class="nav-links">
             <a href="#features" class="nav-link">${t('landing.nav.features')}</a>
