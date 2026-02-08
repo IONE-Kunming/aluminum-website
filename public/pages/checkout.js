@@ -342,8 +342,8 @@ function initializeCheckout(cartItems, cartTotal) {
           paymentMethod: selectedPayment,
           status: 'pending',
           paymentStatus: 'deposit_paid',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
         
         // Save order to Firestore

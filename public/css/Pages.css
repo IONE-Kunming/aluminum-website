@@ -1359,6 +1359,11 @@
   color: var(--text-primary);
 }
 
+.quantity-btn svg,
+.quantity-btn i {
+  pointer-events: none;
+}
+
 .quantity-btn:hover {
   border-color: var(--electric-blue);
   background: var(--hover-bg);
