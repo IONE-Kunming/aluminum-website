@@ -1,0 +1,112 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules for Aluminum Website
+// These rules ensure that sellers can only upload to their own folders
+// and prevent generic/mock data by enforcing strict path-based access control
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the resource path
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Helper function to validate image file
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*') &&
+             request.resource.size < 5 * 1024 * 1024; // 5MB limit
+    }
+    
+    // Helper function to validate CAD file
+    function isValidCADFile() {
+      return (request.resource.contentType.matches('application/.*') ||
+              request.resource.contentType.matches('image/.*')) &&
+             request.resource.size < 50 * 1024 * 1024; // 50MB limit
+    }
+    
+    // Products folder - Seller-specific uploads
+    // Path structure: /products/{sellerId}/{fileName}
+    // Each seller can only upload to their own folder
+    match /products/{sellerId}/{fileName} {
+      // Public read access for product images (needed for catalog display)
+      allow read: if true;
+      
+      // Only the seller who owns this folder can write to it
+      // This prevents sellers from uploading to other sellers' folders
+      allow write: if isAuthenticated() && 
+                      isOwner(sellerId) && 
+                      isValidImage();
+    }
+    
+    // Products folder - Nested paths for organization
+    // Path structure: /products/{sellerId}/{subfolder}/{fileName}
+    match /products/{sellerId}/{allPaths=**} {
+      // Public read access for all product-related files
+      allow read: if true;
+      
+      // Only the seller can upload to their own folder and subfolders
+      allow write: if isAuthenticated() && 
+                      isOwner(sellerId) && 
+                      isValidImage();
+    }
+    
+    // CAD files folder - For technical drawings and 3D models
+    // Path structure: /cad/{sellerId}/{fileName}
+    match /cad/{sellerId}/{fileName} {
+      // Only authenticated users can read CAD files
+      allow read: if isAuthenticated();
+      
+      // Only the seller can upload CAD files to their own folder
+      allow write: if isAuthenticated() && 
+                      isOwner(sellerId) && 
+                      isValidCADFile();
+    }
+    
+    // CAD files folder - Nested paths
+    match /cad/{sellerId}/{allPaths=**} {
+      // Only authenticated users can read CAD files
+      allow read: if isAuthenticated();
+      
+      // Only the seller can upload to their own CAD folder
+      allow write: if isAuthenticated() && 
+                      isOwner(sellerId) && 
+                      isValidCADFile();
+    }
+    
+    // Profile pictures - User-specific uploads
+    // Path structure: /profiles/{userId}/{fileName}
+    match /profiles/{userId}/{fileName} {
+      // Public read access for profile pictures
+      allow read: if true;
+      
+      // Only the user can upload to their own profile folder
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) && 
+                      request.resource.contentType.matches('image/.*') &&
+                      request.resource.size < 2 * 1024 * 1024; // 2MB limit
+    }
+    
+    // Profile pictures - Nested paths
+    match /profiles/{userId}/{allPaths=**} {
+      // Public read access for profile pictures
+      allow read: if true;
+      
+      // Only the user can upload to their own profile folder
+      allow write: if isAuthenticated() && 
+                      isOwner(userId) &&
+                      request.resource.contentType.matches('image/.*') &&
+                      request.resource.size < 2 * 1024 * 1024; // 2MB limit
+    }
+    
+    // Deny all other paths by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
