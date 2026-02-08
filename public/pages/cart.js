@@ -293,45 +293,63 @@ export async function renderCart() {
     });
   }
 
-  // Quantity input changes
-  document.querySelectorAll('.quantity-input').forEach(input => {
+  // Quantity input changes - using event delegation on cart-items container
+  const cartItemsContainerForInputs = document.querySelector('.cart-items');
+  if (cartItemsContainerForInputs) {
     // Handle Enter key press
-    input.addEventListener('keypress', async (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const itemId = parseInt(input.getAttribute('data-item-id'));
-        const newQuantity = parseInt(input.value);
-        let cartItems = cartManager.getCart();
-        let item = cartItems.find(i => i.id === itemId);
-        
-        if (item) {
-          const minQty = getMinQuantity(item);
-          if (newQuantity >= minQty && !isNaN(newQuantity)) {
-            await cartManager.updateQuantity(itemId, newQuantity);
-            
-            // Get updated cart after quantity change
-            cartItems = cartManager.getCart();
-            item = cartItems.find(i => i.id === itemId);
-            
-            // Update the subtotal for this item
-            const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
-            if (subtotalEl && item) {
-              subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
-            }
-            // Update the cart summary
-            updateCartSummary();
-            window.toast.success(t('cart.quantityUpdated'));
-          } else {
-            window.toast.warning(`${t('cart.minOrderQuantity')} ${minQty}`);
-            input.value = item.quantity; // Reset to current value
+    cartItemsContainerForInputs.addEventListener('keypress', async (e) => {
+      const input = e.target.closest('.quantity-input');
+      if (!input || e.key !== 'Enter') return;
+      
+      e.preventDefault();
+      const itemId = parseInt(input.getAttribute('data-item-id'));
+      const newQuantity = parseInt(input.value);
+      
+      if (isNaN(itemId)) {
+        console.error('Invalid item ID on quantity input');
+        return;
+      }
+      
+      let cartItems = cartManager.getCart();
+      let item = cartItems.find(i => i.id === itemId);
+      
+      if (item) {
+        const minQty = getMinQuantity(item);
+        if (newQuantity >= minQty && !isNaN(newQuantity)) {
+          await cartManager.updateQuantity(itemId, newQuantity);
+          
+          // Get updated cart after quantity change
+          cartItems = cartManager.getCart();
+          item = cartItems.find(i => i.id === itemId);
+          
+          // Update the subtotal for this item
+          const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
+          if (subtotalEl && item) {
+            subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
           }
+          // Update the cart summary
+          updateCartSummary();
+          window.toast.success(t('cart.quantityUpdated'));
+        } else {
+          window.toast.warning(`${t('cart.minOrderQuantity')} ${minQty}`);
+          input.value = item.quantity; // Reset to current value
         }
       }
     });
     
-    input.addEventListener('change', async (e) => {
+    // Handle change event
+    cartItemsContainerForInputs.addEventListener('change', async (e) => {
+      const input = e.target.closest('.quantity-input');
+      if (!input) return;
+      
       const itemId = parseInt(input.getAttribute('data-item-id'));
       const newQuantity = parseInt(input.value);
+      
+      if (isNaN(itemId)) {
+        console.error('Invalid item ID on quantity input');
+        return;
+      }
+      
       let cartItems = cartManager.getCart();
       let item = cartItems.find(i => i.id === itemId);
       
@@ -358,10 +376,15 @@ export async function renderCart() {
       }
     });
     
-    // Also handle input event for real-time updates
-    input.addEventListener('input', async (e) => {
+    // Handle input event for real-time updates
+    cartItemsContainerForInputs.addEventListener('input', async (e) => {
+      const input = e.target.closest('.quantity-input');
+      if (!input) return;
+      
       const itemId = parseInt(input.getAttribute('data-item-id'));
       const newQty = parseInt(input.value);
+      
+      if (isNaN(itemId)) return;
       
       if (!isNaN(newQty) && newQty > 0) {
         let cartItems = cartManager.getCart();
@@ -388,7 +411,7 @@ export async function renderCart() {
         }
       }
     });
-  });
+  }
 
   // Checkout button
   const checkoutBtn = document.getElementById('checkout-btn');

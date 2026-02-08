@@ -485,9 +485,15 @@ class DataService {
         throw new Error('Unable to connect to the database. Please try again or contact support.');
       }
       
+      // Validate input
+      if (!ordersData || ordersData.length === 0) {
+        console.error('No orders data provided to createOrdersBatch');
+        throw new Error('No orders to create');
+      }
+      
       console.log('Creating batch of orders:', {
         count: ordersData.length,
-        buyerId: ordersData[0]?.buyerId
+        buyerId: ordersData[0].buyerId
       });
       
       // Use Firestore batched write for atomicity
@@ -518,7 +524,7 @@ class DataService {
       };
     } catch (error) {
       console.error('Error creating orders batch:', error);
-      console.error('Failed to create orders for buyer:', ordersData[0]?.buyerId);
+      console.error('Failed to create orders');
       throw error;
     }
   }
