@@ -70,6 +70,12 @@ class AuthManager {
     
     // Wait for the auth state to be determined
     return new Promise((resolve) => {
+      // Add resolver to be called when auth state is determined
+      const wrappedResolve = () => {
+        clearTimeout(timeout);
+        resolve(true);
+      };
+      
       const timeout = setTimeout(() => {
         // Check again if auth state was resolved while timeout was executing
         if (this.authStateResolved) {
@@ -83,11 +89,6 @@ class AuthManager {
         resolve(false);
       }, maxWaitTime);
       
-      // Add resolver to be called when auth state is determined
-      const wrappedResolve = () => {
-        clearTimeout(timeout);
-        resolve(true);
-      };
       this.authStateResolvers.push(wrappedResolve);
     });
   }
