@@ -4,8 +4,10 @@ import cartManager from '../js/cart.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
+import languageManager from '../js/language.js';
 
 export async function renderCheckout() {
+  const t = languageManager.t.bind(languageManager);
   const cartItems = cartManager.getCart();
   const cartTotal = cartManager.getCartTotal();
   
@@ -21,7 +23,7 @@ export async function renderCheckout() {
   
   // If there are unavailable items, redirect back to cart with a message
   if (hasUnavailableItems) {
-    window.toast.error('Some items in your cart are no longer available. Please review your cart.');
+    window.toast.error(t('cart.someItemsUnavailable'));
     router.navigate('/buyer/cart');
     return;
   }
@@ -29,14 +31,14 @@ export async function renderCheckout() {
   const content = `
     <div class="checkout-page">
       <div class="page-header">
-        <h1>Checkout</h1>
-        <p>Complete your order</p>
+        <h1>${t('checkout.title')}</h1>
+        <p>${t('checkout.subtitle')}</p>
       </div>
 
       <div class="checkout-container">
         <!-- Order Summary -->
         <div class="checkout-section card">
-          <h2>Order Summary</h2>
+          <h2>${t('checkout.orderSummary')}</h2>
           <div class="checkout-items">
             ${cartItems.map(item => `
               <div class="checkout-item">
@@ -45,7 +47,7 @@ export async function renderCheckout() {
                   <p class="text-muted">${escapeHtml(item.seller)}</p>
                 </div>
                 <div class="checkout-item-details">
-                  <span>${item.quantity} ${escapeHtml(item.unit || 'units')}</span>
+                  <span>${item.quantity} ${escapeHtml(item.unit || t('checkout.units'))}</span>
                   <span class="checkout-item-price">$${(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               </div>
@@ -53,15 +55,15 @@ export async function renderCheckout() {
           </div>
           <div class="checkout-totals">
             <div class="checkout-total-row">
-              <span>Subtotal:</span>
+              <span>${t('checkout.subtotal')}:</span>
               <span>$${cartTotal.toFixed(2)}</span>
             </div>
             <div class="checkout-total-row">
-              <span>Tax (10%):</span>
+              <span>${t('checkout.tax')} (10%):</span>
               <span>$${(cartTotal * 0.1).toFixed(2)}</span>
             </div>
             <div class="checkout-total-row total">
-              <span>Total:</span>
+              <span>${t('checkout.total')}:</span>
               <span id="order-total">$${(cartTotal * 1.1).toFixed(2)}</span>
             </div>
           </div>
@@ -69,8 +71,8 @@ export async function renderCheckout() {
 
         <!-- Deposit Selection -->
         <div class="checkout-section card">
-          <h2>Deposit Amount <span class="required-badge">Required</span></h2>
-          <p class="section-description">Select the deposit percentage you'd like to pay now</p>
+          <h2>${t('checkout.depositAmount')} <span class="required-badge">${t('checkout.required')}</span></h2>
+          <p class="section-description">${t('checkout.selectDeposit')}</p>
           
           <div class="deposit-options">
             <label class="deposit-option">
@@ -78,7 +80,7 @@ export async function renderCheckout() {
               <div class="deposit-card">
                 <div class="deposit-percentage">5%</div>
                 <div class="deposit-amount">$${(cartTotal * 1.1 * 0.05).toFixed(2)}</div>
-                <div class="deposit-label">Minimum Deposit</div>
+                <div class="deposit-label">${t('checkout.minimumDeposit')}</div>
               </div>
             </label>
             
@@ -87,7 +89,7 @@ export async function renderCheckout() {
               <div class="deposit-card">
                 <div class="deposit-percentage">30%</div>
                 <div class="deposit-amount">$${(cartTotal * 1.1 * 0.30).toFixed(2)}</div>
-                <div class="deposit-label">Standard Deposit</div>
+                <div class="deposit-label">${t('checkout.standardDeposit')}</div>
               </div>
             </label>
             
@@ -96,18 +98,18 @@ export async function renderCheckout() {
               <div class="deposit-card">
                 <div class="deposit-percentage">65%</div>
                 <div class="deposit-amount">$${(cartTotal * 1.1 * 0.65).toFixed(2)}</div>
-                <div class="deposit-label">Premium Deposit</div>
+                <div class="deposit-label">${t('checkout.premiumDeposit')}</div>
               </div>
             </label>
           </div>
           
           <div id="deposit-summary" class="deposit-summary" style="display: none;">
             <div class="summary-row">
-              <span>Deposit Amount:</span>
+              <span>${t('checkout.depositAmountLabel')}:</span>
               <span id="deposit-amount-display">$0.00</span>
             </div>
             <div class="summary-row">
-              <span>Remaining Balance:</span>
+              <span>${t('checkout.remainingBalance')}:</span>
               <span id="remaining-balance-display">$${(cartTotal * 1.1).toFixed(2)}</span>
             </div>
           </div>
@@ -115,8 +117,8 @@ export async function renderCheckout() {
 
         <!-- Payment Method -->
         <div class="checkout-section card">
-          <h2>Payment Method <span class="required-badge">Required</span></h2>
-          <p class="section-description">Choose your preferred payment method</p>
+          <h2>${t('checkout.paymentMethod')} <span class="required-badge">${t('checkout.required')}</span></h2>
+          <p class="section-description">${t('checkout.selectPaymentMethod')}</p>
           
           <div class="payment-methods">
             <label class="payment-method">
@@ -128,7 +130,7 @@ export async function renderCheckout() {
                     <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="18" font-weight="bold">支</text>
                   </svg>
                 </div>
-                <div class="payment-name">Alipay</div>
+                <div class="payment-name">${t('checkout.alipay')}</div>
               </div>
             </label>
             
@@ -141,7 +143,7 @@ export async function renderCheckout() {
                     <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="white" font-size="18" font-weight="bold">微</text>
                   </svg>
                 </div>
-                <div class="payment-name">WeChat Pay</div>
+                <div class="payment-name">${t('checkout.wechat')}</div>
               </div>
             </label>
             
@@ -151,7 +153,7 @@ export async function renderCheckout() {
                 <div class="payment-icon">
                   <i data-lucide="landmark" style="width: 24px; height: 24px; color: #6366f1;"></i>
                 </div>
-                <div class="payment-name">Bank Transfer</div>
+                <div class="payment-name">${t('checkout.bankTransfer')}</div>
               </div>
             </label>
             
@@ -161,7 +163,7 @@ export async function renderCheckout() {
                 <div class="payment-icon">
                   <i data-lucide="credit-card" style="width: 24px; height: 24px; color: #6366f1;"></i>
                 </div>
-                <div class="payment-name">Card Payment</div>
+                <div class="payment-name">${t('checkout.cardPayment')}</div>
               </div>
             </label>
           </div>
@@ -171,11 +173,11 @@ export async function renderCheckout() {
         <div class="checkout-actions">
           <button class="btn btn-secondary" id="back-to-cart-btn">
             <i data-lucide="arrow-left"></i>
-            Back to Cart
+            ${t('checkout.backToCart')}
           </button>
           <button class="btn btn-primary" id="confirm-order-btn" disabled>
             <i data-lucide="check-circle"></i>
-            Confirm Order
+            ${t('checkout.confirmOrder')}
           </button>
         </div>
       </div>
@@ -191,6 +193,7 @@ export async function renderCheckout() {
 }
 
 function initializeCheckout(cartItems, cartTotal) {
+  const t = languageManager.t.bind(languageManager);
   const depositOptions = document.querySelectorAll('input[name="deposit"]');
   const paymentOptions = document.querySelectorAll('input[name="payment"]');
   const confirmBtn = document.getElementById('confirm-order-btn');
@@ -257,12 +260,12 @@ function initializeCheckout(cartItems, cartTotal) {
   // Confirm order
   confirmBtn.addEventListener('click', async () => {
     if (!selectedDeposit || !selectedPayment) {
-      window.toast.warning('Please select deposit amount and payment method');
+      window.toast.warning(t('checkout.selectDepositAndPayment'));
       return;
     }
     
     confirmBtn.disabled = true;
-    confirmBtn.innerHTML = '<i data-lucide="loader"></i> Processing...';
+    confirmBtn.innerHTML = `<i data-lucide="loader"></i> ${t('checkout.processing')}`;
     if (window.lucide) window.lucide.createIcons();
     
     try {
@@ -279,8 +282,15 @@ function initializeCheckout(cartItems, cartTotal) {
       
       // Group items by seller to create separate orders for each seller
       const itemsBySeller = {};
+      
+      // Validate all items have sellerId before proceeding
+      const invalidItems = cartItems.filter(item => !item.sellerId);
+      if (invalidItems.length > 0) {
+        throw new Error('Some items in cart are missing seller information. Please remove them and try again.');
+      }
+      
       cartItems.forEach(item => {
-        const sellerId = item.sellerId || 'unknown';
+        const sellerId = item.sellerId;
         if (!itemsBySeller[sellerId]) {
           itemsBySeller[sellerId] = [];
         }
@@ -346,7 +356,7 @@ function initializeCheckout(cartItems, cartTotal) {
       await cartManager.clearCart();
       
       // Show success message
-      window.toast.success('Order placed successfully!');
+      window.toast.success(t('checkout.orderPlaced'));
       
       // Redirect to orders page
       setTimeout(() => {
@@ -355,9 +365,9 @@ function initializeCheckout(cartItems, cartTotal) {
       
     } catch (error) {
       console.error('Error placing order:', error);
-      window.toast.error('Failed to place order. Please try again.');
+      window.toast.error(t('checkout.orderFailed'));
       confirmBtn.disabled = false;
-      confirmBtn.innerHTML = '<i data-lucide="check-circle"></i> Confirm Order';
+      confirmBtn.innerHTML = `<i data-lucide="check-circle"></i> ${t('checkout.confirmOrder')}`;
       if (window.lucide) window.lucide.createIcons();
     }
   });
