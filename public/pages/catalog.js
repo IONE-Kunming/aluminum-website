@@ -199,6 +199,7 @@ export async function renderCatalog() {
     `;
     
     document.body.appendChild(modal);
+    document.body.classList.add('modal-open');
     
     // Initialize Lucide icons
     if (window.lucide) {
@@ -213,6 +214,7 @@ export async function renderCatalog() {
     
     const closeModal = () => {
       document.body.removeChild(modal);
+      document.body.classList.remove('modal-open');
     };
     
     closeBtn.addEventListener('click', closeModal);
@@ -278,6 +280,7 @@ export async function renderCatalog() {
     `;
     
     document.body.appendChild(overlay);
+    document.body.classList.add('modal-open');
     
     // Initialize Lucide icons
     if (window.lucide) {
@@ -286,6 +289,7 @@ export async function renderCatalog() {
     
     const closeOverlay = () => {
       document.body.removeChild(overlay);
+      document.body.classList.remove('modal-open');
     };
     
     const continueBtn = document.getElementById('continue-shopping');

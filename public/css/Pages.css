@@ -2130,3 +2130,99 @@
 .cart-item-dimensions strong {
   color: var(--text-primary);
 }
+
+/* ==========================================
+   MOBILE RESPONSIVE STYLES FOR MODALS
+   ========================================== */
+
+@media (max-width: 768px) {
+  .modal-content {
+    width: 95%;
+    max-width: none;
+    max-height: 95vh;
+    margin: var(--spacing-md);
+  }
+  
+  .modal-header {
+    padding: var(--spacing-md);
+  }
+  
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .modal-body {
+    padding: var(--spacing-md);
+  }
+  
+  .modal-footer {
+    padding: var(--spacing-md);
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .modal-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Success modal adjustments for mobile */
+  .success-icon {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .success-icon i {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .success-modal h2 {
+    font-size: 1.25rem;
+  }
+  
+  /* Dimension inputs on mobile */
+  .form-group input[type="number"] {
+    font-size: 16px; /* Prevents zoom on iOS */
+    padding: 12px;
+  }
+  
+  /* Cart item dimensions - better mobile display */
+  .cart-item-dimensions {
+    font-size: 0.85rem;
+    display: block;
+    margin-top: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .modal-body p,
+  .success-modal p {
+    font-size: 0.9rem;
+  }
+  
+  /* Ensure touch targets are at least 44px */
+  .modal-close {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  .quantity-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  
+  /* Stack cart item info vertically on small screens */
+  .cart-item {
+    flex-direction: column;
+  }
+  
+  .cart-item-info,
+  .cart-item-details {
+    width: 100%;
+  }
+}

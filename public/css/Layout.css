@@ -372,3 +372,60 @@
   }
 }
 
+
+/* ==========================================
+   MOBILE RESPONSIVE IMPROVEMENTS
+   ========================================== */
+
+@media (max-width: 768px) {
+  /* Language dropdown on mobile */
+  .language-dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: 150px;
+  }
+  
+  .language-toggle {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+  }
+  
+  /* Ensure touch targets are at least 44px */
+  .language-option {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+  
+  /* Header controls spacing on mobile */
+  .header-controls {
+    gap: 8px;
+  }
+  
+  /* Theme toggle button size */
+  .theme-toggle {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Further reduce language toggle size on small screens */
+  .language-toggle {
+    font-size: 0.75rem;
+    padding: 6px 8px;
+  }
+  
+  .language-toggle i {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  
+  /* Stack sidebar footer content on very small screens */
+  .sidebar-footer {
+    padding: var(--spacing-sm);
+  }
+  
+  .user-details {
+    font-size: 0.8rem;
+  }
+}
