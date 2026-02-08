@@ -65,7 +65,7 @@ export async function renderCart() {
           </div>
         ` : ''}
         
-        <div class="cart-items" id="cart-items-container">
+        <div class="cart-items">
           ${cartItems.map(item => {
             const isAvailable = productValidation[item.id] !== false;
             return `
@@ -132,15 +132,15 @@ export async function renderCart() {
           <h2>${t('cart.orderSummary')}</h2>
           <div class="summary-row">
             <span>${t('cart.subtotal')}:</span>
-            <span id="cart-subtotal">$${cartTotal.toFixed(2)}</span>
+            <span>$${cartTotal.toFixed(2)}</span>
           </div>
           <div class="summary-row">
             <span>${t('cart.tax')}:</span>
-            <span id="cart-tax">$${(cartTotal * 0.1).toFixed(2)}</span>
+            <span>$${(cartTotal * 0.1).toFixed(2)}</span>
           </div>
           <div class="summary-row summary-total">
             <span>${t('cart.total')}:</span>
-            <span id="cart-total">$${(cartTotal * 1.1).toFixed(2)}</span>
+            <span>$${(cartTotal * 1.1).toFixed(2)}</span>
           </div>
           <button class="btn btn-primary" id="checkout-btn" ${hasUnavailableItems ? 'disabled' : ''}>
             ${t('cart.proceedToCheckout')}
@@ -153,17 +153,200 @@ export async function renderCart() {
 
   renderPageWithLayout(content, 'buyer');
 
-  // Event Delegation - أفضل ممارسة
-  document.addEventListener('click', handleCartClick);
-  document.addEventListener('change', handleQuantityChange);
-  document.addEventListener('keypress', handleQuantityKeypress);
-  document.addEventListener('input', handleQuantityInput);
+  // Helper function to calculate item subtotal
+  function calculateItemSubtotal(item) {
+    return (item.price * item.quantity).toFixed(2);
+  }
+
+  // Helper function to get minimum quantity for an item
+  function getMinQuantity(item) {
+    return item.minOrder || 1;
+  }
+
+  // Helper function to update cart summary without full re-render
+  function updateCartSummary() {
+    const total = cartManager.getCartTotal();
+    const subtotalEl = document.querySelector('.cart-summary .summary-row:nth-child(2) span:last-child');
+    const taxEl = document.querySelector('.cart-summary .summary-row:nth-child(3) span:last-child');
+    const totalEl = document.querySelector('.cart-summary .summary-total span:last-child');
+    
+    if (subtotalEl) subtotalEl.textContent = `$${total.toFixed(2)}`;
+    if (taxEl) taxEl.textContent = `$${(total * 0.1).toFixed(2)}`;
+    if (totalEl) totalEl.textContent = `$${(total * 1.1).toFixed(2)}`;
+  }
 
   // Navigation buttons
   document.querySelectorAll('[data-nav]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       router.navigate(btn.getAttribute('data-nav'));
+    });
+  });
+
+  // Remove item buttons
+  document.querySelectorAll('.cart-item-remove').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const itemId = parseInt(btn.getAttribute('data-item-id'));
+      
+      // Show immediate feedback with toast
+      window.toast.success(t('cart.itemRemoved'));
+      
+      // Then remove and re-render
+      await cartManager.removeFromCart(itemId);
+      await renderCart();
+    });
+  });
+
+  // Quantity controls
+  document.querySelectorAll('.quantity-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const action = btn.getAttribute('data-action');
+      const itemId = parseInt(btn.getAttribute('data-item-id'));
+      let cartItems = cartManager.getCart();
+      let item = cartItems.find(i => i.id === itemId);
+      
+      if (item) {
+        const step = getMinQuantity(item);
+        let newQuantity;
+        
+        if (action === 'increase') {
+          newQuantity = item.quantity + step;
+          await cartManager.updateQuantity(itemId, newQuantity);
+          
+          // Get updated cart and item after quantity change
+          cartItems = cartManager.getCart();
+          item = cartItems.find(i => i.id === itemId);
+          
+          // Update UI without full re-render
+          const cartItemEl = btn.closest('.cart-item');
+          const quantityInput = cartItemEl.querySelector('.quantity-input');
+          const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
+          
+          if (quantityInput) quantityInput.value = newQuantity;
+          if (subtotalEl && item) subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
+          
+          updateCartSummary();
+        } else if (action === 'decrease') {
+          newQuantity = item.quantity - step;
+          if (newQuantity >= step) {
+            await cartManager.updateQuantity(itemId, newQuantity);
+            
+            // Get updated cart and item after quantity change
+            cartItems = cartManager.getCart();
+            item = cartItems.find(i => i.id === itemId);
+            
+            // Update UI without full re-render
+            const cartItemEl = btn.closest('.cart-item');
+            const quantityInput = cartItemEl.querySelector('.quantity-input');
+            const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
+            
+            if (quantityInput) quantityInput.value = newQuantity;
+            if (subtotalEl && item) subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
+            
+            updateCartSummary();
+          } else {
+            window.toast.warning(`${t('cart.minOrderQuantity')} ${step}`);
+          }
+        }
+      }
+    });
+  });
+
+  // Quantity input changes
+  document.querySelectorAll('.quantity-input').forEach(input => {
+    // Handle Enter key press
+    input.addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const itemId = parseInt(input.getAttribute('data-item-id'));
+        const newQuantity = parseInt(input.value);
+        let cartItems = cartManager.getCart();
+        let item = cartItems.find(i => i.id === itemId);
+        
+        if (item) {
+          const minQty = getMinQuantity(item);
+          if (newQuantity >= minQty && !isNaN(newQuantity)) {
+            await cartManager.updateQuantity(itemId, newQuantity);
+            
+            // Get updated cart after quantity change
+            cartItems = cartManager.getCart();
+            item = cartItems.find(i => i.id === itemId);
+            
+            // Update the subtotal for this item
+            const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
+            if (subtotalEl && item) {
+              subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
+            }
+            // Update the cart summary
+            updateCartSummary();
+            window.toast.success(t('cart.quantityUpdated'));
+          } else {
+            window.toast.warning(`${t('cart.minOrderQuantity')} ${minQty}`);
+            input.value = item.quantity; // Reset to current value
+          }
+        }
+      }
+    });
+    
+    input.addEventListener('change', async (e) => {
+      const itemId = parseInt(input.getAttribute('data-item-id'));
+      const newQuantity = parseInt(input.value);
+      let cartItems = cartManager.getCart();
+      let item = cartItems.find(i => i.id === itemId);
+      
+      if (item) {
+        const minQty = getMinQuantity(item);
+        if (newQuantity >= minQty && !isNaN(newQuantity)) {
+          await cartManager.updateQuantity(itemId, newQuantity);
+          
+          // Get updated cart after quantity change
+          cartItems = cartManager.getCart();
+          item = cartItems.find(i => i.id === itemId);
+          
+          // Update the subtotal for this item
+          const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
+          if (subtotalEl && item) {
+            subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
+          }
+          // Update the cart summary
+          updateCartSummary();
+        } else {
+          window.toast.warning(`${t('cart.minOrderQuantity')} ${minQty}`);
+          input.value = item.quantity; // Reset to current value
+        }
+      }
+    });
+    
+    // Also handle input event for real-time updates
+    input.addEventListener('input', async (e) => {
+      const itemId = parseInt(input.getAttribute('data-item-id'));
+      const newQty = parseInt(input.value);
+      
+      if (!isNaN(newQty) && newQty > 0) {
+        let cartItems = cartManager.getCart();
+        let item = cartItems.find(i => i.id === itemId);
+        
+        if (item) {
+          const minQty = item.minOrder || 1;
+          if (newQty >= minQty) {
+            // Update quantity without re-rendering to avoid losing focus
+            await cartManager.updateQuantity(itemId, newQty);
+            // Get the updated cart after quantity change
+            cartItems = cartManager.getCart();
+            item = cartItems.find(i => i.id === itemId);
+            if (item) {
+              // Just update the subtotal for this item
+              const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
+              if (subtotalEl) {
+                subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
+              }
+              // Update the cart summary
+              updateCartSummary();
+            }
+          }
+        }
+      }
     });
   });
 
@@ -176,220 +359,4 @@ export async function renderCart() {
   }
 
   if (window.lucide) window.lucide.createIcons();
-
-  // Cleanup function
-  return () => {
-    document.removeEventListener('click', handleCartClick);
-    document.removeEventListener('change', handleQuantityChange);
-    document.removeEventListener('keypress', handleQuantityKeypress);
-    document.removeEventListener('input', handleQuantityInput);
-  };
-}
-
-// Event Handlers باستخدام Event Delegation
-async function handleCartClick(e) {
-  const target = e.target;
-  
-  // Handle remove button
-  if (target.closest('.cart-item-remove')) {
-    const removeBtn = target.closest('.cart-item-remove');
-    const itemId = parseInt(removeBtn.getAttribute('data-item-id'));
-    
-    e.preventDefault();
-    
-    // Show immediate feedback
-    if (window.toast) {
-      const t = languageManager.t.bind(languageManager);
-      window.toast.success(t('cart.itemRemoved'));
-    }
-    
-    // Remove from cart
-    await cartManager.removeFromCart(itemId);
-    
-    // Re-render cart
-    await renderCart();
-    return;
-  }
-  
-  // Handle quantity buttons
-  const quantityBtn = target.closest('.quantity-btn');
-  if (quantityBtn) {
-    e.preventDefault();
-    
-    const action = quantityBtn.getAttribute('data-action');
-    const itemId = parseInt(quantityBtn.getAttribute('data-item-id'));
-    const cartItem = quantityBtn.closest('.cart-item');
-    
-    if (quantityBtn.disabled) return;
-    
-    await handleQuantityUpdate(itemId, action, cartItem);
-    return;
-  }
-}
-
-async function handleQuantityChange(e) {
-  if (e.target.classList.contains('quantity-input')) {
-    const input = e.target;
-    const itemId = parseInt(input.getAttribute('data-item-id'));
-    const newQuantity = parseInt(input.value);
-    const cartItem = input.closest('.cart-item');
-    
-    await updateItemQuantity(itemId, newQuantity, cartItem);
-  }
-}
-
-async function handleQuantityKeypress(e) {
-  if (e.target.classList.contains('quantity-input') && e.key === 'Enter') {
-    e.preventDefault();
-    const input = e.target;
-    const itemId = parseInt(input.getAttribute('data-item-id'));
-    const newQuantity = parseInt(input.value);
-    const cartItem = input.closest('.cart-item');
-    
-    await updateItemQuantity(itemId, newQuantity, cartItem);
-  }
-}
-
-async function handleQuantityInput(e) {
-  if (e.target.classList.contains('quantity-input')) {
-    const input = e.target;
-    const itemId = parseInt(input.getAttribute('data-item-id'));
-    const newQty = parseInt(input.value);
-    
-    if (!isNaN(newQty) && newQty > 0) {
-      const cartItems = cartManager.getCart();
-      const item = cartItems.find(i => i.id === itemId);
-      
-      if (item) {
-        const minQty = item.minOrder || 1;
-        if (newQty >= minQty) {
-          // Update in cart manager
-          await cartManager.updateQuantity(itemId, newQty);
-          
-          // Update subtotal for this item
-          const updatedCart = cartManager.getCart();
-          const updatedItem = updatedCart.find(i => i.id === itemId);
-          if (updatedItem) {
-            const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
-            if (subtotalEl) {
-              subtotalEl.textContent = `$${(updatedItem.price * updatedItem.quantity).toFixed(2)}`;
-            }
-            // Update cart summary
-            updateCartSummary();
-          }
-        } else {
-          // Reset to minimum if below min
-          const minQty = item.minOrder || 1;
-          if (window.toast) {
-            const t = languageManager.t.bind(languageManager);
-            window.toast.warning(`${t('cart.minOrderQuantity')} ${minQty}`);
-          }
-          input.value = minQty;
-        }
-      }
-    }
-  }
-}
-
-async function handleQuantityUpdate(itemId, action, cartItem) {
-  const cartItems = cartManager.getCart();
-  const item = cartItems.find(i => i.id === itemId);
-  
-  if (!item) return;
-  
-  const step = item.minOrder || 1;
-  const currentQty = item.quantity;
-  let newQuantity;
-  
-  if (action === 'increase') {
-    newQuantity = currentQty + step;
-  } else if (action === 'decrease') {
-    newQuantity = currentQty - step;
-  } else {
-    return;
-  }
-  
-  // Check minimum quantity
-  if (newQuantity < step && action === 'decrease') {
-    if (window.toast) {
-      const t = languageManager.t.bind(languageManager);
-      window.toast.warning(`${t('cart.minOrderQuantity')} ${step}`);
-    }
-    return;
-  }
-  
-  // Update quantity
-  await cartManager.updateQuantity(itemId, newQuantity);
-  
-  // Update UI
-  updateCartItemUI(itemId, cartItem);
-}
-
-async function updateItemQuantity(itemId, newQuantity, cartItem) {
-  const cartItems = cartManager.getCart();
-  const item = cartItems.find(i => i.id === itemId);
-  
-  if (!item) return;
-  
-  const minQty = item.minOrder || 1;
-  
-  if (isNaN(newQuantity) || newQuantity < minQty) {
-    if (window.toast) {
-      const t = languageManager.t.bind(languageManager);
-      window.toast.warning(`${t('cart.minOrderQuantity')} ${minQty}`);
-    }
-    // Reset to current quantity
-    const input = cartItem.querySelector('.quantity-input');
-    if (input) input.value = item.quantity;
-    return;
-  }
-  
-  // Round to nearest step
-  const step = item.minOrder || 1;
-  const roundedQty = Math.max(minQty, Math.round(newQuantity / step) * step);
-  
-  // Update quantity
-  await cartManager.updateQuantity(itemId, roundedQty);
-  
-  // Update UI
-  updateCartItemUI(itemId, cartItem);
-  
-  if (window.toast) {
-    const t = languageManager.t.bind(languageManager);
-    window.toast.success(t('cart.quantityUpdated'));
-  }
-}
-
-function updateCartItemUI(itemId, cartItem) {
-  const cartItems = cartManager.getCart();
-  const item = cartItems.find(i => i.id === itemId);
-  
-  if (!item || !cartItem) return;
-  
-  // Update quantity input
-  const quantityInput = cartItem.querySelector('.quantity-input');
-  if (quantityInput) {
-    quantityInput.value = item.quantity;
-  }
-  
-  // Update subtotal
-  const subtotalEl = cartItem.querySelector('.cart-item-subtotal .value');
-  if (subtotalEl) {
-    subtotalEl.textContent = `$${(item.price * item.quantity).toFixed(2)}`;
-  }
-  
-  // Update cart summary
-  updateCartSummary();
-}
-
-function updateCartSummary() {
-  const total = cartManager.getCartTotal();
-  
-  const subtotalEl = document.getElementById('cart-subtotal');
-  const taxEl = document.getElementById('cart-tax');
-  const totalEl = document.getElementById('cart-total');
-  
-  if (subtotalEl) subtotalEl.textContent = `$${total.toFixed(2)}`;
-  if (taxEl) taxEl.textContent = `$${(total * 0.1).toFixed(2)}`;
-  if (totalEl) totalEl.textContent = `$${(total * 1.1).toFixed(2)}`;
 }
