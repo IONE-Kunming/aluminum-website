@@ -50,7 +50,7 @@ export async function renderOrders() {
             <div class="order-card card">
               <div class="order-header">
                 <div class="order-info">
-                  <h3>Order #${order.id.substring(0, 8).toUpperCase()}</h3>
+                  <h3>Order #${order.id && order.id.length >= 8 ? order.id.substring(0, 8).toUpperCase() : (order.id || 'N/A').toUpperCase()}</h3>
                   <span class="order-date">${formatDate(order.createdAt)}</span>
                 </div>
                 <div class="order-status">

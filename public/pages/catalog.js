@@ -91,6 +91,8 @@ export async function renderCatalog() {
           const cartProduct = {
             ...product,
             name: product.modelNumber || product.name || 'Product',
+            seller: product.sellerName || 'Unknown Seller',
+            sellerId: product.sellerId || '',
             price: product.pricePerMeter || product.price || 0,
             unit: product.unit || 'unit',
             minOrder: product.minOrder || 1

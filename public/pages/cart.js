@@ -3,8 +3,10 @@ import router from '../js/router.js';
 import cartManager from '../js/cart.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
+import languageManager from '../js/language.js';
 
 export async function renderCart() {
+  const t = languageManager.t.bind(languageManager);
   const cartItems = cartManager.getCart();
   const cartTotal = cartManager.getCartTotal();
   
@@ -29,17 +31,17 @@ export async function renderCart() {
   const content = `
     <div class="cart-page">
       <div class="page-header">
-        <h1>Shopping Cart</h1>
-        <p>Review your items before checkout</p>
+        <h1>${t('cart.title')}</h1>
+        <p>${t('cart.subtitle')}</p>
       </div>
 
       ${cartItems.length === 0 ? `
         <div class="cart-empty">
           <i data-lucide="shopping-cart" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>Your cart is empty</h2>
-          <p>Browse our catalog to add products to your cart</p>
+          <h2>${t('cart.emptyCart')}</h2>
+          <p>${t('cart.reviewItems')}</p>
           <button class="btn btn-primary" data-nav="/buyer/catalog">
-            Browse Catalog
+            ${t('cart.browseCatalog')}
           </button>
         </div>
       ` : `
@@ -47,8 +49,8 @@ export async function renderCart() {
           <div class="alert alert-warning">
             <i data-lucide="alert-triangle"></i>
             <div>
-              <strong>Unable to verify product availability</strong>
-              <p>There was an error checking if products are still available. Please proceed with caution.</p>
+              <strong>${t('cart.unableToVerify')}</strong>
+              <p>${t('cart.proceedWithCaution')}</p>
             </div>
           </div>
         ` : ''}
@@ -57,8 +59,8 @@ export async function renderCart() {
           <div class="alert alert-warning">
             <i data-lucide="alert-triangle"></i>
             <div>
-              <strong>Some items are no longer available</strong>
-              <p>Products marked as "Out of Stock" have been removed by the seller. Please remove them from your cart to proceed.</p>
+              <strong>${t('cart.someItemsUnavailable')}</strong>
+              <p>${t('cart.unavailableMessage')}</p>
             </div>
           </div>
         ` : ''}
@@ -68,7 +70,7 @@ export async function renderCart() {
             const isAvailable = productValidation[item.id] !== false;
             return `
             <div class="cart-item card ${!isAvailable ? 'cart-item-unavailable' : ''}" data-item-id="${item.id}">
-              ${!isAvailable ? '<div class="out-of-stock-badge">Out of Stock</div>' : ''}
+              ${!isAvailable ? `<div class="out-of-stock-badge">${t('cart.outOfStock')}</div>` : ''}
               ${item.imageUrl ? `
                 <img src="${item.imageUrl}" alt="${escapeHtml(item.modelNumber || item.name)}" 
                      class="cart-item-image"
@@ -85,15 +87,15 @@ export async function renderCart() {
                 <h3>${escapeHtml(item.modelNumber || item.name)}</h3>
                 <p class="cart-item-seller">${escapeHtml(item.seller)}</p>
                 <p class="cart-item-description">${escapeHtml(item.description || '')}</p>
-                ${!isAvailable ? '<p class="text-danger"><strong>This product is no longer available</strong></p>' : ''}
+                ${!isAvailable ? `<p class="text-danger"><strong>${t('cart.productNoLongerAvailable')}</strong></p>` : ''}
               </div>
               <div class="cart-item-details">
                 <div class="cart-item-price">
-                  <span class="label">Price:</span>
+                  <span class="label">${t('cart.price')}:</span>
                   <span class="value">$${item.price}/${escapeHtml(item.unit)}</span>
                 </div>
                 <div class="cart-item-quantity">
-                  <label>Quantity:</label>
+                  <label>${t('cart.quantity')}:</label>
                   <div class="quantity-controls">
                     <button class="quantity-btn" data-action="decrease" data-item-id="${item.id}" ${!isAvailable ? 'disabled' : ''}>
                       <i data-lucide="minus"></i>
@@ -113,13 +115,13 @@ export async function renderCart() {
                   </div>
                 </div>
                 <div class="cart-item-subtotal">
-                  <span class="label">Subtotal:</span>
+                  <span class="label">${t('cart.subtotal')}:</span>
                   <span class="value ${!isAvailable ? 'text-muted' : ''}">$${(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               </div>
               <button class="cart-item-remove" data-item-id="${item.id}">
                 <i data-lucide="trash-2"></i>
-                Remove
+                ${t('cart.remove')}
               </button>
             </div>
           `;
@@ -127,29 +129,34 @@ export async function renderCart() {
         </div>
 
         <div class="cart-summary card">
-          <h2>Order Summary</h2>
+          <h2>${t('cart.orderSummary')}</h2>
           <div class="summary-row">
-            <span>Subtotal:</span>
+            <span>${t('cart.subtotal')}:</span>
             <span>$${cartTotal.toFixed(2)}</span>
           </div>
           <div class="summary-row">
-            <span>Tax (estimated):</span>
+            <span>${t('cart.tax')}:</span>
             <span>$${(cartTotal * 0.1).toFixed(2)}</span>
           </div>
           <div class="summary-row summary-total">
-            <span>Total:</span>
+            <span>${t('cart.total')}:</span>
             <span>$${(cartTotal * 1.1).toFixed(2)}</span>
           </div>
           <button class="btn btn-primary" id="checkout-btn" ${hasUnavailableItems ? 'disabled' : ''}>
-            Proceed to Checkout
+            ${t('cart.proceedToCheckout')}
           </button>
-          ${hasUnavailableItems ? '<p class="text-danger" style="margin-top: 0.5rem; font-size: 0.875rem;">Remove unavailable items to proceed</p>' : ''}
+          ${hasUnavailableItems ? `<p class="text-danger" style="margin-top: 0.5rem; font-size: 0.875rem;">${t('cart.removeUnavailableItems')}</p>` : ''}
         </div>
       `}
     </div>
   `;
 
   renderPageWithLayout(content, 'buyer');
+
+  // Helper function to get minimum quantity for an item
+  function getMinQuantity(item) {
+    return item.minOrder || 1;
+  }
 
   // Helper function to update cart summary without full re-render
   function updateCartSummary() {
@@ -176,7 +183,7 @@ export async function renderCart() {
     btn.addEventListener('click', async () => {
       const itemId = parseInt(btn.getAttribute('data-item-id'));
       await cartManager.removeFromCart(itemId);
-      window.toast.success('Item removed from cart');
+      window.toast.success(t('cart.itemRemoved'));
       await renderCart(); // Re-render
     });
   });
@@ -191,17 +198,38 @@ export async function renderCart() {
       const item = cartItems.find(i => i.id === itemId);
       
       if (item) {
-        const step = item.minOrder || 1;
+        const step = getMinQuantity(item);
+        let newQuantity;
+        
         if (action === 'increase') {
-          await cartManager.updateQuantity(itemId, item.quantity + step);
-          await renderCart(); // Re-render
+          newQuantity = item.quantity + step;
+          await cartManager.updateQuantity(itemId, newQuantity);
+          
+          // Update UI without full re-render
+          const cartItemEl = btn.closest('.cart-item');
+          const quantityInput = cartItemEl.querySelector('.quantity-input');
+          const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
+          
+          if (quantityInput) quantityInput.value = newQuantity;
+          if (subtotalEl) subtotalEl.textContent = `$${(item.price * newQuantity).toFixed(2)}`;
+          
+          updateCartSummary();
         } else if (action === 'decrease') {
-          const newQty = item.quantity - step;
-          if (newQty >= step) {
-            await cartManager.updateQuantity(itemId, newQty);
-            await renderCart(); // Re-render
+          newQuantity = item.quantity - step;
+          if (newQuantity >= step) {
+            await cartManager.updateQuantity(itemId, newQuantity);
+            
+            // Update UI without full re-render
+            const cartItemEl = btn.closest('.cart-item');
+            const quantityInput = cartItemEl.querySelector('.quantity-input');
+            const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
+            
+            if (quantityInput) quantityInput.value = newQuantity;
+            if (subtotalEl) subtotalEl.textContent = `$${(item.price * newQuantity).toFixed(2)}`;
+            
+            updateCartSummary();
           } else {
-            window.toast.warning(`Minimum order quantity is ${step}`);
+            window.toast.warning(`${t('cart.minOrderQuantity')} ${step}`);
           }
         }
       }
@@ -210,19 +238,54 @@ export async function renderCart() {
 
   // Quantity input changes
   document.querySelectorAll('.quantity-input').forEach(input => {
+    // Handle Enter key press
+    input.addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const itemId = parseInt(input.getAttribute('data-item-id'));
+        const newQuantity = parseInt(input.value);
+        const cartItems = cartManager.getCart();
+        const item = cartItems.find(i => i.id === itemId);
+        
+        if (item) {
+          const minQty = getMinQuantity(item);
+          if (newQuantity >= minQty && !isNaN(newQuantity)) {
+            await cartManager.updateQuantity(itemId, newQuantity);
+            // Update the subtotal for this item
+            const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
+            if (subtotalEl) {
+              subtotalEl.textContent = `$${(item.price * newQuantity).toFixed(2)}`;
+            }
+            // Update the cart summary
+            updateCartSummary();
+            window.toast.success(t('cart.quantityUpdated'));
+          } else {
+            window.toast.warning(`${t('cart.minOrderQuantity')} ${minQty}`);
+            input.value = item.quantity; // Reset to current value
+          }
+        }
+      }
+    });
+    
     input.addEventListener('change', async (e) => {
       const itemId = parseInt(input.getAttribute('data-item-id'));
-      const newQty = parseInt(input.value);
+      const newQuantity = parseInt(input.value);
       const cartItems = cartManager.getCart();
       const item = cartItems.find(i => i.id === itemId);
       
       if (item) {
-        const minQty = item.minOrder || 1;
-        if (newQty >= minQty && !isNaN(newQty)) {
-          await cartManager.updateQuantity(itemId, newQty);
-          await renderCart(); // Re-render
+        const minQty = getMinQuantity(item);
+        if (newQuantity >= minQty && !isNaN(newQuantity)) {
+          await cartManager.updateQuantity(itemId, newQuantity);
+          // Update the subtotal for this item
+          const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
+          if (subtotalEl) {
+            subtotalEl.textContent = `$${(item.price * newQuantity).toFixed(2)}`;
+          }
+          // Update the cart summary
+          updateCartSummary();
         } else {
-          window.toast.warning(`Minimum order quantity is ${minQty}`);
+          window.toast.warning(`${t('cart.minOrderQuantity')} ${minQty}`);
           input.value = item.quantity; // Reset to current value
         }
       }
