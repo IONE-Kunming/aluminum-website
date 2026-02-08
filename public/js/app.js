@@ -9,6 +9,7 @@ import '../css/Pages.css';
 
 import router from './router.js';
 import authManager from './auth.js';
+import cartManager from './cart.js';
 
 // Eagerly load landing and auth pages (always needed)
 import { renderLandingPage } from '../pages/landing.js';
@@ -95,12 +96,22 @@ function protectedRoute(handler, requireRole = null) {
       }
       
       if (profile.role !== requireRole) {
-        toast.error('You do not have permission to access this page');
+        // Only show error if user is trying to access a different role's page
+        // Don't show error if we're just redirecting them to their correct dashboard
+        const currentPath = window.location.pathname.replace(router.basePath, '') || '/';
+        
+        // Show error only if they're not already being redirected to their dashboard
+        if (!currentPath.includes('/dashboard')) {
+          toast.error('You do not have permission to access this page');
+        }
+        
         // Redirect to the correct dashboard based on their role
         if (profile.role === 'seller') {
           router.navigate('/seller/dashboard');
         } else if (profile.role === 'buyer') {
           router.navigate('/buyer/dashboard');
+        } else if (profile.role === 'admin') {
+          router.navigate('/admin/dashboard');
         } else {
           router.navigate('/');
         }
@@ -158,11 +169,27 @@ async function initApp() {
   router.register('/', renderLandingPage);
   router.register('/login', renderLoginPage);
   router.register('/signup', renderSignupPage);
-  router.register('/profile-selection', () => {
+  router.register('/profile-selection', async () => {
     if (!authManager.isAuthenticated()) {
       router.navigate('/login');
       return;
     }
+    
+    // Wait for profile to load and check if user already has a role
+    const profile = await authManager.waitForProfile(3000);
+    
+    if (profile && profile.role) {
+      // User already has a role, redirect to their dashboard
+      if (profile.role === 'seller') {
+        router.navigate('/seller/dashboard');
+      } else if (profile.role === 'buyer') {
+        router.navigate('/buyer/dashboard');
+      } else if (profile.role === 'admin') {
+        router.navigate('/admin/dashboard');
+      }
+      return;
+    }
+    
     renderProfileSelection();
   });
   
@@ -195,7 +222,14 @@ async function initApp() {
   router.register('*', renderLandingPage);
   
   // Listen to auth state changes
-  authManager.onAuthStateChanged((user, profile) => {
+  authManager.onAuthStateChanged(async (user, profile) => {
+    // Initialize cart with user context
+    if (user) {
+      await cartManager.switchUser(user.uid);
+    } else {
+      await cartManager.logout();
+    }
+    
     // Re-render current route when auth state changes
     router.handleRoute();
   });

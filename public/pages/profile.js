@@ -59,9 +59,6 @@ export function renderProfile() {
               <i data-lucide="save"></i>
               Save Changes
             </button>
-            <button type="button" class="btn btn-text" id="cancel-profile-btn">
-              Cancel
-            </button>
           </div>
         </form>
       </div>
@@ -80,18 +77,8 @@ function initProfileHandlers(profile, user) {
   const emailInput = document.getElementById('email');
   const phoneInput = document.getElementById('phoneNumber');
   const saveBtn = document.getElementById('save-profile-btn');
-  const cancelBtn = document.getElementById('cancel-profile-btn');
   
   if (!form) return;
-  
-  // Handle cancel button
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', () => {
-      // Reset form to original values
-      if (emailInput) emailInput.value = user?.email || '';
-      if (phoneInput) phoneInput.value = profile?.phoneNumber || '';
-    });
-  }
   
   // Handle form submission
   form.addEventListener('submit', async (e) => {
@@ -129,7 +116,7 @@ function initProfileHandlers(profile, user) {
       if (emailChanged) updates.email = newEmail;
       if (phoneChanged) updates.phoneNumber = newPhone;
       
-      const result = await authManager.updateUserProfile(updates);
+      const result = await authManager.updateProfileFields(updates);
       
       if (result.success) {
         if (window.toast) {
