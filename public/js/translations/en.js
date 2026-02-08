@@ -386,6 +386,7 @@ export default {
   languages: {
     en: 'English',
     ar: 'العربية',
-    zh: '中文'
+    zh: '中文',
+    ur: 'اردو'
   }
 };

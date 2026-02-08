@@ -2,10 +2,11 @@
 import en from './translations/en.js';
 import zh from './translations/zh.js';
 import ar from './translations/ar.js';
+import ur from './translations/ur.js';
 
 class LanguageManager {
   constructor() {
-    this.translations = { en, zh, ar };
+    this.translations = { en, zh, ar, ur };
     this.currentLanguage = localStorage.getItem('language') || 'en';
     this.init();
   }
@@ -18,8 +19,8 @@ class LanguageManager {
     this.currentLanguage = lang;
     localStorage.setItem('language', lang);
     
-    // Apply RTL for Arabic
-    if (lang === 'ar') {
+    // Apply RTL for Arabic and Urdu
+    if (lang === 'ar' || lang === 'ur') {
       document.documentElement.setAttribute('dir', 'rtl');
     } else {
       document.documentElement.setAttribute('dir', 'ltr');
