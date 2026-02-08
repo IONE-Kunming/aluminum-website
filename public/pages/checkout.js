@@ -298,15 +298,15 @@ function initializeCheckout(cartItems, cartTotal) {
         itemsBySeller[sellerId].push(item);
       });
       
-      // Create separate order for each seller
-      const orderPromises = Object.entries(itemsBySeller).map(async ([sellerId, items]) => {
+      // Create separate order for each seller using batched writes for atomicity
+      const ordersData = Object.entries(itemsBySeller).map(([sellerId, items]) => {
         const sellerSubtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         const sellerTax = sellerSubtotal * 0.1;
         const sellerTotal = sellerSubtotal + sellerTax;
         const sellerDepositAmount = sellerTotal * (selectedDeposit / 100);
         const sellerRemainingBalance = sellerTotal - sellerDepositAmount;
         
-        const orderData = {
+        return {
           buyerId: user.uid,
           buyerName: userProfile?.displayName || user.displayName || 'Unknown',
           buyerEmail: userProfile?.email || user.email,
@@ -345,13 +345,11 @@ function initializeCheckout(cartItems, cartTotal) {
           createdAt: firebase.firestore.FieldValue.serverTimestamp(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
-        
-        // Save order to Firestore
-        return dataService.createOrder(orderData);
       });
       
-      // Wait for all orders to be created
-      await Promise.all(orderPromises);
+      // Create all orders atomically using batched write
+      // This ensures either all orders succeed or all fail - no partial orders
+      await dataService.createOrdersBatch(ordersData);
       
       // Clear cart
       await cartManager.clearCart();

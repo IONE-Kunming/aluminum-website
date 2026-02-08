@@ -475,6 +475,60 @@ class DataService {
     }
   }
 
+  // Create multiple orders atomically using Firestore batched writes
+  async createOrdersBatch(ordersData) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        console.error('Firestore not initialized when trying to create orders');
+        throw new Error('Unable to connect to the database. Please try again or contact support.');
+      }
+      
+      // Validate input
+      if (!ordersData || ordersData.length === 0) {
+        console.error('No orders data provided to createOrdersBatch');
+        throw new Error('No orders to create');
+      }
+      
+      console.log('Creating batch of orders:', {
+        count: ordersData.length,
+        buyerId: ordersData[0].buyerId
+      });
+      
+      // Use Firestore batched write for atomicity
+      const batch = this.db.batch();
+      const orderIds = [];
+      
+      ordersData.forEach(orderData => {
+        const orderRef = this.db.collection('orders').doc();
+        batch.set(orderRef, orderData);
+        orderIds.push(orderRef.id);
+        
+        console.log('Adding order to batch:', {
+          orderId: orderRef.id,
+          sellerId: orderData.sellerId,
+          itemsCount: orderData.items?.length,
+          total: orderData.total
+        });
+      });
+      
+      // Commit all orders atomically
+      await batch.commit();
+      
+      console.log('All orders created successfully:', orderIds);
+      
+      return {
+        success: true,
+        orderIds: orderIds
+      };
+    } catch (error) {
+      console.error('Error creating orders batch:', error);
+      console.error('Failed to create orders');
+      throw error;
+    }
+  }
+
   // Get orders for a specific user
   async getOrders(filters = {}) {
     await this.init();
