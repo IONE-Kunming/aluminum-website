@@ -202,30 +202,30 @@ export async function renderCart() {
         let newQuantity;
         
         if (action === 'increase') {
-          newQty = item.quantity + step;
-          await cartManager.updateQuantity(itemId, newQty);
+          newQuantity = item.quantity + step;
+          await cartManager.updateQuantity(itemId, newQuantity);
           
           // Update UI without full re-render
           const cartItemEl = btn.closest('.cart-item');
           const quantityInput = cartItemEl.querySelector('.quantity-input');
           const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
           
-          if (quantityInput) quantityInput.value = newQty;
-          if (subtotalEl) subtotalEl.textContent = `$${(item.price * newQty).toFixed(2)}`;
+          if (quantityInput) quantityInput.value = newQuantity;
+          if (subtotalEl) subtotalEl.textContent = `$${(item.price * newQuantity).toFixed(2)}`;
           
           updateCartSummary();
         } else if (action === 'decrease') {
-          newQty = item.quantity - step;
-          if (newQty >= step) {
-            await cartManager.updateQuantity(itemId, newQty);
+          newQuantity = item.quantity - step;
+          if (newQuantity >= step) {
+            await cartManager.updateQuantity(itemId, newQuantity);
             
             // Update UI without full re-render
             const cartItemEl = btn.closest('.cart-item');
             const quantityInput = cartItemEl.querySelector('.quantity-input');
             const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
             
-            if (quantityInput) quantityInput.value = newQty;
-            if (subtotalEl) subtotalEl.textContent = `$${(item.price * newQty).toFixed(2)}`;
+            if (quantityInput) quantityInput.value = newQuantity;
+            if (subtotalEl) subtotalEl.textContent = `$${(item.price * newQuantity).toFixed(2)}`;
             
             updateCartSummary();
           } else {
