@@ -192,14 +192,35 @@ export async function renderCart() {
       
       if (item) {
         const step = item.minOrder || 1;
+        let newQty;
+        
         if (action === 'increase') {
-          await cartManager.updateQuantity(itemId, item.quantity + step);
-          await renderCart(); // Re-render
+          newQty = item.quantity + step;
+          await cartManager.updateQuantity(itemId, newQty);
+          
+          // Update UI without full re-render
+          const cartItemEl = btn.closest('.cart-item');
+          const quantityInput = cartItemEl.querySelector('.quantity-input');
+          const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
+          
+          if (quantityInput) quantityInput.value = newQty;
+          if (subtotalEl) subtotalEl.textContent = `$${(item.price * newQty).toFixed(2)}`;
+          
+          updateCartSummary();
         } else if (action === 'decrease') {
-          const newQty = item.quantity - step;
+          newQty = item.quantity - step;
           if (newQty >= step) {
             await cartManager.updateQuantity(itemId, newQty);
-            await renderCart(); // Re-render
+            
+            // Update UI without full re-render
+            const cartItemEl = btn.closest('.cart-item');
+            const quantityInput = cartItemEl.querySelector('.quantity-input');
+            const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
+            
+            if (quantityInput) quantityInput.value = newQty;
+            if (subtotalEl) subtotalEl.textContent = `$${(item.price * newQty).toFixed(2)}`;
+            
+            updateCartSummary();
           } else {
             window.toast.warning(`Minimum order quantity is ${step}`);
           }
@@ -210,6 +231,35 @@ export async function renderCart() {
 
   // Quantity input changes
   document.querySelectorAll('.quantity-input').forEach(input => {
+    // Handle Enter key press
+    input.addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const itemId = parseInt(input.getAttribute('data-item-id'));
+        const newQty = parseInt(input.value);
+        const cartItems = cartManager.getCart();
+        const item = cartItems.find(i => i.id === itemId);
+        
+        if (item) {
+          const minQty = item.minOrder || 1;
+          if (newQty >= minQty && !isNaN(newQty)) {
+            await cartManager.updateQuantity(itemId, newQty);
+            // Update the subtotal for this item
+            const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
+            if (subtotalEl) {
+              subtotalEl.textContent = `$${(item.price * newQty).toFixed(2)}`;
+            }
+            // Update the cart summary
+            updateCartSummary();
+            window.toast.success('Quantity updated');
+          } else {
+            window.toast.warning(`Minimum order quantity is ${minQty}`);
+            input.value = item.quantity; // Reset to current value
+          }
+        }
+      }
+    });
+    
     input.addEventListener('change', async (e) => {
       const itemId = parseInt(input.getAttribute('data-item-id'));
       const newQty = parseInt(input.value);
@@ -220,7 +270,13 @@ export async function renderCart() {
         const minQty = item.minOrder || 1;
         if (newQty >= minQty && !isNaN(newQty)) {
           await cartManager.updateQuantity(itemId, newQty);
-          await renderCart(); // Re-render
+          // Update the subtotal for this item
+          const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
+          if (subtotalEl) {
+            subtotalEl.textContent = `$${(item.price * newQty).toFixed(2)}`;
+          }
+          // Update the cart summary
+          updateCartSummary();
         } else {
           window.toast.warning(`Minimum order quantity is ${minQty}`);
           input.value = item.quantity; // Reset to current value

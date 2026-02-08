@@ -277,47 +277,70 @@ function initializeCheckout(cartItems, cartTotal) {
         throw new Error('User not authenticated');
       }
       
-      const orderData = {
-        buyerId: user.uid,
-        buyerName: userProfile?.displayName || user.displayName || 'Unknown',
-        buyerEmail: userProfile?.email || user.email,
-        buyerCompany: userProfile?.companyName || 'N/A',
-        items: cartItems.map(item => {
-          // Validate and sanitize cart item data
-          const quantity = Number(item.quantity) || 0;
-          const pricePerUnit = Number(item.price) || 0;
-          const sellerId = item.sellerId || item.seller || '';
-          
-          if (quantity <= 0 || pricePerUnit < 0) {
-            throw new Error('Invalid cart item data');
-          }
-          
-          return {
-            productId: item.id,
-            productName: item.name,
-            seller: item.seller,
-            sellerId: sellerId,
-            quantity: quantity,
-            unit: item.unit || 'units',
-            pricePerUnit: pricePerUnit,
-            subtotal: pricePerUnit * quantity
-          };
-        }),
-        subtotal: cartTotal,
-        tax: cartTotal * 0.1,
-        total: orderTotal,
-        depositPercentage: selectedDeposit,
-        depositAmount: orderTotal * (selectedDeposit / 100),
-        remainingBalance: orderTotal - (orderTotal * (selectedDeposit / 100)),
-        paymentMethod: selectedPayment,
-        status: 'pending',
-        paymentStatus: 'deposit_paid',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
+      // Group items by seller to create separate orders for each seller
+      const itemsBySeller = {};
+      cartItems.forEach(item => {
+        const sellerId = item.sellerId || 'unknown';
+        if (!itemsBySeller[sellerId]) {
+          itemsBySeller[sellerId] = [];
+        }
+        itemsBySeller[sellerId].push(item);
+      });
       
-      // Save order to Firestore
-      await dataService.createOrder(orderData);
+      // Create separate order for each seller
+      const orderPromises = Object.entries(itemsBySeller).map(async ([sellerId, items]) => {
+        const sellerSubtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const sellerTax = sellerSubtotal * 0.1;
+        const sellerTotal = sellerSubtotal + sellerTax;
+        const sellerDepositAmount = sellerTotal * (selectedDeposit / 100);
+        const sellerRemainingBalance = sellerTotal - sellerDepositAmount;
+        
+        const orderData = {
+          buyerId: user.uid,
+          buyerName: userProfile?.displayName || user.displayName || 'Unknown',
+          buyerEmail: userProfile?.email || user.email,
+          buyerCompany: userProfile?.companyName || 'N/A',
+          sellerId: sellerId,
+          sellerName: items[0]?.seller || items[0]?.sellerName || 'Unknown Seller',
+          items: items.map(item => {
+            // Validate and sanitize cart item data
+            const quantity = Number(item.quantity) || 0;
+            const pricePerUnit = Number(item.price) || 0;
+            
+            if (quantity <= 0 || pricePerUnit < 0) {
+              throw new Error('Invalid cart item data');
+            }
+            
+            return {
+              productId: item.id,
+              productName: item.name || item.modelNumber,
+              seller: item.seller || item.sellerName,
+              sellerId: item.sellerId,
+              quantity: quantity,
+              unit: item.unit || 'units',
+              pricePerUnit: pricePerUnit,
+              subtotal: pricePerUnit * quantity
+            };
+          }),
+          subtotal: sellerSubtotal,
+          tax: sellerTax,
+          total: sellerTotal,
+          depositPercentage: selectedDeposit,
+          depositAmount: sellerDepositAmount,
+          remainingBalance: sellerRemainingBalance,
+          paymentMethod: selectedPayment,
+          status: 'pending',
+          paymentStatus: 'deposit_paid',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        // Save order to Firestore
+        return dataService.createOrder(orderData);
+      });
+      
+      // Wait for all orders to be created
+      await Promise.all(orderPromises);
       
       // Clear cart
       await cartManager.clearCart();

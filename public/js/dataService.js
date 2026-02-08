@@ -553,6 +553,31 @@ class DataService {
       return {};
     }
   }
+
+  // Get all sellers from the database
+  async getSellers() {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        return [];
+      }
+      
+      // Query profiles collection for users with role 'seller'
+      const snapshot = await this.db
+        .collection('profiles')
+        .where('role', '==', 'seller')
+        .get();
+      
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('Error fetching sellers:', error);
+      return [];
+    }
+  }
 }
 
 export default new DataService();

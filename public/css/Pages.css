@@ -791,10 +791,61 @@
 }
 
 .branch-info p,
-.seller-info p {
+.seller-info p,
+.seller-company {
   color: var(--text-secondary);
   font-size: 0.875rem;
   margin: 0;
+}
+
+.seller-avatar {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--electric-blue));
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dark-bg);
+}
+
+.seller-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.seller-detail {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.seller-detail i {
+  width: 16px;
+  height: 16px;
+  color: var(--electric-blue);
+}
+
+.order-buyer-info {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: rgba(0, 128, 255, 0.05);
+  border-radius: var(--radius-sm);
+}
+
+.order-buyer-info h4 {
+  margin: 0 0 var(--spacing-sm);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.order-buyer-info p {
+  margin: var(--spacing-xs) 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
 }
 
 .branch-details,
