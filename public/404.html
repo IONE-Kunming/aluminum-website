@@ -14,8 +14,13 @@
     // Calculate the base path from the current location
     // For GitHub Pages: https://username.github.io/repo-name/some/page
     // Extract /repo-name/ from pathname
-    var pathSegments = location.pathname.split('/');
-    var basePath = pathSegments.length > 1 && pathSegments[1] ? '/' + pathSegments[1] + '/' : '/';
+    var pathSegments = location.pathname.split('/').filter(function(segment) {
+      return segment.length > 0;
+    });
+    
+    // If we have path segments, assume first one is the repo name (for GitHub Pages)
+    // Otherwise, it's a root deployment
+    var basePath = pathSegments.length > 0 && pathSegments[0] ? '/' + pathSegments[0] + '/' : '/';
     
     // Redirect to index.html at the correct base path
     window.location.replace(basePath);

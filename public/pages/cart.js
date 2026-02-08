@@ -11,11 +11,19 @@ export async function renderCart() {
   // Validate product availability
   let productValidation = {};
   let hasUnavailableItems = false;
+  let validationFailed = false;
   
   if (cartItems.length > 0) {
     const productIds = cartItems.map(item => item.id.toString());
     productValidation = await dataService.validateProducts(productIds);
-    hasUnavailableItems = Object.values(productValidation).some(isValid => !isValid);
+    
+    // Check if validation actually ran (returns empty object on error)
+    if (Object.keys(productValidation).length === 0 && productIds.length > 0) {
+      validationFailed = true;
+      console.warn('Product validation failed - unable to verify product availability');
+    } else {
+      hasUnavailableItems = Object.values(productValidation).some(isValid => !isValid);
+    }
   }
   
   const content = `
@@ -35,6 +43,16 @@ export async function renderCart() {
           </button>
         </div>
       ` : `
+        ${validationFailed ? `
+          <div class="alert alert-warning">
+            <i data-lucide="alert-triangle"></i>
+            <div>
+              <strong>Unable to verify product availability</strong>
+              <p>There was an error checking if products are still available. Please proceed with caution.</p>
+            </div>
+          </div>
+        ` : ''}
+        
         ${hasUnavailableItems ? `
           <div class="alert alert-warning">
             <i data-lucide="alert-triangle"></i>
