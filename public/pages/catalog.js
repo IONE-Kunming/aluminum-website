@@ -227,7 +227,8 @@ export async function renderCatalog() {
       const length = parseFloat(lengthInput.value);
       const width = parseFloat(widthInput.value);
       
-      if (!length || length <= 0 || !width || width <= 0) {
+      if (isNaN(length) || !isFinite(length) || length <= 0 || 
+          isNaN(width) || !isFinite(width) || width <= 0) {
         window.toast.error(t('cart.pleaseEnterValidDimensions'));
         return;
       }

@@ -666,7 +666,7 @@
   }
   
   .landing-page .language-option {
-    min-height: 44px;
+    min-height: var(--min-touch-target);
     padding: 12px 16px;
   }
 }
