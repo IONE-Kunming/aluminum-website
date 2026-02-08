@@ -212,7 +212,7 @@
 <body>
   <div class="container">
     <div class="logo">
-      <img id="logo-img" src="/logo.svg" alt="IONE AlumaTech" onerror="this.style.display='none'">
+      <img src="logo.svg" alt="IONE AlumaTech" onerror="this.style.display='none'">
     </div>
 
     <h1>Create Admin Account</h1>
@@ -289,13 +289,6 @@
     const credentialsDiv = document.getElementById('credentials');
     const warningDiv = document.getElementById('warning');
     const spinner = document.getElementById('spinner');
-    const logoImg = document.getElementById('logo-img');
-    
-    // Set logo path dynamically - for standalone HTML files, just use relative path
-    // This file is accessed directly at /create-admin.html, so logo.svg works
-    if (logoImg) {
-      logoImg.src = 'logo.svg';
-    }
 
     function showStatus(message, type) {
       statusDiv.textContent = message;
