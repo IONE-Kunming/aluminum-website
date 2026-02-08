@@ -51,7 +51,7 @@ export function renderLayout(content, userRole = null) {
       <!-- Sidebar -->
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-          <img src="./logo.svg" alt="I ONE Construction" class="logo-svg" id="logo-link" style="cursor: pointer;" title="Go to Dashboard" />
+          <img src="/logo.svg" alt="I ONE Construction" class="logo-svg" id="logo-link" style="cursor: pointer;" title="Go to Dashboard" />
           <div class="header-controls">
             <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">
               <i data-lucide="${themeManager.getTheme() === 'dark' ? 'sun' : 'moon'}"></i>
