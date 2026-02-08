@@ -185,15 +185,38 @@ export async function renderCart() {
 
   // Remove item buttons
   document.querySelectorAll('.cart-item-remove').forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
       const itemId = parseInt(btn.getAttribute('data-item-id'));
       
-      // Show immediate feedback with toast
-      window.toast.success(t('cart.itemRemoved'));
-      
-      // Then remove and re-render
-      await cartManager.removeFromCart(itemId);
-      await renderCart();
+      try {
+        // Remove from cart
+        await cartManager.removeFromCart(itemId);
+        
+        // Show success feedback
+        window.toast.success(t('cart.itemRemoved'));
+        
+        // Re-render the cart page
+        await renderCart();
+      } catch (error) {
+        console.error('Error removing item from cart:', error);
+        
+        // If it's a Firestore error, still try to remove locally
+        if (error.code === 'unavailable' || error.message?.includes('ERR_BLOCKED_BY_CLIENT')) {
+          console.warn('Firestore unavailable, removing from local storage only');
+          // Force local removal even if Firestore fails
+          const cart = cartManager.getCart().filter(item => item.id !== itemId);
+          cartManager.cartCache = cart;
+          localStorage.setItem(cartManager.getUserStorageKey(), JSON.stringify(cart));
+          
+          window.toast.success(t('cart.itemRemoved'));
+          await renderCart();
+        } else {
+          window.toast.error('Failed to remove item. Please try again.');
+        }
+      }
     });
   });
 
@@ -201,55 +224,61 @@ export async function renderCart() {
   document.querySelectorAll('.quantity-btn').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
+      e.stopPropagation();
+      
       const action = btn.getAttribute('data-action');
       const itemId = parseInt(btn.getAttribute('data-item-id'));
       let cartItems = cartManager.getCart();
       let item = cartItems.find(i => i.id === itemId);
       
-      if (item) {
-        const step = getMinQuantity(item);
-        let newQuantity;
+      if (!item) {
+        console.error('Item not found in cart:', itemId);
+        return;
+      }
+      
+      const step = getMinQuantity(item);
+      let newQuantity;
+      
+      if (action === 'increase') {
+        newQuantity = item.quantity + step;
+      } else if (action === 'decrease') {
+        newQuantity = item.quantity - step;
+        if (newQuantity < step) {
+          window.toast.warning(`${t('cart.minOrderQuantity')} ${step}`);
+          return;
+        }
+      } else {
+        return;
+      }
+      
+      // Update quantity in cart manager
+      await cartManager.updateQuantity(itemId, newQuantity);
+      
+      // Get updated cart and item after quantity change
+      cartItems = cartManager.getCart();
+      item = cartItems.find(i => i.id === itemId);
+      
+      if (!item) {
+        console.error('Item not found after update:', itemId);
+        return;
+      }
+      
+      // Update UI without full re-render
+      const cartItemEl = document.querySelector(`.cart-item[data-item-id="${itemId}"]`);
+      if (cartItemEl) {
+        const quantityInput = cartItemEl.querySelector('.quantity-input');
+        const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
         
-        if (action === 'increase') {
-          newQuantity = item.quantity + step;
-          await cartManager.updateQuantity(itemId, newQuantity);
-          
-          // Get updated cart and item after quantity change
-          cartItems = cartManager.getCart();
-          item = cartItems.find(i => i.id === itemId);
-          
-          // Update UI without full re-render
-          const cartItemEl = btn.closest('.cart-item');
-          const quantityInput = cartItemEl.querySelector('.quantity-input');
-          const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
-          
-          if (quantityInput) quantityInput.value = newQuantity;
-          if (subtotalEl && item) subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
-          
-          updateCartSummary();
-        } else if (action === 'decrease') {
-          newQuantity = item.quantity - step;
-          if (newQuantity >= step) {
-            await cartManager.updateQuantity(itemId, newQuantity);
-            
-            // Get updated cart and item after quantity change
-            cartItems = cartManager.getCart();
-            item = cartItems.find(i => i.id === itemId);
-            
-            // Update UI without full re-render
-            const cartItemEl = btn.closest('.cart-item');
-            const quantityInput = cartItemEl.querySelector('.quantity-input');
-            const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
-            
-            if (quantityInput) quantityInput.value = newQuantity;
-            if (subtotalEl && item) subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
-            
-            updateCartSummary();
-          } else {
-            window.toast.warning(`${t('cart.minOrderQuantity')} ${step}`);
-          }
+        if (quantityInput) {
+          quantityInput.value = newQuantity;
+        }
+        if (subtotalEl) {
+          subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
         }
       }
+      
+      // Update the cart summary
+      updateCartSummary();
     });
   });
 
