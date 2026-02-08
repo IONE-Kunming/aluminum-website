@@ -159,10 +159,11 @@ export async function renderBuyerDashboard() {
                 const itemCount = order.items ? order.items.length : 0;
                 const productDisplay = firstItem.productName || 'N/A';
                 const quantityDisplay = itemCount > 1 ? `${itemCount} items` : `${firstItem.quantity || 0} ${firstItem.unit || 'units'}`;
+                const orderId = order.id ? order.id.substring(0, 8).toUpperCase() : 'N/A';
                 
                 return `
                 <tr>
-                  <td class="font-medium">${escapeHtml((order.id || '').substring(0, 8).toUpperCase())}</td>
+                  <td class="font-medium">${escapeHtml(orderId)}</td>
                   <td>${escapeHtml(order.date || new Date(order.createdAt?.toDate?.() || Date.now()).toLocaleDateString())}</td>
                   <td>${escapeHtml(productDisplay)}</td>
                   <td>${escapeHtml(quantityDisplay)}</td>

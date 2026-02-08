@@ -22,6 +22,8 @@
 ## Recommended Firebase Rules Updates
 
 ### Current Rules - Orders Collection
+**Note**: The current rules have a syntax issue where multiple `allow read` statements are defined. Firebase Rules engine will only honor the last matching rule, which means buyers may not be able to read their own orders if they don't have the seller role.
+
 ```javascript
 // Orders collection
 match /orders/{orderId} {
@@ -30,7 +32,7 @@ match /orders/{orderId} {
                  resource.data.buyerId == request.auth.uid;
   // Buyers can create orders
   allow create: if hasRole('buyer');
-  // Sellers can read orders containing their products
+  // Sellers can read orders containing their products - PROBLEMATIC: overwrites buyer read rule
   allow read: if isAuthenticated() && 
                  hasRole('seller');
   // Sellers can update order status
@@ -44,30 +46,34 @@ match /orders/{orderId} {
 ```javascript
 // Orders collection
 match /orders/{orderId} {
-  // Buyers can read their own orders
-  allow read: if isAuthenticated() && 
-                 resource.data.buyerId == request.auth.uid;
-  // Buyers can create orders
+  // Buyers can read their own orders, Sellers can read their own orders, Admins can read all
+  allow read: if isAuthenticated() && (
+                 (resource.data.buyerId == request.auth.uid) ||
+                 (hasRole('seller') && resource.data.sellerId == request.auth.uid) ||
+                 hasRole('admin')
+              );
+  
+  // Buyers can create orders with their own buyerId
   allow create: if isAuthenticated() && 
                    hasRole('buyer') &&
                    request.resource.data.buyerId == request.auth.uid;
-  // Sellers can read their own orders
-  allow read: if isAuthenticated() && 
-                 hasRole('seller') &&
-                 resource.data.sellerId == request.auth.uid;
+  
   // Sellers can update their own order status
   allow update: if isAuthenticated() &&
                    hasRole('seller') &&
                    resource.data.sellerId == request.auth.uid;
+  
   // Admins can do anything
-  allow read, write: if hasRole('admin');
+  allow write: if hasRole('admin');
 }
 ```
 
 ### Key Changes:
-1. **Sellers can only read their own orders** - Changed from allowing all sellers to read all orders, to only allowing sellers to read orders where they are the seller
-2. **Sellers can only update their own orders** - Added check that seller can only update orders where they are the seller
-3. **Buyers must set their own buyerId** - Added validation that buyers can only create orders with their own user ID
+1. **Combined read rules** - Used OR logic to allow buyers to read their own orders AND sellers to read their own orders in a single rule
+2. **Sellers can only read their own orders** - Changed from allowing all sellers to read all orders, to only allowing sellers to read orders where they are the seller
+3. **Sellers can only update their own orders** - Added check that seller can only update orders where they are the seller
+4. **Buyers must set their own buyerId** - Added validation that buyers can only create orders with their own user ID
+5. **Admin rules simplified** - Consolidated admin permissions into a single write rule
 
 ## Understanding Revenue Calculation
 
