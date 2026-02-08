@@ -143,17 +143,17 @@ export async function renderCart() {
 
   // Remove item buttons
   document.querySelectorAll('.cart-item-remove').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const itemId = parseInt(btn.getAttribute('data-item-id'));
-      cartManager.removeFromCart(itemId);
+      await cartManager.removeFromCart(itemId);
       window.toast.success('Item removed from cart');
-      renderCart(); // Re-render
+      await renderCart(); // Re-render
     });
   });
 
   // Quantity controls
   document.querySelectorAll('.quantity-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       e.preventDefault();
       const action = btn.getAttribute('data-action');
       const itemId = parseInt(btn.getAttribute('data-item-id'));
@@ -163,13 +163,13 @@ export async function renderCart() {
       if (item) {
         const step = item.minOrder || 1;
         if (action === 'increase') {
-          cartManager.updateQuantity(itemId, item.quantity + step);
-          renderCart(); // Re-render
+          await cartManager.updateQuantity(itemId, item.quantity + step);
+          await renderCart(); // Re-render
         } else if (action === 'decrease') {
           const newQty = item.quantity - step;
           if (newQty >= step) {
-            cartManager.updateQuantity(itemId, newQty);
-            renderCart(); // Re-render
+            await cartManager.updateQuantity(itemId, newQty);
+            await renderCart(); // Re-render
           } else {
             window.toast.warning(`Minimum order quantity is ${step}`);
           }
@@ -180,7 +180,7 @@ export async function renderCart() {
 
   // Quantity input changes
   document.querySelectorAll('.quantity-input').forEach(input => {
-    input.addEventListener('change', (e) => {
+    input.addEventListener('change', async (e) => {
       const itemId = parseInt(input.getAttribute('data-item-id'));
       const newQty = parseInt(input.value);
       const cartItems = cartManager.getCart();
@@ -189,8 +189,8 @@ export async function renderCart() {
       if (item) {
         const minQty = item.minOrder || 1;
         if (newQty >= minQty && !isNaN(newQty)) {
-          cartManager.updateQuantity(itemId, newQty);
-          renderCart(); // Re-render
+          await cartManager.updateQuantity(itemId, newQty);
+          await renderCart(); // Re-render
         } else {
           window.toast.warning(`Minimum order quantity is ${minQty}`);
           input.value = item.quantity; // Reset to current value
@@ -199,7 +199,7 @@ export async function renderCart() {
     });
     
     // Also handle input event for real-time updates
-    input.addEventListener('input', (e) => {
+    input.addEventListener('input', async (e) => {
       const itemId = parseInt(input.getAttribute('data-item-id'));
       const newQty = parseInt(input.value);
       
@@ -211,7 +211,7 @@ export async function renderCart() {
           const minQty = item.minOrder || 1;
           if (newQty >= minQty) {
             // Update quantity without re-rendering to avoid losing focus
-            cartManager.updateQuantity(itemId, newQty);
+            await cartManager.updateQuantity(itemId, newQty);
             // Get the updated item after quantity change
             const updatedCartItems = cartManager.getCart();
             const updatedItem = updatedCartItems.find(i => i.id === itemId);

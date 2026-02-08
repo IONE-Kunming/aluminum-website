@@ -2,29 +2,104 @@
 class CartManager {
   constructor() {
     this.storageKey = 'aluminum-cart';
-    this.init();
+    this.currentUserId = null;
+    this.db = null;
+    this.cartCache = [];
+    this.initialized = false;
   }
 
-  init() {
-    // Listen for storage changes from other tabs
-    window.addEventListener('storage', (e) => {
-      if (e.key === this.storageKey) {
-        this.notifyListeners();
-      }
-    });
+  // Initialize cart manager with user context
+  async init(userId) {
+    this.currentUserId = userId;
+    
+    // Wait for Firebase to be available
+    if (typeof firebase !== 'undefined' && firebase.firestore) {
+      this.db = firebase.firestore();
+      this.initialized = true;
+      
+      // Load cart from Firestore for this user
+      await this.loadCartFromFirestore();
+    } else {
+      // Fallback to localStorage with user-specific key
+      this.initialized = false;
+      this.cartCache = this.getCartFromLocalStorage();
+    }
+    
+    this.notifyListeners();
   }
 
-  getCart() {
+  // Get user-specific storage key
+  getUserStorageKey() {
+    return this.currentUserId 
+      ? `${this.storageKey}-${this.currentUserId}`
+      : this.storageKey;
+  }
+
+  // Load cart from Firestore
+  async loadCartFromFirestore() {
+    if (!this.db || !this.currentUserId) {
+      return;
+    }
+    
     try {
-      const cartData = localStorage.getItem(this.storageKey);
+      const cartDoc = await this.db.collection('carts').doc(this.currentUserId).get();
+      
+      if (cartDoc.exists) {
+        const data = cartDoc.data();
+        this.cartCache = data.items || [];
+      } else {
+        this.cartCache = [];
+      }
+    } catch (error) {
+      console.error('Error loading cart from Firestore:', error);
+      // Fallback to localStorage
+      this.cartCache = this.getCartFromLocalStorage();
+    }
+  }
+
+  // Save cart to Firestore
+  async saveCartToFirestore(cart) {
+    if (!this.db || !this.currentUserId) {
+      return;
+    }
+    
+    try {
+      await this.db.collection('carts').doc(this.currentUserId).set({
+        items: cart,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error saving cart to Firestore:', error);
+      // Fallback to localStorage
+      this.saveCartToLocalStorage(cart);
+    }
+  }
+
+  // Get cart from localStorage
+  getCartFromLocalStorage() {
+    try {
+      const cartData = localStorage.getItem(this.getUserStorageKey());
       return cartData ? JSON.parse(cartData) : [];
     } catch (error) {
-      console.error('Error reading cart:', error);
+      console.error('Error reading cart from localStorage:', error);
       return [];
     }
   }
 
-  addToCart(product, quantity = 1) {
+  // Save cart to localStorage
+  saveCartToLocalStorage(cart) {
+    try {
+      localStorage.setItem(this.getUserStorageKey(), JSON.stringify(cart));
+    } catch (error) {
+      console.error('Error saving cart to localStorage:', error);
+    }
+  }
+
+  getCart() {
+    return this.cartCache;
+  }
+
+  async addToCart(product, quantity = 1) {
     const cart = this.getCart();
     
     // Check if product already exists in cart
@@ -40,35 +115,47 @@ class CartManager {
       });
     }
     
-    this.saveCart(cart);
+    await this.saveCart(cart);
     this.notifyListeners();
     return true;
   }
 
-  removeFromCart(productId) {
+  async removeFromCart(productId) {
     let cart = this.getCart();
     cart = cart.filter(item => item.id !== productId);
-    this.saveCart(cart);
+    await this.saveCart(cart);
     this.notifyListeners();
   }
 
-  updateQuantity(productId, quantity) {
+  async updateQuantity(productId, quantity) {
     const cart = this.getCart();
     const item = cart.find(item => item.id === productId);
     
     if (item) {
       if (quantity <= 0) {
-        this.removeFromCart(productId);
+        await this.removeFromCart(productId);
       } else {
         item.quantity = quantity;
-        this.saveCart(cart);
+        await this.saveCart(cart);
         this.notifyListeners();
       }
     }
   }
 
-  clearCart() {
-    localStorage.removeItem(this.storageKey);
+  async clearCart() {
+    this.cartCache = [];
+    
+    // Clear from Firestore
+    if (this.db && this.currentUserId) {
+      try {
+        await this.db.collection('carts').doc(this.currentUserId).delete();
+      } catch (error) {
+        console.error('Error clearing cart from Firestore:', error);
+      }
+    }
+    
+    // Clear from localStorage
+    localStorage.removeItem(this.getUserStorageKey());
     this.notifyListeners();
   }
 
@@ -82,12 +169,28 @@ class CartManager {
     return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   }
 
-  saveCart(cart) {
-    try {
-      localStorage.setItem(this.storageKey, JSON.stringify(cart));
-    } catch (error) {
-      console.error('Error saving cart:', error);
+  async saveCart(cart) {
+    this.cartCache = cart;
+    
+    // Save to Firestore if available
+    if (this.initialized && this.db) {
+      await this.saveCartToFirestore(cart);
+    } else {
+      // Fallback to localStorage
+      this.saveCartToLocalStorage(cart);
     }
+  }
+
+  // Switch user context (called on login/logout)
+  async switchUser(userId) {
+    await this.init(userId);
+  }
+
+  // Clear user context (called on logout)
+  async logout() {
+    this.currentUserId = null;
+    this.cartCache = [];
+    this.notifyListeners();
   }
 
   // Listener management for reactive updates

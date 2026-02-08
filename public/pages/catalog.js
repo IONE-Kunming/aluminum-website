@@ -80,7 +80,7 @@ export async function renderCatalog() {
 
     // Re-attach event listeners for add to cart
     document.querySelectorAll('[data-product-id]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const productId = btn.getAttribute('data-product-id');
         const product = productsToRender.find(p => String(p.id) === productId);
         
@@ -93,7 +93,7 @@ export async function renderCatalog() {
             unit: product.unit || 'unit',
             minOrder: product.minOrder || 1
           };
-          cartManager.addToCart(cartProduct, cartProduct.minOrder);
+          await cartManager.addToCart(cartProduct, cartProduct.minOrder);
           window.toast.success(`${cartProduct.name} added to cart!`);
         }
       });

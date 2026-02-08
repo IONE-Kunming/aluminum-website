@@ -320,7 +320,7 @@ function initializeCheckout(cartItems, cartTotal) {
       await dataService.createOrder(orderData);
       
       // Clear cart
-      cartManager.clearCart();
+      await cartManager.clearCart();
       
       // Show success message
       window.toast.success('Order placed successfully!');

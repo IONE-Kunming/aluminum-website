@@ -9,6 +9,7 @@ import '../css/Pages.css';
 
 import router from './router.js';
 import authManager from './auth.js';
+import cartManager from './cart.js';
 
 // Eagerly load landing and auth pages (always needed)
 import { renderLandingPage } from '../pages/landing.js';
@@ -221,7 +222,14 @@ async function initApp() {
   router.register('*', renderLandingPage);
   
   // Listen to auth state changes
-  authManager.onAuthStateChanged((user, profile) => {
+  authManager.onAuthStateChanged(async (user, profile) => {
+    // Initialize cart with user context
+    if (user) {
+      await cartManager.switchUser(user.uid);
+    } else {
+      await cartManager.logout();
+    }
+    
     // Re-render current route when auth state changes
     router.handleRoute();
   });

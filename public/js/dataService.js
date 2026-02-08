@@ -460,7 +460,6 @@ class DataService {
       const promises = productIds.map(async (id) => {
         const product = await this.getProductById(id);
         validationResults[id] = product !== null;
-        return { id, exists: product !== null, product };
       });
       
       await Promise.all(promises);
