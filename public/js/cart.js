@@ -105,8 +105,25 @@ class CartManager {
   async addToCart(product, quantity = 1) {
     const cart = this.getCart();
     
-    // Check if product already exists in cart
-    const existingItem = cart.find(item => item.id === product.id);
+    // Check if product already exists in cart with same dimensions
+    // Products with different dimensions should be treated as separate items
+    const existingItem = cart.find(item => {
+      if (item.id !== product.id) return false;
+      
+      // If both have dimensions, compare them
+      if (item.dimensions && product.dimensions) {
+        return item.dimensions.length === product.dimensions.length && 
+               item.dimensions.width === product.dimensions.width;
+      }
+      
+      // If neither has dimensions, they're the same
+      if (!item.dimensions && !product.dimensions) {
+        return true;
+      }
+      
+      // If one has dimensions and the other doesn't, they're different
+      return false;
+    });
     
     if (existingItem) {
       existingItem.quantity += quantity;

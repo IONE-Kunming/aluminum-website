@@ -155,7 +155,14 @@ export default {
     unableToVerify: 'Unable to verify product availability',
     proceedWithCaution: 'There was an error checking if products are still available. Please proceed with caution.',
     someItemsUnavailable: 'Some items are no longer available',
-    unavailableMessage: 'Products marked as "Out of Stock" have been removed by the seller. Please remove them from your cart to proceed.'
+    unavailableMessage: 'Products marked as "Out of Stock" have been removed by the seller. Please remove them from your cart to proceed.',
+    length: 'Length',
+    width: 'Width',
+    dimensions: 'Dimensions',
+    addDimensions: 'Add Dimensions',
+    goToCart: 'Go to Cart',
+    itemAdded: 'Item added to cart!',
+    enterDimensions: 'Enter dimensions for this product'
   },
   
   // Checkout

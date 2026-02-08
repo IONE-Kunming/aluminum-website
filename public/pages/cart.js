@@ -87,6 +87,13 @@ export async function renderCart() {
                 <h3>${escapeHtml(item.modelNumber || item.name)}</h3>
                 <p class="cart-item-seller">${escapeHtml(item.seller)}</p>
                 <p class="cart-item-description">${escapeHtml(item.description || '')}</p>
+                ${item.dimensions ? `
+                  <p class="cart-item-dimensions">
+                    <strong>${t('cart.dimensions')}:</strong> 
+                    ${t('cart.length')}: ${item.dimensions.length}m, 
+                    ${t('cart.width')}: ${item.dimensions.width}m
+                  </p>
+                ` : ''}
                 ${!isAvailable ? `<p class="text-danger"><strong>${t('cart.productNoLongerAvailable')}</strong></p>` : ''}
               </div>
               <div class="cart-item-details">
