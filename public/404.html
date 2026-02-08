@@ -7,13 +7,19 @@
     // GitHub Pages SPA redirect solution
     // This script takes the current path and query string and stores them in sessionStorage
     // Then redirects to the index.html page
+    
+    // Store the redirect path for the index.html to restore
     sessionStorage.redirect = location.href;
+    
+    // Calculate the base path from the current location
+    // For GitHub Pages: https://username.github.io/repo-name/some/page
+    // Extract /repo-name/ from pathname
+    var pathSegments = location.pathname.split('/');
+    var basePath = pathSegments.length > 1 && pathSegments[1] ? '/' + pathSegments[1] + '/' : '/';
+    
+    // Redirect to index.html at the correct base path
+    window.location.replace(basePath);
   </script>
-  <!-- 
-    Note: Update this base path if the repository name changes.
-    Should match VITE_BASE_PATH in the build workflow.
-  -->
-  <meta http-equiv="refresh" content="0;URL='/'">
 </head>
 <body>
   <!-- GitHub Pages SPA fallback -->
