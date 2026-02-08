@@ -262,7 +262,7 @@ class DataService {
       // Create product document with seller information
       const product = {
         sellerId: user.uid,
-        sellerName: profile?.displayName || 'Unknown Seller',
+        sellerName: profile?.displayName || user.email || 'Seller',
         modelNumber: productData.modelNumber,
         category: productData.category,
         pricePerMeter: parseFloat(productData.pricePerMeter),

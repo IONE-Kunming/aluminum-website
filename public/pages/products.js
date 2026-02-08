@@ -415,14 +415,14 @@ function initializeAddProduct() {
       
       const modelNumber = document.getElementById('add-model-number').value.trim();
       const category = document.getElementById('add-category').value.trim();
-      const pricePerMeter = document.getElementById('add-price').value;
-      const stock = document.getElementById('add-stock').value;
+      const pricePerMeter = parseFloat(document.getElementById('add-price').value);
+      const stock = parseInt(document.getElementById('add-stock').value) || 0;
       const description = document.getElementById('add-description').value.trim();
       const imageFile = document.getElementById('add-image').files[0];
       
-      if (!modelNumber || !category || !pricePerMeter) {
+      if (!modelNumber || !category || !pricePerMeter || pricePerMeter <= 0) {
         if (window.toast) {
-          window.toast.error('Please fill in all required fields');
+          window.toast.error('Please fill in all required fields with valid values');
         }
         return;
       }
