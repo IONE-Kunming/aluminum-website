@@ -284,8 +284,9 @@ function initializeCheckout(cartItems, cartTotal) {
       const itemsBySeller = {};
       
       // Validate all items have sellerId before proceeding
-      const invalidItems = cartItems.filter(item => !item.sellerId);
+      const invalidItems = cartItems.filter(item => !item.sellerId || item.sellerId === '');
       if (invalidItems.length > 0) {
+        console.error('Items without seller ID:', invalidItems);
         throw new Error('Some items in cart are missing seller information. Please remove them and try again.');
       }
       
@@ -365,7 +366,17 @@ function initializeCheckout(cartItems, cartTotal) {
       
     } catch (error) {
       console.error('Error placing order:', error);
-      window.toast.error(t('checkout.orderFailed'));
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        user: authManager.getCurrentUser()?.uid,
+        cartItems: cartItems.length
+      });
+      
+      // Show more specific error message if available
+      const errorMessage = error.message || t('checkout.orderFailed');
+      window.toast.error(errorMessage);
+      
       confirmBtn.disabled = false;
       confirmBtn.innerHTML = `<i data-lucide="check-circle"></i> ${t('checkout.confirmOrder')}`;
       if (window.lucide) window.lucide.createIcons();

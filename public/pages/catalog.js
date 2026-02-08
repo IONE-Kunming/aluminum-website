@@ -87,12 +87,19 @@ export async function renderCatalog() {
         const product = productsToRender.find(p => String(p.id) === productId);
         
         if (product) {
+          // Validate that product has sellerId
+          if (!product.sellerId || product.sellerId === '') {
+            window.toast.error('This product is missing seller information and cannot be added to cart. Please contact support.');
+            console.error('Product missing sellerId:', product);
+            return;
+          }
+          
           // Normalize product data for cart
           const cartProduct = {
             ...product,
             name: product.modelNumber || product.name || 'Product',
             seller: product.sellerName || 'Unknown Seller',
-            sellerId: product.sellerId || '',
+            sellerId: product.sellerId,
             price: product.pricePerMeter || product.price || 0,
             unit: product.unit || 'unit',
             minOrder: product.minOrder || 1

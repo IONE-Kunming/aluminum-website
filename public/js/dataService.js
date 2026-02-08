@@ -449,10 +449,20 @@ class DataService {
     
     try {
       if (!this.db) {
-        throw new Error('Database not initialized');
+        console.error('Firestore not initialized when trying to create order');
+        throw new Error('Unable to connect to the database. Please try again or contact support.');
       }
       
+      console.log('Creating order with data:', {
+        buyerId: orderData.buyerId,
+        sellerId: orderData.sellerId,
+        itemsCount: orderData.items?.length,
+        total: orderData.total
+      });
+      
       const orderRef = await this.db.collection('orders').add(orderData);
+      
+      console.log('Order created successfully with ID:', orderRef.id);
       
       return {
         success: true,
@@ -460,6 +470,7 @@ class DataService {
       };
     } catch (error) {
       console.error('Error creating order:', error);
+      console.error('Order data that failed:', orderData);
       throw error;
     }
   }
@@ -488,15 +499,35 @@ class DataService {
         query = query.where('status', '==', filters.status);
       }
       
-      // Order by creation date descending
-      query = query.orderBy('createdAt', 'desc');
-      
-      const snapshot = await query.get();
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      // Try to order by creation date descending
+      try {
+        query = query.orderBy('createdAt', 'desc');
+        const snapshot = await query.get();
+        
+        return snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      } catch (indexError) {
+        // If index error, try without orderBy
+        console.warn('Firestore index not available, fetching without ordering:', indexError);
+        const snapshot = await query.get();
+        
+        // Sort in memory
+        const orders = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        // Sort by createdAt, putting orders without timestamps at the end
+        orders.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+          return dateB - dateA;
+        });
+        
+        return orders;
+      }
     } catch (error) {
       console.error('Error fetching orders:', error);
       return [];
@@ -563,9 +594,9 @@ class DataService {
         return [];
       }
       
-      // Query profiles collection for users with role 'seller'
+      // Query users collection for users with role 'seller'
       const snapshot = await this.db
-        .collection('profiles')
+        .collection('users')
         .where('role', '==', 'seller')
         .get();
       

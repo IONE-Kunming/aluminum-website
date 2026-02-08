@@ -153,6 +153,11 @@ export async function renderCart() {
 
   renderPageWithLayout(content, 'buyer');
 
+  // Helper function to calculate item subtotal
+  function calculateItemSubtotal(item) {
+    return (item.price * item.quantity).toFixed(2);
+  }
+
   // Helper function to get minimum quantity for an item
   function getMinQuantity(item) {
     return item.minOrder || 1;
@@ -182,9 +187,13 @@ export async function renderCart() {
   document.querySelectorAll('.cart-item-remove').forEach(btn => {
     btn.addEventListener('click', async () => {
       const itemId = parseInt(btn.getAttribute('data-item-id'));
-      await cartManager.removeFromCart(itemId);
+      
+      // Show immediate feedback with toast
       window.toast.success(t('cart.itemRemoved'));
-      await renderCart(); // Re-render
+      
+      // Then remove and re-render
+      await cartManager.removeFromCart(itemId);
+      await renderCart();
     });
   });
 
@@ -194,8 +203,8 @@ export async function renderCart() {
       e.preventDefault();
       const action = btn.getAttribute('data-action');
       const itemId = parseInt(btn.getAttribute('data-item-id'));
-      const cartItems = cartManager.getCart();
-      const item = cartItems.find(i => i.id === itemId);
+      let cartItems = cartManager.getCart();
+      let item = cartItems.find(i => i.id === itemId);
       
       if (item) {
         const step = getMinQuantity(item);
@@ -205,13 +214,17 @@ export async function renderCart() {
           newQuantity = item.quantity + step;
           await cartManager.updateQuantity(itemId, newQuantity);
           
+          // Get updated cart and item after quantity change
+          cartItems = cartManager.getCart();
+          item = cartItems.find(i => i.id === itemId);
+          
           // Update UI without full re-render
           const cartItemEl = btn.closest('.cart-item');
           const quantityInput = cartItemEl.querySelector('.quantity-input');
           const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
           
           if (quantityInput) quantityInput.value = newQuantity;
-          if (subtotalEl) subtotalEl.textContent = `$${(item.price * newQuantity).toFixed(2)}`;
+          if (subtotalEl && item) subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
           
           updateCartSummary();
         } else if (action === 'decrease') {
@@ -219,13 +232,17 @@ export async function renderCart() {
           if (newQuantity >= step) {
             await cartManager.updateQuantity(itemId, newQuantity);
             
+            // Get updated cart and item after quantity change
+            cartItems = cartManager.getCart();
+            item = cartItems.find(i => i.id === itemId);
+            
             // Update UI without full re-render
             const cartItemEl = btn.closest('.cart-item');
             const quantityInput = cartItemEl.querySelector('.quantity-input');
             const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
             
             if (quantityInput) quantityInput.value = newQuantity;
-            if (subtotalEl) subtotalEl.textContent = `$${(item.price * newQuantity).toFixed(2)}`;
+            if (subtotalEl && item) subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
             
             updateCartSummary();
           } else {
@@ -244,17 +261,22 @@ export async function renderCart() {
         e.preventDefault();
         const itemId = parseInt(input.getAttribute('data-item-id'));
         const newQuantity = parseInt(input.value);
-        const cartItems = cartManager.getCart();
-        const item = cartItems.find(i => i.id === itemId);
+        let cartItems = cartManager.getCart();
+        let item = cartItems.find(i => i.id === itemId);
         
         if (item) {
           const minQty = getMinQuantity(item);
           if (newQuantity >= minQty && !isNaN(newQuantity)) {
             await cartManager.updateQuantity(itemId, newQuantity);
+            
+            // Get updated cart after quantity change
+            cartItems = cartManager.getCart();
+            item = cartItems.find(i => i.id === itemId);
+            
             // Update the subtotal for this item
             const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
-            if (subtotalEl) {
-              subtotalEl.textContent = `$${(item.price * newQuantity).toFixed(2)}`;
+            if (subtotalEl && item) {
+              subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
             }
             // Update the cart summary
             updateCartSummary();
@@ -270,17 +292,22 @@ export async function renderCart() {
     input.addEventListener('change', async (e) => {
       const itemId = parseInt(input.getAttribute('data-item-id'));
       const newQuantity = parseInt(input.value);
-      const cartItems = cartManager.getCart();
-      const item = cartItems.find(i => i.id === itemId);
+      let cartItems = cartManager.getCart();
+      let item = cartItems.find(i => i.id === itemId);
       
       if (item) {
         const minQty = getMinQuantity(item);
         if (newQuantity >= minQty && !isNaN(newQuantity)) {
           await cartManager.updateQuantity(itemId, newQuantity);
+          
+          // Get updated cart after quantity change
+          cartItems = cartManager.getCart();
+          item = cartItems.find(i => i.id === itemId);
+          
           // Update the subtotal for this item
           const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
-          if (subtotalEl) {
-            subtotalEl.textContent = `$${(item.price * newQuantity).toFixed(2)}`;
+          if (subtotalEl && item) {
+            subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
           }
           // Update the cart summary
           updateCartSummary();
@@ -297,22 +324,22 @@ export async function renderCart() {
       const newQty = parseInt(input.value);
       
       if (!isNaN(newQty) && newQty > 0) {
-        const cartItems = cartManager.getCart();
-        const item = cartItems.find(i => i.id === itemId);
+        let cartItems = cartManager.getCart();
+        let item = cartItems.find(i => i.id === itemId);
         
         if (item) {
           const minQty = item.minOrder || 1;
           if (newQty >= minQty) {
             // Update quantity without re-rendering to avoid losing focus
             await cartManager.updateQuantity(itemId, newQty);
-            // Get the updated item after quantity change
-            const updatedCartItems = cartManager.getCart();
-            const updatedItem = updatedCartItems.find(i => i.id === itemId);
-            if (updatedItem) {
+            // Get the updated cart after quantity change
+            cartItems = cartManager.getCart();
+            item = cartItems.find(i => i.id === itemId);
+            if (item) {
               // Just update the subtotal for this item
               const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
               if (subtotalEl) {
-                subtotalEl.textContent = `$${(updatedItem.price * updatedItem.quantity).toFixed(2)}`;
+                subtotalEl.textContent = `$${calculateItemSubtotal(item)}`;
               }
               // Update the cart summary
               updateCartSummary();
