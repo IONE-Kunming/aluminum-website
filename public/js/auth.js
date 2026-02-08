@@ -58,7 +58,9 @@ class AuthManager {
    * Wait for the initial authentication state to be determined
    * This ensures Firebase has had a chance to restore any existing session
    * @param {number} maxWaitTime - Maximum time to wait in milliseconds (default: 5000ms)
-   * @returns {Promise<boolean>} True when auth state is determined
+   * @returns {Promise<boolean>} True when auth state is successfully determined, false on timeout.
+   * Note: Even on timeout (returns false), the auth check will proceed, which is safe as it will
+   * correctly identify unauthenticated users if Firebase truly couldn't restore a session.
    */
   async waitForAuthState(maxWaitTime = 5000) {
     // If auth state is already resolved, return immediately
@@ -69,8 +71,14 @@ class AuthManager {
     // Wait for the auth state to be determined
     return new Promise((resolve) => {
       const timeout = setTimeout(() => {
+        // Check again if auth state was resolved while timeout was executing
+        if (this.authStateResolved) {
+          resolve(true);
+          return;
+        }
+        
         // Remove resolver if still present
-        this.authStateResolvers = this.authStateResolvers.filter(r => r !== resolve);
+        this.authStateResolvers = this.authStateResolvers.filter(r => r !== wrappedResolve);
         this.authStateResolved = true;
         resolve(false);
       }, maxWaitTime);
