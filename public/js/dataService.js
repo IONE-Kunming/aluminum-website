@@ -488,15 +488,34 @@ class DataService {
         query = query.where('status', '==', filters.status);
       }
       
-      // Order by creation date descending
-      query = query.orderBy('createdAt', 'desc');
-      
-      const snapshot = await query.get();
-      
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      // Try to order by creation date descending
+      try {
+        query = query.orderBy('createdAt', 'desc');
+        const snapshot = await query.get();
+        
+        return snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      } catch (indexError) {
+        // If index error, try without orderBy
+        console.warn('Firestore index not available, fetching without ordering:', indexError);
+        const snapshot = await query.get();
+        
+        // Sort in memory
+        const orders = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        orders.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date();
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date();
+          return dateB - dateA;
+        });
+        
+        return orders;
+      }
     } catch (error) {
       console.error('Error fetching orders:', error);
       return [];
