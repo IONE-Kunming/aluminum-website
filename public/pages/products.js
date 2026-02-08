@@ -69,6 +69,60 @@ export async function renderProducts() {
         </div>
       </div>
 
+      <!-- Add Product Modal -->
+      <div id="add-product-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+          <div class="modal-header">
+            <h2>${t('products.addProduct')}</h2>
+            <button class="modal-close" id="close-add-modal-btn">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="add-product-form">
+              <div class="form-group">
+                <label for="add-model-number">${t('products.modelNumber')} *</label>
+                <input type="text" id="add-model-number" class="form-control" required />
+              </div>
+              
+              <div class="form-group">
+                <label for="add-category">${t('products.category')} *</label>
+                <input type="text" id="add-category" class="form-control" required />
+              </div>
+              
+              <div class="form-group">
+                <label for="add-price">${t('products.pricePerMeter')} *</label>
+                <input type="number" id="add-price" class="form-control" step="0.01" min="0" required />
+              </div>
+              
+              <div class="form-group">
+                <label for="add-stock">${t('products.stock')}</label>
+                <input type="number" id="add-stock" class="form-control" min="0" value="0" />
+              </div>
+              
+              <div class="form-group">
+                <label for="add-description">${t('products.description')}</label>
+                <textarea id="add-description" class="form-control" rows="3"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label for="add-image">${t('products.imagePath')}</label>
+                <input type="file" id="add-image" class="form-control" accept="image/*" />
+                <small style="color: #6b7280; font-size: 12px;">Optional: Upload product image</small>
+              </div>
+              
+              <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" id="cancel-add-btn">${t('common.cancel')}</button>
+                <button type="submit" class="btn btn-primary" id="submit-add-btn">
+                  <i data-lucide="plus"></i>
+                  ${t('products.addProduct')}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
       <!-- Bulk Import Modal -->
       <div id="bulk-import-modal" class="modal" style="display: none;">
         <div class="modal-content">
@@ -149,6 +203,9 @@ export async function renderProducts() {
   
   // Load and display products
   await loadProducts();
+  
+  // Initialize add product functionality
+  initializeAddProduct();
   
   // Initialize bulk import functionality
   initializeBulkImport();
@@ -317,6 +374,106 @@ async function deleteProduct(productId) {
     if (window.toast) {
       window.toast.error('Failed to delete product');
     }
+  }
+}
+
+// Initialize Add Product functionality
+function initializeAddProduct() {
+  const addProductBtn = document.getElementById('add-product-btn');
+  const modal = document.getElementById('add-product-modal');
+  const closeModalBtn = document.getElementById('close-add-modal-btn');
+  const cancelBtn = document.getElementById('cancel-add-btn');
+  const form = document.getElementById('add-product-form');
+  const submitBtn = document.getElementById('submit-add-btn');
+  
+  const closeModal = () => {
+    modal.style.display = 'none';
+    form.reset();
+  };
+  
+  // Open modal
+  if (addProductBtn) {
+    addProductBtn.addEventListener('click', () => {
+      modal.style.display = 'flex';
+      if (window.lucide) window.lucide.createIcons();
+    });
+  }
+  
+  // Close modal
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', closeModal);
+  }
+  
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', closeModal);
+  }
+  
+  // Handle form submission
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const modelNumber = document.getElementById('add-model-number').value.trim();
+      const category = document.getElementById('add-category').value.trim();
+      const pricePerMeter = document.getElementById('add-price').value;
+      const stock = document.getElementById('add-stock').value;
+      const description = document.getElementById('add-description').value.trim();
+      const imageFile = document.getElementById('add-image').files[0];
+      
+      if (!modelNumber || !category || !pricePerMeter) {
+        if (window.toast) {
+          window.toast.error('Please fill in all required fields');
+        }
+        return;
+      }
+      
+      try {
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-lucide="loader"></i> Adding...';
+        if (window.lucide) window.lucide.createIcons();
+        
+        let imageUrl = '';
+        
+        // Upload image if provided
+        if (imageFile) {
+          const storage = firebase.storage();
+          const user = authManager.getCurrentUser();
+          const imageRef = storage.ref(`products/${user.uid}/${Date.now()}_${imageFile.name}`);
+          await imageRef.put(imageFile);
+          imageUrl = await imageRef.getDownloadURL();
+        }
+        
+        // Add product to database
+        const productData = {
+          modelNumber,
+          category,
+          pricePerMeter,
+          stock,
+          description,
+          imageUrl
+        };
+        
+        await dataService.addProduct(productData);
+        
+        if (window.toast) {
+          window.toast.success('Product added successfully!');
+        }
+        
+        // Close modal and reload products
+        closeModal();
+        await loadProducts();
+      } catch (error) {
+        console.error('Error adding product:', error);
+        if (window.toast) {
+          window.toast.error('Failed to add product: ' + error.message);
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="plus"></i> Add Product';
+        if (window.lucide) window.lucide.createIcons();
+      }
+    });
   }
 }
 

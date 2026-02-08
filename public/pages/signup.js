@@ -241,6 +241,7 @@ export function renderSignupPage() {
       const user = authManager.getCurrentUser();
       if (user) {
         const profileResult = await authManager.updateUserProfile(user.uid, {
+          uid: user.uid,  // Explicitly store the user ID
           role,
           companyName,
           phoneNumber,
