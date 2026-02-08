@@ -51,7 +51,7 @@ export function renderLayout(content, userRole = null) {
       <!-- Sidebar -->
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
-          <img src="./logo.svg" alt="I ONE Construction" class="logo-svg" />
+          <img src="./logo.svg" alt="I ONE Construction" class="logo-svg" id="logo-link" style="cursor: pointer;" title="Go to Dashboard" />
           <div class="header-controls">
             <button class="theme-toggle" id="theme-toggle" title="Toggle Theme">
               <i data-lucide="${themeManager.getTheme() === 'dark' ? 'sun' : 'moon'}"></i>
@@ -122,6 +122,7 @@ export function renderLayout(content, userRole = null) {
   const themeToggle = document.getElementById('theme-toggle');
   const languageToggle = document.getElementById('language-toggle');
   const languageMenu = document.getElementById('language-menu');
+  const logoLink = document.getElementById('logo-link');
 
   function toggleSidebar() {
     sidebar.classList.toggle('open');
@@ -146,6 +147,28 @@ export function renderLayout(content, userRole = null) {
 
   mobileMenuBtn.addEventListener('click', toggleSidebar);
   overlay.addEventListener('click', closeSidebar);
+
+  // Logo click handler - redirect to dashboard based on user role
+  if (logoLink) {
+    logoLink.addEventListener('click', () => {
+      const profile = authManager.getUserProfile();
+      const userRole = profile?.role;
+      
+      if (userRole === 'seller') {
+        router.navigate('/seller/dashboard');
+      } else if (userRole === 'buyer') {
+        router.navigate('/buyer/dashboard');
+      } else if (userRole === 'admin') {
+        router.navigate('/admin/dashboard');
+      } else {
+        // If no role, redirect to profile selection
+        router.navigate('/profile-selection');
+      }
+      
+      // Close sidebar on mobile after navigation
+      closeSidebar();
+    });
+  }
 
   navItems.forEach(item => {
     item.addEventListener('click', (e) => {
