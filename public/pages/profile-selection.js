@@ -86,6 +86,7 @@ export function renderProfileSelection() {
     }
 
     const result = await authManager.updateUserProfile(user.uid, {
+      uid: user.uid,  // Explicitly store the user ID
       role: selectedRole,
       createdAt: new Date().toISOString()
     });

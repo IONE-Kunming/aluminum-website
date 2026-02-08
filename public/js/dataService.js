@@ -243,6 +243,44 @@ class DataService {
     }
   }
 
+  // Add a new product
+  async addProduct(productData) {
+    await this.init();
+
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+
+      const user = authManager.getCurrentUser();
+      const profile = authManager.getUserProfile();
+      
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
+      // Create product document with seller information
+      const product = {
+        sellerId: user.uid,
+        sellerName: profile?.displayName || user.email || 'Seller',
+        modelNumber: productData.modelNumber,
+        category: productData.category,
+        pricePerMeter: parseFloat(productData.pricePerMeter),
+        description: productData.description || '',
+        stock: parseInt(productData.stock) || 0,
+        imageUrl: productData.imageUrl || '',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      const docRef = await this.db.collection('products').add(product);
+      return { success: true, id: docRef.id, product };
+    } catch (error) {
+      console.error('Error adding product:', error);
+      throw error;
+    }
+  }
+
   // Delete a product
   async deleteProduct(productId) {
     await this.init();

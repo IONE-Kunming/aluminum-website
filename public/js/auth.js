@@ -168,8 +168,8 @@ class AuthManager {
   }
 
   /**
-   * Update user profile information (email, phone, etc.)
-   * @param {Object} updates - Object containing fields to update (email, phoneNumber)
+   * Update user profile information (email, phone, displayName, etc.)
+   * @param {Object} updates - Object containing fields to update (email, phoneNumber, displayName)
    * @returns {Promise<Object>} Result object with success status
    */
   async updateProfileFields(updates) {
@@ -179,6 +179,17 @@ class AuthManager {
       }
 
       const updateData = {};
+      
+      // Handle display name update in Firebase Auth
+      if (updates.displayName !== undefined && updates.displayName !== (this.user.displayName || '')) {
+        try {
+          await this.user.updateProfile({ displayName: updates.displayName });
+          updateData.displayName = updates.displayName;
+        } catch (error) {
+          console.error('Error updating display name in Auth:', error);
+          throw new Error('Failed to update display name: ' + error.message);
+        }
+      }
       
       // Handle email update (requires re-authentication for security)
       if (updates.email !== undefined && updates.email !== this.user.email) {

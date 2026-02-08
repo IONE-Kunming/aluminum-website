@@ -177,6 +177,8 @@ export function renderLoginPage() {
         router.navigate('/seller/dashboard');
       } else if (profile?.role === 'buyer') {
         router.navigate('/buyer/dashboard');
+      } else if (profile?.role === 'admin') {
+        router.navigate('/admin/dashboard');
       } else {
         router.navigate('/profile-selection');
       }
@@ -202,6 +204,8 @@ export function renderLoginPage() {
         router.navigate('/seller/dashboard');
       } else if (profile?.role === 'buyer') {
         router.navigate('/buyer/dashboard');
+      } else if (profile?.role === 'admin') {
+        router.navigate('/admin/dashboard');
       } else {
         router.navigate('/profile-selection');
       }

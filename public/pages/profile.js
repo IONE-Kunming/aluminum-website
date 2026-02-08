@@ -31,8 +31,8 @@ export function renderProfile() {
         <form id="profile-form">
           <div class="form-group">
             <label>${t('profile.displayName')}</label>
-            <input type="text" class="form-control" id="displayName" value="${escapeHtml(profile?.displayName || '')}" readonly>
-            <small style="color: #6b7280; font-size: 12px;">Display name cannot be changed</small>
+            <input type="text" class="form-control" id="displayName" value="${escapeHtml(profile?.displayName || '')}" required>
+            <small style="color: #6b7280; font-size: 12px;">Enter your display name</small>
           </div>
           <div class="form-group">
             <label>${t('profile.email')}</label>
@@ -74,6 +74,7 @@ export function renderProfile() {
 
 function initProfileHandlers(profile, user) {
   const form = document.getElementById('profile-form');
+  const displayNameInput = document.getElementById('displayName');
   const emailInput = document.getElementById('email');
   const phoneInput = document.getElementById('phoneNumber');
   const saveBtn = document.getElementById('save-profile-btn');
@@ -84,16 +85,26 @@ function initProfileHandlers(profile, user) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    const newDisplayName = displayNameInput?.value.trim();
     const newEmail = emailInput?.value.trim();
     const newPhone = phoneInput?.value.trim();
     
     // Check if anything changed
+    const displayNameChanged = newDisplayName !== (profile?.displayName || '');
     const emailChanged = newEmail !== user?.email;
     const phoneChanged = newPhone !== (profile?.phoneNumber || '');
     
-    if (!emailChanged && !phoneChanged) {
+    if (!displayNameChanged && !emailChanged && !phoneChanged) {
       if (window.toast) {
         window.toast.info('No changes to save');
+      }
+      return;
+    }
+    
+    // Validate display name
+    if (displayNameChanged && newDisplayName.length < 2) {
+      if (window.toast) {
+        window.toast.error('Display name must be at least 2 characters long');
       }
       return;
     }
@@ -113,6 +124,7 @@ function initProfileHandlers(profile, user) {
       if (window.lucide) window.lucide.createIcons();
       
       const updates = {};
+      if (displayNameChanged) updates.displayName = newDisplayName;
       if (emailChanged) updates.email = newEmail;
       if (phoneChanged) updates.phoneNumber = newPhone;
       

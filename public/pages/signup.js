@@ -241,6 +241,7 @@ export function renderSignupPage() {
       const user = authManager.getCurrentUser();
       if (user) {
         const profileResult = await authManager.updateUserProfile(user.uid, {
+          uid: user.uid,  // Explicitly store the user ID
           role,
           companyName,
           phoneNumber,
@@ -258,7 +259,12 @@ export function renderSignupPage() {
           // Navigate based on role after profile is loaded
           if (role === 'seller') {
             router.navigate('/seller/dashboard');
+          } else if (role === 'buyer') {
+            router.navigate('/buyer/dashboard');
+          } else if (role === 'admin') {
+            router.navigate('/admin/dashboard');
           } else {
+            // Fallback to buyer dashboard if role is unexpected
             router.navigate('/buyer/dashboard');
           }
         } else {

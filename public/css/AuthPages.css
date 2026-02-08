@@ -92,6 +92,7 @@
   background: white;
   color: #333;
   border: 1px solid var(--border-color);
+  justify-content: center;
 }
 
 .btn-google:hover {
