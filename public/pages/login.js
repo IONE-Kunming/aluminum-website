@@ -177,6 +177,12 @@ export function renderLoginPage() {
       // Wait for profile to load before navigation
       const profile = await authManager.waitForProfile();
       
+      if (!profile) {
+        // Profile failed to load, but user is authenticated
+        // Redirect to profile selection as fallback
+        console.warn('Profile not loaded after login, redirecting to profile selection');
+      }
+      
       if (profile?.role === 'seller') {
         router.navigate('/seller/dashboard');
       } else if (profile?.role === 'buyer') {
@@ -203,6 +209,12 @@ export function renderLoginPage() {
       
       // Wait for profile to load before navigation
       const profile = await authManager.waitForProfile();
+      
+      if (!profile) {
+        // Profile failed to load, but user is authenticated
+        // Redirect to profile selection as fallback
+        console.warn('Profile not loaded after login, redirecting to profile selection');
+      }
       
       if (profile?.role === 'seller') {
         router.navigate('/seller/dashboard');
