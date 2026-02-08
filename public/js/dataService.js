@@ -449,10 +449,20 @@ class DataService {
     
     try {
       if (!this.db) {
-        throw new Error('Database not initialized');
+        console.error('Firestore not initialized when trying to create order');
+        throw new Error('Database not initialized. Please check your Firebase configuration.');
       }
       
+      console.log('Creating order with data:', {
+        buyerId: orderData.buyerId,
+        sellerId: orderData.sellerId,
+        itemsCount: orderData.items?.length,
+        total: orderData.total
+      });
+      
       const orderRef = await this.db.collection('orders').add(orderData);
+      
+      console.log('Order created successfully with ID:', orderRef.id);
       
       return {
         success: true,
@@ -460,6 +470,7 @@ class DataService {
       };
     } catch (error) {
       console.error('Error creating order:', error);
+      console.error('Order data that failed:', orderData);
       throw error;
     }
   }
@@ -582,9 +593,9 @@ class DataService {
         return [];
       }
       
-      // Query profiles collection for users with role 'seller'
+      // Query users collection for users with role 'seller'
       const snapshot = await this.db
-        .collection('profiles')
+        .collection('users')
         .where('role', '==', 'seller')
         .get();
       
