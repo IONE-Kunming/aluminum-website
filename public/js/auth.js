@@ -7,6 +7,8 @@ class AuthManager {
     this.userProfile = null;
     this.listeners = [];
     this.initialized = false;
+    this.authStateResolved = false;
+    this.authStateResolvers = [];
   }
 
   async init() {
@@ -36,6 +38,13 @@ class AuthManager {
           this.userProfile = null;
         }
         
+        // Mark auth state as resolved on first callback
+        if (!this.authStateResolved) {
+          this.authStateResolved = true;
+          this.authStateResolvers.forEach(resolve => resolve());
+          this.authStateResolvers = [];
+        }
+        
         this.notifyListeners();
       });
       
@@ -43,6 +52,36 @@ class AuthManager {
     } catch (error) {
       console.error('Error initializing Firebase:', error);
     }
+  }
+
+  /**
+   * Wait for the initial authentication state to be determined
+   * This ensures Firebase has had a chance to restore any existing session
+   * @param {number} maxWaitTime - Maximum time to wait in milliseconds (default: 5000ms)
+   * @returns {Promise<boolean>} True when auth state is determined
+   */
+  async waitForAuthState(maxWaitTime = 5000) {
+    // If auth state is already resolved, return immediately
+    if (this.authStateResolved) {
+      return true;
+    }
+    
+    // Wait for the auth state to be determined
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        // Remove resolver if still present
+        this.authStateResolvers = this.authStateResolvers.filter(r => r !== resolve);
+        this.authStateResolved = true;
+        resolve(false);
+      }, maxWaitTime);
+      
+      // Add resolver to be called when auth state is determined
+      const wrappedResolve = () => {
+        clearTimeout(timeout);
+        resolve(true);
+      };
+      this.authStateResolvers.push(wrappedResolve);
+    });
   }
 
   /**
