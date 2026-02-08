@@ -153,13 +153,20 @@ export async function renderBuyerDashboard() {
               </tr>
             </thead>
             <tbody>
-              ${recentOrders.map(order => `
+              ${recentOrders.map(order => {
+                // Get first item details for display
+                const firstItem = order.items && order.items.length > 0 ? order.items[0] : {};
+                const itemCount = order.items ? order.items.length : 0;
+                const productDisplay = firstItem.productName || 'N/A';
+                const quantityDisplay = itemCount > 1 ? `${itemCount} items` : `${firstItem.quantity || 0} ${firstItem.unit || 'units'}`;
+                
+                return `
                 <tr>
-                  <td class="font-medium">${escapeHtml(order.id || order.orderNumber || '')}</td>
+                  <td class="font-medium">${escapeHtml((order.id || '').substring(0, 8).toUpperCase())}</td>
                   <td>${escapeHtml(order.date || new Date(order.createdAt?.toDate?.() || Date.now()).toLocaleDateString())}</td>
-                  <td>${escapeHtml(order.product || order.productName || '')}</td>
-                  <td>${escapeHtml(order.quantity || '')}</td>
-                  <td>${escapeHtml(order.seller || order.sellerName || '')}</td>
+                  <td>${escapeHtml(productDisplay)}</td>
+                  <td>${escapeHtml(quantityDisplay)}</td>
+                  <td>${escapeHtml(order.sellerName || 'N/A')}</td>
                   <td class="font-medium">$${(order.total || 0).toLocaleString()}</td>
                   <td>
                     <span class="status-badge ${getStatusColor(order.status)}">
@@ -167,7 +174,8 @@ export async function renderBuyerDashboard() {
                     </span>
                   </td>
                 </tr>
-              `).join('')}
+                `;
+              }).join('')}
             </tbody>
           </table>
         </div>

@@ -97,7 +97,7 @@ export async function renderCart() {
                 <div class="cart-item-quantity">
                   <label>${t('cart.quantity')}:</label>
                   <div class="quantity-controls">
-                    <button class="quantity-btn" data-action="decrease" data-item-id="${item.id}" ${!isAvailable ? 'disabled' : ''}>
+                    <button type="button" class="quantity-btn" data-action="decrease" data-item-id="${item.id}" ${!isAvailable ? 'disabled' : ''}>
                       <i data-lucide="minus"></i>
                     </button>
                     <input 
@@ -109,7 +109,7 @@ export async function renderCart() {
                       data-item-id="${item.id}"
                       ${!isAvailable ? 'disabled' : ''}
                     />
-                    <button class="quantity-btn" data-action="increase" data-item-id="${item.id}" ${!isAvailable ? 'disabled' : ''}>
+                    <button type="button" class="quantity-btn" data-action="increase" data-item-id="${item.id}" ${!isAvailable ? 'disabled' : ''}>
                       <i data-lucide="plus"></i>
                     </button>
                   </div>
