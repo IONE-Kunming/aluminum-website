@@ -102,7 +102,7 @@ function initProfileHandlers(profile, user) {
     }
     
     // Validate display name
-    if (newDisplayName && newDisplayName.length < 2) {
+    if (displayNameChanged && newDisplayName.length < 2) {
       if (window.toast) {
         window.toast.error('Display name must be at least 2 characters long');
       }

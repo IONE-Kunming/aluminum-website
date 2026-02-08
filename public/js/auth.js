@@ -181,7 +181,7 @@ class AuthManager {
       const updateData = {};
       
       // Handle display name update in Firebase Auth
-      if (updates.displayName !== undefined && updates.displayName !== this.user.displayName) {
+      if (updates.displayName !== undefined && updates.displayName !== (this.user.displayName || '')) {
         try {
           await this.user.updateProfile({ displayName: updates.displayName });
           updateData.displayName = updates.displayName;
