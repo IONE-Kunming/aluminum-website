@@ -366,7 +366,7 @@ function displayMessages(messages) {
     const messageHtml = `
       <div class="message ${isOwn ? 'message-own' : 'message-other'}" data-message-id="${msg.id}" data-original-language="${messageLanguage}">
         <div class="message-content">
-          ${safeMessage ? `<div class="message-text" data-original-text="${escapeHtml(msg.message)}">${safeMessage}</div>` : ''}
+          ${safeMessage ? `<div class="message-text" data-original-text="${msg.message}">${safeMessage}</div>` : ''}
           ${showTranslateButton ? `
             <button class="btn-translate" data-message-id="${msg.id}" title="Translate">
               <i data-lucide="languages" style="width: 14px; height: 14px;"></i>
