@@ -2,30 +2,13 @@
 name: Deploy to Firebase
 
 on:
-  # Runs on pushes targeting the main branch
   push:
     branches: ["main"]
-    paths:
-      - 'public/**'
-      - 'index.html'
-      - 'vite.config.js'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'firebase.json'
-      - 'firestore.rules'
-      - 'firestore.indexes.json'
-      - 'storage.rules'
-      - '.github/workflows/firebase-hosting.yml'
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
     
     steps:
       - name: Checkout
@@ -42,108 +25,10 @@ jobs:
         
       - name: Build with Vite
         run: npm run build
-        env:
-          # Firebase uses root path (not /aluminum-website/ like GitHub Pages)
-          VITE_BASE_PATH: /
-          
-      - name: Create Firebase Service Account Key
+        
+      - name: Deploy using Firebase CLI
         run: |
-          # Create service account file from GitHub Secret
-          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > firebase-service-account.json
-          # Validate JSON format
-          jq . firebase-service-account.json > /dev/null
-          echo "✅ Service account key created"
-          
-      - name: Setup Firebase Project
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
-        run: |
-          # Install Firebase CLI
-          npm install -g firebase-tools@latest
-          
-          # Set the Firebase project
-          firebase use gen-lang-client-0988357303 --alias default
-          
-          # Verify project setup
-          echo "Current Firebase project:"
-          firebase projects:list | grep gen-lang-client-0988357303
-          
-          # Ensure firebase.json exists with correct structure
-          if [ ! -f "firebase.json" ]; then
-            echo "Creating firebase.json..."
-            cat > firebase.json << 'EOF'
-{
-  "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
-  },
-  "storage": {
-    "rules": "storage.rules"
-  },
-  "hosting": {
-    "public": "dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
-}
-EOF
-          fi
-          
-          # Ensure .firebaserc exists
-          if [ ! -f ".firebaserc" ]; then
-            echo "Creating .firebaserc..."
-            cat > .firebaserc << 'EOF'
-{
-  "projects": {
-    "default": "gen-lang-client-0988357303"
-  }
-}
-EOF
-          fi
-          
-          # Create default config files if missing
-          [ ! -f "firestore.rules" ] && echo 'rules_version = "2"; service cloud.firestore { match /databases/{database}/documents { match /{document=**} { allow read, write: if true; } } }' > firestore.rules
-          [ ! -f "firestore.indexes.json" ] && echo '{"indexes":[],"fieldOverrides":[]}' > firestore.indexes.json
-          [ ! -f "storage.rules" ] && echo 'rules_version = "2"; service firebase.storage { match /b/{bucket}/o { match /{allPaths=**} { allow read, write: if true; } } }' > storage.rules
-          
-      - name: Deploy to Firebase
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: firebase-service-account.json
-        run: |
-          echo "🚀 Starting Firebase deployment..."
-          
-          # Deploy step by step with error handling
-          echo "📝 Deploying Firestore rules..."
-          if [ -f "firestore.rules" ]; then
-            firebase deploy --only firestore:rules --non-interactive || echo "⚠️  Firestore rules deployment had issues"
-          fi
-          
-          echo "📊 Deploying Firestore indexes..."
-          if [ -f "firestore.indexes.json" ]; then
-            firebase deploy --only firestore:indexes --non-interactive || echo "⚠️  Firestore indexes deployment had issues"
-          fi
-          
-          echo "📦 Deploying Storage rules..."
-          if [ -f "storage.rules" ]; then
-            firebase deploy --only storage --non-interactive || echo "⚠️  Storage rules deployment had issues"
-          fi
-          
-          echo "🌐 Deploying Hosting..."
-          if [ -d "dist" ]; then
-            firebase deploy --only hosting --non-interactive
-          else
-            echo "❌ No dist/ directory found - checking build output..."
-            ls -la
-            exit 1
-          fi
-          
-          echo "✅ Deployment completed successfully!"
+          npm install -g firebase-tools
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > service-account.json
+          export GOOGLE_APPLICATION_CREDENTIALS=service-account.json
+          firebase deploy --project gen-lang-client-0988357303 --non-interactive
