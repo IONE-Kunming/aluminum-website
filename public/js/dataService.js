@@ -921,19 +921,28 @@ class DataService {
         const otherUserId = chatData.participants.find(id => id !== userId);
         
         // Get other user's details
-        let otherUser = { displayName: 'Unknown User', email: '' };
+        let otherUser = { displayName: 'Unknown User', email: '', role: 'user' };
         try {
           const userDoc = await this.db.collection('users').doc(otherUserId).get();
           if (userDoc.exists) {
             const userData = userDoc.data();
+            const role = userData.role || 'user';
+            const displayName = userData.displayName || userData.email || `${role.charAt(0).toUpperCase() + role.slice(1)}`;
             otherUser = {
-              displayName: userData.displayName || userData.email || 'Unknown User',
+              displayName: displayName,
               email: userData.email || '',
-              role: userData.role || 'user'
+              role: role,
+              company: userData.company || ''
             };
           }
         } catch (err) {
           console.error('Error fetching user details:', err);
+        }
+        
+        // Create a more informative display name with role context
+        let displayNameWithRole = otherUser.displayName;
+        if (otherUser.company) {
+          displayNameWithRole = `${otherUser.displayName} (${otherUser.company})`;
         }
         
         return {
@@ -941,7 +950,8 @@ class DataService {
           ...chatData,
           otherUserId,
           otherUser,
-          otherUserName: otherUser.displayName
+          otherUserName: displayNameWithRole,
+          otherUserRole: otherUser.role
         };
       }));
       

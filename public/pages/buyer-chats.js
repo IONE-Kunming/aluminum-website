@@ -94,6 +94,7 @@ let selectedFiles = [];
 let currentChatId = null;
 let currentSellerId = null;
 let allMessages = []; // Store all messages for document extraction
+let renderedMessageIds = new Set(); // Track which messages are already rendered
 
 async function loadChats() {
   try {
@@ -118,12 +119,17 @@ async function loadChats() {
       const avatarLetter = (chat.otherUserName || 'U').charAt(0).toUpperCase();
       const safeName = escapeHtml(chat.otherUserName || 'User');
       const safeLastMessage = escapeHtml(chat.lastMessage || 'No messages yet');
+      const role = chat.otherUserRole || 'seller';
+      const roleLabel = role === 'seller' ? 'Seller' : role.charAt(0).toUpperCase() + role.slice(1);
       
       return `
         <div class="chat-item" data-chat-id="${chat.id}" data-seller-id="${chat.otherUserId}">
           <div class="chat-avatar">${avatarLetter}</div>
           <div class="chat-info">
-            <div class="chat-name">${safeName}</div>
+            <div class="chat-name">
+              ${safeName}
+              <span class="chat-role-badge" style="font-size: 0.75rem; color: var(--text-muted); margin-left: 4px;">${roleLabel}</span>
+            </div>
             <div class="chat-last-message">${safeLastMessage}</div>
           </div>
           <div class="chat-time">${timeStr}</div>
@@ -232,6 +238,9 @@ async function loadMessages(sellerId) {
   unsubscribers.forEach(unsub => unsub());
   unsubscribers = [];
   
+  // Reset rendered messages tracking
+  renderedMessageIds.clear();
+  
   try {
     const unsubscribe = await dataService.subscribeToChatMessages(sellerId, (messages) => {
       displayMessages(messages);
@@ -253,10 +262,22 @@ function displayMessages(messages) {
   
   if (!messages || messages.length === 0) {
     messagesContainer.innerHTML = '<div class="empty-state">No messages yet. Start the conversation!</div>';
+    renderedMessageIds.clear();
     return;
   }
   
-  messagesContainer.innerHTML = messages.map(msg => {
+  // Check if this is a fresh load (no messages rendered yet)
+  const isFreshLoad = renderedMessageIds.size === 0;
+  
+  // Save scroll position
+  const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 100;
+  
+  // Only render new messages (incremental update for better performance)
+  messages.forEach((msg, index) => {
+    if (renderedMessageIds.has(msg.id)) {
+      return; // Skip already rendered messages
+    }
+    
     const isOwn = msg.senderId === currentUser?.uid;
     const time = msg.createdAt?.toDate?.() || new Date(msg.createdAt);
     const timeStr = formatTime(time);
@@ -328,8 +349,8 @@ function displayMessages(messages) {
       attachmentsHtml += '</div>';
     }
     
-    return `
-      <div class="message ${isOwn ? 'message-own' : 'message-other'}">
+    const messageHtml = `
+      <div class="message ${isOwn ? 'message-own' : 'message-other'}" data-message-id="${msg.id}">
         <div class="message-content">
           ${safeMessage ? `<div class="message-text">${safeMessage}</div>` : ''}
           ${attachmentsHtml}
@@ -337,20 +358,49 @@ function displayMessages(messages) {
         </div>
       </div>
     `;
-  }).join('');
-  
-  if (window.lucide) window.lucide.createIcons();
-  
-  // Add click handlers for images after rendering
-  const images = messagesContainer.querySelectorAll('.attachment-image');
-  images.forEach(img => {
-    img.addEventListener('click', function() {
-      window.open(this.dataset.url, '_blank');
+    
+    // Create temp element to parse HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = messageHtml;
+    const messageElement = tempDiv.firstElementChild;
+    
+    // Find correct insertion position (maintain chronological order)
+    let inserted = false;
+    const existingMessages = messagesContainer.querySelectorAll('.message[data-message-id]');
+    
+    for (let i = 0; i < existingMessages.length; i++) {
+      const existingMsgId = existingMessages[i].dataset.messageId;
+      const existingMsgIndex = messages.findIndex(m => m.id === existingMsgId);
+      
+      if (existingMsgIndex > index) {
+        messagesContainer.insertBefore(messageElement, existingMessages[i]);
+        inserted = true;
+        break;
+      }
+    }
+    
+    if (!inserted) {
+      messagesContainer.appendChild(messageElement);
+    }
+    
+    // Add click handler for images
+    const images = messageElement.querySelectorAll('.attachment-image');
+    images.forEach(img => {
+      img.addEventListener('click', function() {
+        window.open(this.dataset.url, '_blank');
+      });
     });
+    
+    renderedMessageIds.add(msg.id);
   });
   
-  // Scroll to bottom
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  // Initialize lucide icons for new elements only
+  if (window.lucide) window.lucide.createIcons();
+  
+  // Scroll to bottom if user was at bottom or if fresh load
+  if (wasAtBottom || isFreshLoad) {
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
 }
 
 async function sendMessage() {
