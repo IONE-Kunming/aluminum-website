@@ -13,6 +13,33 @@ export function escapeHtml(unsafe) {
     .replace(/'/g, "&#039;");
 }
 
+// Sanitize URL to prevent javascript: protocol attacks
+export function sanitizeUrl(url) {
+  if (!url) return '';
+  
+  // Convert to string and trim
+  const urlStr = String(url).trim();
+  
+  // Check for dangerous protocols
+  const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
+  const lowerUrl = urlStr.toLowerCase();
+  
+  for (const protocol of dangerousProtocols) {
+    if (lowerUrl.startsWith(protocol)) {
+      console.warn('Blocked dangerous URL protocol:', urlStr);
+      return '';
+    }
+  }
+  
+  // Only allow http(s) or relative URLs
+  if (!urlStr.startsWith('http://') && !urlStr.startsWith('https://') && !urlStr.startsWith('/')) {
+    console.warn('Blocked non-http(s) URL:', urlStr);
+    return '';
+  }
+  
+  return urlStr;
+}
+
 // Format currency
 export function formatCurrency(amount) {
   return new Intl.NumberFormat('en-US', {

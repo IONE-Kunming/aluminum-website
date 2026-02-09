@@ -2,7 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import languageManager from '../js/language.js';
-import { escapeHtml } from '../js/utils.js';
+import { escapeHtml, sanitizeUrl } from '../js/utils.js';
 
 let unsubscribers = [];
 
@@ -218,7 +218,13 @@ function displayMessages(messages) {
       msg.attachments.forEach(att => {
         // Sanitize attachment name and URL
         const safeName = escapeHtml(att.name);
-        const safeUrl = escapeHtml(att.url);
+        const safeUrl = sanitizeUrl(att.url);
+        
+        // Skip if URL is invalid
+        if (!safeUrl) {
+          console.warn('Skipping attachment with invalid URL:', att.name);
+          return;
+        }
         
         if (att.type.startsWith('image/')) {
           // Display images inline
