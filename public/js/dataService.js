@@ -12,6 +12,8 @@ class DataService {
       products: { data: null, timestamp: null, ttl: 60000 }, // 1 minute TTL
       categories: { data: null, timestamp: null, ttl: 300000 }, // 5 minutes TTL
     };
+    // Constants
+    this.ATTACHMENT_PLACEHOLDER = 'Attachment';
   }
 
   // Initialize Firestore connection
@@ -575,8 +577,9 @@ class DataService {
         
         // Sort by createdAt, putting orders without timestamps at the end
         orders.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+          // Handle Firestore Timestamp objects properly
+          const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
+          const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
           return dateB - dateA;
         });
         
@@ -661,6 +664,258 @@ class DataService {
     } catch (error) {
       console.error('Error fetching sellers:', error);
       return [];
+    }
+  }
+
+  // Send a chat message
+  async sendChatMessage({ sellerId, message, files = [] }) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      const currentUser = authManager.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      const buyerId = currentUser.uid;
+      
+      // Create chat conversation ID (consistent ordering: buyer_seller)
+      const chatId = [buyerId, sellerId].sort().join('_');
+      
+      // Upload files if any
+      const attachments = [];
+      if (files.length > 0) {
+        for (const file of files) {
+          try {
+            const attachment = await this.uploadChatFile(chatId, file);
+            attachments.push(attachment);
+          } catch (error) {
+            console.error('Error uploading file:', file.name, error);
+            // Continue with other files
+          }
+        }
+      }
+      
+      // Create message data
+      const messageData = {
+        chatId: chatId,
+        senderId: buyerId,
+        receiverId: sellerId,
+        message: message,
+        attachments: attachments,
+        read: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      // Add message to Firestore
+      const messageRef = await this.db.collection('messages').add(messageData);
+      
+      // Create or update chat conversation
+      const chatData = {
+        participants: [buyerId, sellerId],
+        lastMessage: message || this.ATTACHMENT_PLACEHOLDER,
+        lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
+        lastSenderId: buyerId,
+        buyerId: buyerId,
+        sellerId: sellerId
+      };
+      
+      await this.db.collection('chats').doc(chatId).set(chatData, { merge: true });
+      
+      // Create notification for receiver
+      await this.createChatNotification(sellerId, buyerId, message);
+      
+      console.log('Message sent successfully:', messageRef.id);
+      return { success: true, messageId: messageRef.id };
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      throw error;
+    }
+  }
+
+  // Upload chat file to Firebase Storage
+  async uploadChatFile(chatId, file) {
+    try {
+      // Validate file
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        throw new Error('File size exceeds 10MB limit');
+      }
+      
+      // Validate file type
+      const allowedTypes = [
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+        'video/mp4', 'video/webm', 'video/quicktime',
+        'application/pdf'
+      ];
+      
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error('File type not supported');
+      }
+      
+      const currentUser = authManager.getCurrentUser();
+      const timestamp = Date.now();
+      const fileName = `${timestamp}_${file.name}`;
+      const path = `chats/${chatId}/${fileName}`;
+      
+      // Upload to Firebase Storage
+      const storageRef = firebase.storage().ref(path);
+      const uploadTask = await storageRef.put(file);
+      const downloadURL = await uploadTask.ref.getDownloadURL();
+      
+      return {
+        name: file.name,
+        url: downloadURL,
+        type: file.type,
+        size: file.size,
+        path: path
+      };
+      
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw error;
+    }
+  }
+
+  // Subscribe to chat messages (real-time)
+  async subscribeToChatMessages(sellerId, callback) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      const currentUser = authManager.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      const buyerId = currentUser.uid;
+      const chatId = [buyerId, sellerId].sort().join('_');
+      
+      // Debounce timer for marking messages as read
+      let markReadTimeout = null;
+      
+      // Subscribe to messages in this chat
+      const unsubscribe = this.db
+        .collection('messages')
+        .where('chatId', '==', chatId)
+        .orderBy('createdAt', 'asc')
+        .onSnapshot((snapshot) => {
+          const messages = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          
+          callback(messages);
+          
+          // Debounce marking messages as read to avoid excessive writes
+          if (markReadTimeout) {
+            clearTimeout(markReadTimeout);
+          }
+          
+          markReadTimeout = setTimeout(() => {
+            // Mark unread messages as read (batched)
+            const unreadMessages = snapshot.docs.filter(doc => {
+              const msg = doc.data();
+              return msg.receiverId === buyerId && !msg.read;
+            });
+            
+            if (unreadMessages.length > 0) {
+              const batch = this.db.batch();
+              unreadMessages.forEach(doc => {
+                batch.update(this.db.collection('messages').doc(doc.id), { read: true });
+              });
+              batch.commit().catch(err => console.error('Error marking messages as read:', err));
+            }
+          }, 1000); // Wait 1 second before marking as read
+        }, (error) => {
+          console.error('Error in message subscription:', error);
+        });
+      
+      return unsubscribe;
+      
+    } catch (error) {
+      console.error('Error subscribing to messages:', error);
+      throw error;
+    }
+  }
+
+  // Create chat notification
+  async createChatNotification(receiverId, senderId, message) {
+    try {
+      if (!this.db) return;
+      
+      // Get sender info
+      const senderDoc = await this.db.collection('users').doc(senderId).get();
+      const senderName = senderDoc.exists ? 
+        (senderDoc.data().displayName || senderDoc.data().email || 'Someone') : 
+        'Someone';
+      
+      // Create notification
+      await this.db.collection('notifications').add({
+        userId: receiverId,
+        type: 'chat',
+        title: 'New Message',
+        message: `${senderName}: ${message || this.ATTACHMENT_PLACEHOLDER}`,
+        senderId: senderId,
+        senderName: senderName,
+        read: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+    } catch (error) {
+      console.error('Error creating notification:', error);
+      // Don't throw - notification failure shouldn't block message sending
+    }
+  }
+
+  // Get user notifications
+  async getNotifications(userId) {
+    await this.init();
+    
+    try {
+      if (!this.db || !userId) {
+        return [];
+      }
+      
+      const snapshot = await this.db
+        .collection('notifications')
+        .where('userId', '==', userId)
+        .orderBy('createdAt', 'desc')
+        .limit(50)
+        .get();
+      
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+      return [];
+    }
+  }
+
+  // Mark notification as read
+  async markNotificationAsRead(notificationId) {
+    await this.init();
+    
+    try {
+      if (!this.db || !notificationId) return;
+      
+      await this.db.collection('notifications').doc(notificationId).update({
+        read: true
+      });
+      
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
     }
   }
 }

@@ -302,8 +302,8 @@ export async function renderProductDetail() {
       // Show success message
       window.toast.success(t('cart.itemAdded'));
       
-      // Navigate to cart
-      router.navigate('/buyer/cart');
+      // Navigate back to catalog
+      router.navigate('/buyer/catalog');
     });
   }
 

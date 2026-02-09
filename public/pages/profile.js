@@ -46,8 +46,16 @@ export function renderProfile() {
           </div>
           <div class="form-group">
             <label>Phone Number</label>
-            <input type="tel" class="form-control" id="phoneNumber" value="${escapeHtml(profile?.phoneNumber || '')}" placeholder="+1234567890">
-            <small style="color: #6b7280; font-size: 12px;">Enter your phone number with country code</small>
+            <input 
+              type="tel" 
+              class="form-control" 
+              id="phoneNumber" 
+              value="${escapeHtml(profile?.phoneNumber || '')}" 
+              placeholder="+1234567890"
+              inputmode="numeric"
+              pattern="[0-9+\\-\\s()]+"
+            >
+            <small style="color: #6b7280; font-size: 12px;">Enter your phone number with country code (letters not allowed)</small>
           </div>
           <div class="form-group">
             <label>${t('profile.role')}</label>
@@ -81,6 +89,33 @@ function initProfileHandlers(profile, user) {
   
   if (!form) return;
   
+  // Prevent non-numeric characters in phone number (except +, -, space, parentheses)
+  phoneInput.addEventListener('input', (e) => {
+    const cursorPosition = e.target.selectionStart;
+    const oldValue = e.target.value;
+    const newValue = oldValue.replace(/[^0-9+\-\s()]/g, '');
+    
+    if (oldValue !== newValue) {
+      e.target.value = newValue;
+      // Restore cursor position
+      e.target.setSelectionRange(cursorPosition - 1, cursorPosition - 1);
+    }
+  });
+  
+  // Prevent pasting non-numeric content
+  phoneInput.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+    const cleanedText = pastedText.replace(/[^0-9+\-\s()]/g, '');
+    
+    // Insert cleaned text at cursor position
+    const start = phoneInput.selectionStart;
+    const end = phoneInput.selectionEnd;
+    const currentValue = phoneInput.value;
+    phoneInput.value = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
+    phoneInput.selectionStart = phoneInput.selectionEnd = start + cleanedText.length;
+  });
+  
   // Handle form submission
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -113,6 +148,14 @@ function initProfileHandlers(profile, user) {
     if (newEmail && !isValidEmail(newEmail)) {
       if (window.toast) {
         window.toast.error('Please enter a valid email address');
+      }
+      return;
+    }
+    
+    // Validate phone number format if changed
+    if (phoneChanged && newPhone && !isValidPhoneNumber(newPhone)) {
+      if (window.toast) {
+        window.toast.error('Please enter a valid phone number with country code (e.g., +1234567890)');
       }
       return;
     }
@@ -155,6 +198,13 @@ function initProfileHandlers(profile, user) {
       if (window.lucide) window.lucide.createIcons();
     }
   });
+}
+
+// Validate phone number format
+function isValidPhoneNumber(phone) {
+  // Basic validation: must start with + and contain at least 10 digits
+  const cleanPhone = phone.replace(/[^0-9+]/g, '');
+  return cleanPhone.startsWith('+') && cleanPhone.length >= 11 && cleanPhone.length <= 16;
 }
 
 function isValidEmail(email) {
