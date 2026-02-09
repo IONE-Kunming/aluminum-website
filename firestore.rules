@@ -100,6 +100,12 @@ service cloud.firestore {
     
     // Notifications collection
     match /notifications/{notificationId} {
+      // Helper to verify chat exists between sender and receiver
+      function chatExists(senderId, receiverId) {
+        let chatId = senderId < receiverId ? senderId + '_' + receiverId : receiverId + '_' + senderId;
+        return exists(/databases/$(database)/documents/chats/$(chatId));
+      }
+      
       // Users can read their own notifications
       allow read: if isAuthenticated() && 
                      resource.data.userId == request.auth.uid;
@@ -107,9 +113,11 @@ service cloud.firestore {
       allow create: if isAuthenticated() && 
                        request.resource.data.userId == request.auth.uid;
       // Chat participants can create notifications (sender creates notification for receiver)
+      // Must verify that a chat exists between them to prevent spam
       allow create: if isAuthenticated() && 
                        request.resource.data.type == 'chat' &&
-                       request.resource.data.senderId == request.auth.uid;
+                       request.resource.data.senderId == request.auth.uid &&
+                       chatExists(request.auth.uid, request.resource.data.userId);
       // Users can update their own notifications (mark as read)
       allow update: if isAuthenticated() && 
                        resource.data.userId == request.auth.uid;

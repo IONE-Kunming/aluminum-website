@@ -107,10 +107,12 @@ service firebase.storage {
     // Chat files - Shared between participants
     // Path structure: /chats/{chatId}/{fileName}
     // chatId format: buyerId_sellerId (sorted alphabetically)
-    match /chats/{chatId}/{fileName} {
+    match /chats/{chatId}/{allPaths=**} {
       // Helper function to check if user is participant in chat
+      // chatId format: userId1_userId2 where userIds are sorted alphabetically
       function isParticipant(chatId) {
-        return chatId.matches('.*' + request.auth.uid + '.*');
+        let parts = chatId.split('_');
+        return parts.size() == 2 && (parts[0] == request.auth.uid || parts[1] == request.auth.uid);
       }
       
       // Participants can read chat files
@@ -118,25 +120,6 @@ service firebase.storage {
       
       // Authenticated chat participants can upload to chat folders
       // Validation: only images, videos, and PDFs up to 10MB
-      allow write: if isAuthenticated() &&
-                      isParticipant(chatId) &&
-                      (request.resource.contentType.matches('image/.*') ||
-                       request.resource.contentType.matches('video/.*') ||
-                       request.resource.contentType == 'application/pdf') &&
-                      request.resource.size < 10 * 1024 * 1024; // 10MB limit
-    }
-    
-    // Chat files - Nested paths
-    match /chats/{chatId}/{allPaths=**} {
-      // Helper function to check if user is participant in chat
-      function isParticipant(chatId) {
-        return chatId.matches('.*' + request.auth.uid + '.*');
-      }
-      
-      // Participants can read chat files
-      allow read: if isAuthenticated() && isParticipant(chatId);
-      
-      // Authenticated chat participants can upload to chat folders
       allow write: if isAuthenticated() &&
                       isParticipant(chatId) &&
                       (request.resource.contentType.matches('image/.*') ||

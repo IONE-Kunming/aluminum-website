@@ -13,7 +13,7 @@ class DataService {
       categories: { data: null, timestamp: null, ttl: 300000 }, // 5 minutes TTL
     };
     // Constants
-    this.ATTACHMENT_PLACEHOLDER = '📎 Attachment';
+    this.ATTACHMENT_PLACEHOLDER = 'Attachment';
   }
 
   // Initialize Firestore connection
@@ -799,6 +799,9 @@ class DataService {
       const buyerId = currentUser.uid;
       const chatId = [buyerId, sellerId].sort().join('_');
       
+      // Debounce timer for marking messages as read
+      let markReadTimeout = null;
+      
       // Subscribe to messages in this chat
       const unsubscribe = this.db
         .collection('messages')
@@ -812,19 +815,26 @@ class DataService {
           
           callback(messages);
           
-          // Mark unread messages as read (batched to avoid excessive writes)
-          const unreadMessages = snapshot.docs.filter(doc => {
-            const msg = doc.data();
-            return msg.receiverId === buyerId && !msg.read;
-          });
-          
-          if (unreadMessages.length > 0) {
-            const batch = this.db.batch();
-            unreadMessages.forEach(doc => {
-              batch.update(this.db.collection('messages').doc(doc.id), { read: true });
-            });
-            batch.commit().catch(err => console.error('Error marking messages as read:', err));
+          // Debounce marking messages as read to avoid excessive writes
+          if (markReadTimeout) {
+            clearTimeout(markReadTimeout);
           }
+          
+          markReadTimeout = setTimeout(() => {
+            // Mark unread messages as read (batched)
+            const unreadMessages = snapshot.docs.filter(doc => {
+              const msg = doc.data();
+              return msg.receiverId === buyerId && !msg.read;
+            });
+            
+            if (unreadMessages.length > 0) {
+              const batch = this.db.batch();
+              unreadMessages.forEach(doc => {
+                batch.update(this.db.collection('messages').doc(doc.id), { read: true });
+              });
+              batch.commit().catch(err => console.error('Error marking messages as read:', err));
+            }
+          }, 1000); // Wait 1 second before marking as read
         }, (error) => {
           console.error('Error in message subscription:', error);
         });

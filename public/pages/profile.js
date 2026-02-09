@@ -147,7 +147,13 @@ function initProfileHandlers(profile, user) {
     e.preventDefault();
     const pastedText = (e.clipboardData || window.clipboardData).getData('text');
     const cleanedText = pastedText.replace(/[^0-9+\-\s()]/g, '');
-    document.execCommand('insertText', false, cleanedText);
+    
+    // Insert cleaned text at cursor position
+    const start = phoneInput.selectionStart;
+    const end = phoneInput.selectionEnd;
+    const currentValue = phoneInput.value;
+    phoneInput.value = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
+    phoneInput.selectionStart = phoneInput.selectionEnd = start + cleanedText.length;
   });
   
   // Prevent non-numeric characters in OTP code
@@ -167,7 +173,14 @@ function initProfileHandlers(profile, user) {
       e.preventDefault();
       const pastedText = (e.clipboardData || window.clipboardData).getData('text');
       const cleanedText = pastedText.replace(/[^0-9]/g, '').substring(0, 6);
-      document.execCommand('insertText', false, cleanedText);
+      
+      // Insert cleaned text
+      const start = otpCodeInput.selectionStart;
+      const end = otpCodeInput.selectionEnd;
+      const currentValue = otpCodeInput.value;
+      otpCodeInput.value = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
+      otpCodeInput.value = otpCodeInput.value.substring(0, 6); // Enforce max length
+      otpCodeInput.selectionStart = otpCodeInput.selectionEnd = Math.min(start + cleanedText.length, 6);
     });
   }
   
@@ -293,9 +306,18 @@ function initProfileHandlers(profile, user) {
     }
     
     // Check if phone number changed and needs verification
-    if (phoneChanged && !profile?.phoneVerified) {
-      window.toast.warning('Please verify your phone number before saving');
-      return;
+    if (phoneChanged) {
+      // If phone number changed but not verified, warn but still save other changes
+      if (!profile?.phoneVerified && pendingPhoneNumber !== newPhone) {
+        window.toast.warning('Phone number changes require verification. Other changes will be saved.');
+        // Don't include phone in updates
+      } else if (profile?.phoneVerified || pendingPhoneNumber === newPhone) {
+        // Include phone if it was verified
+        updates.phoneNumber = newPhone;
+        if (pendingPhoneNumber === newPhone) {
+          updates.phoneVerified = true;
+        }
+      }
     }
     
     try {
@@ -307,8 +329,6 @@ function initProfileHandlers(profile, user) {
       const updates = {};
       if (displayNameChanged) updates.displayName = newDisplayName;
       if (emailChanged) updates.email = newEmail;
-      // Only update phone if it was changed and verified
-      if (phoneChanged && profile?.phoneVerified) updates.phoneNumber = newPhone;
       
       const result = await authManager.updateProfileFields(updates);
       
@@ -340,6 +360,7 @@ function initProfileHandlers(profile, user) {
 }
 
 // Mock OTP sending function (replace with actual SMS service in production)
+// WARNING: This is for DEMO purposes only. In production, use a secure backend service.
 async function sendOTP(phoneNumber) {
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1000));
@@ -348,21 +369,26 @@ async function sendOTP(phoneNumber) {
   // For now, generate a mock verification ID
   const verificationId = 'mock_' + Date.now();
   
-  // Store the OTP in sessionStorage for verification (ONLY FOR DEMO - use server-side in production)
+  // SECURITY WARNING: Storing OTP in sessionStorage is insecure and only for demo
+  // In production, OTP should be validated on the server side
   const mockOTP = Math.floor(100000 + Math.random() * 900000).toString();
   sessionStorage.setItem(verificationId, mockOTP);
   
-  console.log('Mock OTP sent:', mockOTP); // For testing purposes
+  // Only log in development mode
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    console.log('[DEV ONLY] Mock OTP sent:', mockOTP);
+  }
   
   return verificationId;
 }
 
 // Mock OTP verification function (replace with actual verification in production)
+// WARNING: This is for DEMO purposes only. In production, use secure server-side validation.
 async function verifyOTP(verificationId, otpCode) {
   // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 500));
   
-  // Get stored OTP (ONLY FOR DEMO)
+  // SECURITY WARNING: This client-side validation is insecure and only for demo
   const storedOTP = sessionStorage.getItem(verificationId);
   
   if (storedOTP === otpCode) {
