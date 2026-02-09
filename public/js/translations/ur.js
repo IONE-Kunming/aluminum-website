@@ -207,7 +207,11 @@ export default {
     stock: 'اسٹاک:',
     addToCart: 'ٹوکری میں شامل کریں',
     loading: 'مصنوعات لوڈ ہو رہی ہیں...',
-    noProducts: 'کوئی مصنوعات دستیاب نہیں'
+    noProducts: 'کوئی مصنوعات دستیاب نہیں',
+    viewDetails: 'تفصیلات دیکھیں',
+    description: 'تفصیل',
+    details: 'تفصیلات',
+    orderDetails: 'آرڈر کی تفصیلات'
   },
   
   // فروخت کنندگان

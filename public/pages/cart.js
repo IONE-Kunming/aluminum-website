@@ -202,7 +202,7 @@ export async function renderCart() {
       e.preventDefault();
       e.stopPropagation();
       
-      const itemId = parseInt(btn.getAttribute('data-item-id'));
+      const itemId = btn.getAttribute('data-item-id');
       
       try {
         // Remove from cart
@@ -220,7 +220,10 @@ export async function renderCart() {
         if (error.code === 'unavailable' || error.message?.includes('ERR_BLOCKED_BY_CLIENT')) {
           console.warn('Firestore unavailable, removing from local storage only');
           // Force local removal even if Firestore fails
-          const cart = cartManager.getCart().filter(item => item.id !== itemId);
+          const cart = cartManager.getCart().filter(item => {
+            const currentItemId = item.cartItemId || item.id;
+            return currentItemId !== itemId;
+          });
           cartManager.cartCache = cart;
           localStorage.setItem(cartManager.getUserStorageKey(), JSON.stringify(cart));
           
@@ -244,16 +247,19 @@ export async function renderCart() {
       e.stopPropagation();
       
       const action = btn.getAttribute('data-action');
-      const itemId = parseInt(btn.getAttribute('data-item-id'));
+      const itemId = btn.getAttribute('data-item-id');
       
       // Validate itemId
-      if (isNaN(itemId)) {
+      if (!itemId) {
         console.error('Invalid item ID on quantity button');
         return;
       }
       
       let cartItems = cartManager.getCart();
-      let item = cartItems.find(i => i.id === itemId);
+      let item = cartItems.find(i => {
+        const currentItemId = i.cartItemId || i.id;
+        return currentItemId === itemId;
+      });
       
       if (!item) {
         console.error('Item not found in cart:', itemId);
@@ -280,7 +286,10 @@ export async function renderCart() {
       
       // Get updated cart and item after quantity change
       cartItems = cartManager.getCart();
-      item = cartItems.find(i => i.id === itemId);
+      item = cartItems.find(i => {
+        const currentItemId = i.cartItemId || i.id;
+        return currentItemId === itemId;
+      });
       
       if (!item) {
         console.error('Item not found after update:', itemId);
@@ -288,7 +297,7 @@ export async function renderCart() {
       }
       
       // Update UI without full re-render
-      const cartItemEl = document.querySelector(`.cart-item[data-item-id="${itemId}"]`);
+      const cartItemEl = document.querySelector(`.cart-item[data-item-id="${CSS.escape(itemId)}"]`);
       if (cartItemEl) {
         const quantityInput = cartItemEl.querySelector('.quantity-input');
         const subtotalEl = cartItemEl.querySelector('.cart-item-subtotal .value');
@@ -315,16 +324,19 @@ export async function renderCart() {
       if (!input || e.key !== 'Enter') return;
       
       e.preventDefault();
-      const itemId = parseInt(input.getAttribute('data-item-id'));
+      const itemId = input.getAttribute('data-item-id');
       const newQuantity = parseInt(input.value);
       
-      if (isNaN(itemId)) {
+      if (!itemId) {
         console.error('Invalid item ID on quantity input');
         return;
       }
       
       let cartItems = cartManager.getCart();
-      let item = cartItems.find(i => i.id === itemId);
+      let item = cartItems.find(i => {
+        const currentItemId = i.cartItemId || i.id;
+        return currentItemId === itemId;
+      });
       
       if (item) {
         const minQty = getMinQuantity(item);
@@ -333,7 +345,10 @@ export async function renderCart() {
           
           // Get updated cart after quantity change
           cartItems = cartManager.getCart();
-          item = cartItems.find(i => i.id === itemId);
+          item = cartItems.find(i => {
+            const currentItemId = i.cartItemId || i.id;
+            return currentItemId === itemId;
+          });
           
           // Update the subtotal for this item
           const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
@@ -355,16 +370,19 @@ export async function renderCart() {
       const input = e.target.closest('.quantity-input');
       if (!input) return;
       
-      const itemId = parseInt(input.getAttribute('data-item-id'));
+      const itemId = input.getAttribute('data-item-id');
       const newQuantity = parseInt(input.value);
       
-      if (isNaN(itemId)) {
+      if (!itemId) {
         console.error('Invalid item ID on quantity input');
         return;
       }
       
       let cartItems = cartManager.getCart();
-      let item = cartItems.find(i => i.id === itemId);
+      let item = cartItems.find(i => {
+        const currentItemId = i.cartItemId || i.id;
+        return currentItemId === itemId;
+      });
       
       if (item) {
         const minQty = getMinQuantity(item);
@@ -373,7 +391,10 @@ export async function renderCart() {
           
           // Get updated cart after quantity change
           cartItems = cartManager.getCart();
-          item = cartItems.find(i => i.id === itemId);
+          item = cartItems.find(i => {
+            const currentItemId = i.cartItemId || i.id;
+            return currentItemId === itemId;
+          });
           
           // Update the subtotal for this item
           const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');
@@ -394,14 +415,17 @@ export async function renderCart() {
       const input = e.target.closest('.quantity-input');
       if (!input) return;
       
-      const itemId = parseInt(input.getAttribute('data-item-id'));
+      const itemId = input.getAttribute('data-item-id');
       const newQty = parseInt(input.value);
       
-      if (isNaN(itemId)) return;
+      if (!itemId) return;
       
       if (!isNaN(newQty) && newQty > 0) {
         let cartItems = cartManager.getCart();
-        let item = cartItems.find(i => i.id === itemId);
+        let item = cartItems.find(i => {
+          const currentItemId = i.cartItemId || i.id;
+          return currentItemId === itemId;
+        });
         
         if (item) {
           const minQty = item.minOrder || 1;
@@ -410,7 +434,10 @@ export async function renderCart() {
             await cartManager.updateQuantity(itemId, newQty);
             // Get the updated cart after quantity change
             cartItems = cartManager.getCart();
-            item = cartItems.find(i => i.id === itemId);
+            item = cartItems.find(i => {
+              const currentItemId = i.cartItemId || i.id;
+              return currentItemId === itemId;
+            });
             if (item) {
               // Just update the subtotal for this item
               const subtotalEl = input.closest('.cart-item').querySelector('.cart-item-subtotal .value');

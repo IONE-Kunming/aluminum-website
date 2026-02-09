@@ -207,7 +207,11 @@ export default {
     stock: 'Stock:',
     addToCart: 'Add to Cart',
     loading: 'Loading products...',
-    noProducts: 'No products available'
+    noProducts: 'No products available',
+    viewDetails: 'View Details',
+    description: 'Description',
+    details: 'Details',
+    orderDetails: 'Order Details'
   },
   
   // Sellers
