@@ -6,6 +6,9 @@ import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
 
+// Constants
+const CM_TO_METERS = 100;
+
 export async function renderProductDetail() {
   const t = languageManager.t.bind(languageManager);
   const profile = authManager.getUserProfile();
@@ -268,8 +271,8 @@ export async function renderProductDetail() {
       }
       
       // Convert cm to meters for storage
-      const lengthInMeters = length / 100;
-      const widthInMeters = width / 100;
+      const lengthInMeters = length / CM_TO_METERS;
+      const widthInMeters = width / CM_TO_METERS;
       
       // Create a unique cart item ID that includes dimensions
       const cartItemId = `${product.id}_${lengthInMeters}_${widthInMeters}`;

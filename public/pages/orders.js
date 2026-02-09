@@ -29,9 +29,7 @@ export async function renderOrders() {
   }
   
   // Fetch orders for this buyer
-  console.log('Fetching orders for buyer:', user.uid);
   const orders = await dataService.getOrders({ buyerId: user.uid });
-  console.log('Orders fetched:', orders.length, orders);
   
   const content = `
     <div class="orders-page">
