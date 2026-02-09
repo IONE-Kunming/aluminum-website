@@ -105,9 +105,9 @@ export function renderLayout(content, userRole = null) {
       <!-- Overlay for mobile -->
       <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-      <!-- Cart Overlay Widget (only for buyers) -->
+      <!-- Cart Overlay Widget (only for buyers on catalog page) -->
       ${role === 'buyer' ? `
-        <div class="cart-overlay-widget" id="cart-overlay-widget">
+        <div class="cart-overlay-widget" id="cart-overlay-widget" style="display: none;">
           <div class="cart-overlay-header">
             <i data-lucide="shopping-cart"></i>
             <span class="cart-overlay-title">Cart</span>
@@ -261,10 +261,21 @@ async function initCartOverlay() {
   // Import cart manager dynamically
   const { default: cartManager } = await import('./cart.js');
   
-  // Update cart display
+  // Update cart display and visibility
   function updateCartOverlay() {
     const cartItems = cartManager.getCart();
     const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    
+    // Check if on catalog page
+    const currentPath = router.currentRoute;
+    const isOnCatalogPage = currentPath === '/buyer/catalog';
+    
+    // Show overlay only if on catalog page AND cart has items
+    if (isOnCatalogPage && cartItems.length > 0) {
+      cartOverlay.style.display = 'block';
+    } else {
+      cartOverlay.style.display = 'none';
+    }
     
     cartOverlayCount.textContent = itemCount;
     
@@ -298,6 +309,19 @@ async function initCartOverlay() {
   
   // Subscribe to cart changes
   cartManager.subscribe(updateCartOverlay);
+  
+  // Listen for route changes to update visibility
+  const originalNavigate = router.navigate.bind(router);
+  router.navigate = function(path) {
+    originalNavigate(path);
+    // Use setTimeout to ensure route is updated before checking
+    setTimeout(updateCartOverlay, 0);
+  };
+  
+  // Also listen for popstate (back/forward buttons)
+  window.addEventListener('popstate', () => {
+    setTimeout(updateCartOverlay, 0);
+  });
   
   // Checkout button
   cartCheckoutBtn.addEventListener('click', () => {

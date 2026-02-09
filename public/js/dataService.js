@@ -686,18 +686,19 @@ class DataService {
       // Create chat conversation ID (consistent ordering: buyer_seller)
       const chatId = [buyerId, sellerId].sort().join('_');
       
-      // Upload files if any
+      // Upload files if any (in parallel for better performance)
       const attachments = [];
       if (files.length > 0) {
-        for (const file of files) {
-          try {
-            const attachment = await this.uploadChatFile(chatId, file);
-            attachments.push(attachment);
-          } catch (error) {
-            console.error('Error uploading file:', file.name, error);
-            // Continue with other files
-          }
-        }
+        const uploadPromises = files.map(file => 
+          this.uploadChatFile(chatId, file)
+            .catch(error => {
+              console.error('Error uploading file:', file.name, error);
+              return null; // Return null for failed uploads
+            })
+        );
+        const results = await Promise.all(uploadPromises);
+        // Filter out failed uploads (null values)
+        attachments.push(...results.filter(att => att !== null));
       }
       
       // Create message data
@@ -843,6 +844,66 @@ class DataService {
       
     } catch (error) {
       console.error('Error subscribing to messages:', error);
+      throw error;
+    }
+  }
+
+  // Get all chats for a user
+  async getUserChats() {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      const currentUser = authManager.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      const userId = currentUser.uid;
+      
+      // Get all chats where user is a participant
+      const snapshot = await this.db
+        .collection('chats')
+        .where('participants', 'array-contains', userId)
+        .orderBy('lastMessageTime', 'desc')
+        .get();
+      
+      // Get user details for each chat participant
+      const chats = await Promise.all(snapshot.docs.map(async (doc) => {
+        const chatData = doc.data();
+        const otherUserId = chatData.participants.find(id => id !== userId);
+        
+        // Get other user's details
+        let otherUser = { displayName: 'Unknown User', email: '' };
+        try {
+          const userDoc = await this.db.collection('users').doc(otherUserId).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            otherUser = {
+              displayName: userData.displayName || userData.email || 'Unknown User',
+              email: userData.email || '',
+              role: userData.role || 'user'
+            };
+          }
+        } catch (err) {
+          console.error('Error fetching user details:', err);
+        }
+        
+        return {
+          id: doc.id,
+          ...chatData,
+          otherUserId,
+          otherUser
+        };
+      }));
+      
+      return chats;
+      
+    } catch (error) {
+      console.error('Error getting user chats:', error);
       throw error;
     }
   }

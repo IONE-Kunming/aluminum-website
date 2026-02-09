@@ -2806,10 +2806,135 @@
   transform: scale(1.1);
 }
 
+/* Chat panel with sidebar layout */
+.chat-panel {
+  display: flex;
+  flex-direction: row;
+}
+
+.chat-sidebar {
+  width: 250px;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-secondary);
+}
+
+.chat-sidebar-header {
+  padding: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chat-sidebar-header h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.chat-sidebar-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chat-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s;
+}
+
+.chat-list-item:hover {
+  background-color: var(--hover-bg);
+}
+
+.chat-list-item.active {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.chat-list-item.active .chat-list-name,
+.chat-list-item.active .chat-list-last-message {
+  color: white;
+}
+
+.chat-list-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.chat-list-item.active .chat-list-avatar {
+  background: white;
+  color: var(--primary-color);
+}
+
+.chat-list-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-list-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-list-last-message {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.btn-toggle-sidebar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.btn-toggle-sidebar:hover {
+  background-color: var(--hover-bg);
+}
+
 @media (max-width: 768px) {
   .chat-panel {
     width: 100%;
     max-width: 400px;
+  }
+  
+  .chat-sidebar {
+    width: 200px;
   }
   
   .sellers-content {

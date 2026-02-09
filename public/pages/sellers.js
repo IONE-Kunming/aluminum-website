@@ -65,29 +65,42 @@ export async function renderSellers() {
             `).join('')}
           </div>
           <div class="chat-panel" id="chatPanel" style="display: none;">
-            <div class="chat-header">
-              <h3 id="chatSellerName">Chat</h3>
-              <button class="btn-close-chat" id="closeChatBtn">
-                <i data-lucide="x"></i>
-              </button>
-            </div>
-            <div class="chat-messages" id="chatMessages">
-              <div class="chat-empty">
-                <i data-lucide="message-circle" style="width: 48px; height: 48px; opacity: 0.3;"></i>
-                <p>Start a conversation</p>
+            <div class="chat-sidebar" id="chatSidebar" style="display: none;">
+              <div class="chat-sidebar-header">
+                <h4>Conversations</h4>
+              </div>
+              <div class="chat-sidebar-list" id="chatSidebarList">
+                <!-- Chat list will be populated here -->
               </div>
             </div>
-            <div class="chat-input">
-              <input type="file" id="chatFileInput" accept="image/*,video/*,.pdf" style="display: none;" multiple />
-              <button class="btn-attach" id="attachFileBtn" title="Attach files">
-                <i data-lucide="paperclip"></i>
-              </button>
-              <input type="text" id="chatMessageInput" placeholder="Type a message..." />
-              <button class="btn-send" id="sendMessageBtn">
-                <i data-lucide="send"></i>
-              </button>
+            <div class="chat-main">
+              <div class="chat-header">
+                <button class="btn-toggle-sidebar" id="toggleSidebarBtn" style="display: none;">
+                  <i data-lucide="users"></i>
+                </button>
+                <h3 id="chatSellerName">Chat</h3>
+                <button class="btn-close-chat" id="closeChatBtn">
+                  <i data-lucide="x"></i>
+                </button>
+              </div>
+              <div class="chat-messages" id="chatMessages">
+                <div class="chat-empty">
+                  <i data-lucide="message-circle" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                  <p>Start a conversation</p>
+                </div>
+              </div>
+              <div class="chat-input">
+                <input type="file" id="chatFileInput" accept="image/*,video/*,.pdf" style="display: none;" multiple />
+                <button class="btn-attach" id="attachFileBtn" title="Attach files">
+                  <i data-lucide="paperclip"></i>
+                </button>
+                <input type="text" id="chatMessageInput" placeholder="Type a message..." />
+                <button class="btn-send" id="sendMessageBtn">
+                  <i data-lucide="send"></i>
+                </button>
+              </div>
+              <div class="chat-attachments" id="chatAttachments" style="display: none;"></div>
             </div>
-            <div class="chat-attachments" id="chatAttachments" style="display: none;"></div>
           </div>
         </div>
       `}
@@ -108,8 +121,12 @@ function initializeChat() {
   let currentChatSellerId = null;
   let selectedFiles = [];
   let unsubscribeMessages = null;
+  let allChats = [];
   
   const chatPanel = document.getElementById('chatPanel');
+  const chatSidebar = document.getElementById('chatSidebar');
+  const chatSidebarList = document.getElementById('chatSidebarList');
+  const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
   const chatMessages = document.getElementById('chatMessages');
   const chatSellerName = document.getElementById('chatSellerName');
   const chatMessageInput = document.getElementById('chatMessageInput');
@@ -118,6 +135,67 @@ function initializeChat() {
   const attachFileBtn = document.getElementById('attachFileBtn');
   const chatFileInput = document.getElementById('chatFileInput');
   const chatAttachments = document.getElementById('chatAttachments');
+  
+  // Load user's chat list
+  async function loadChatList() {
+    try {
+      allChats = await dataService.getUserChats();
+      
+      // Show sidebar only if user has more than 1 chat
+      if (allChats.length > 1) {
+        chatSidebar.style.display = 'block';
+        toggleSidebarBtn.style.display = 'block';
+        
+        // Populate chat list
+        chatSidebarList.innerHTML = allChats.map(chat => `
+          <div class="chat-list-item ${chat.otherUserId === currentChatSellerId ? 'active' : ''}" 
+               data-user-id="${chat.otherUserId}"
+               data-user-name="${escapeHtml(chat.otherUser.displayName)}">
+            <div class="chat-list-avatar">
+              ${chat.otherUser.displayName.charAt(0).toUpperCase()}
+            </div>
+            <div class="chat-list-info">
+              <div class="chat-list-name">${escapeHtml(chat.otherUser.displayName)}</div>
+              <div class="chat-list-last-message">${escapeHtml(chat.lastMessage || 'No messages')}</div>
+            </div>
+          </div>
+        `).join('');
+        
+        // Add click handlers to chat list items
+        document.querySelectorAll('.chat-list-item').forEach(item => {
+          item.addEventListener('click', async () => {
+            const userId = item.dataset.userId;
+            const userName = item.dataset.userName;
+            
+            currentChatSellerId = userId;
+            chatSellerName.textContent = `Chat with ${userName}`;
+            
+            // Update active state
+            document.querySelectorAll('.chat-list-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            
+            // Load messages
+            await loadChatMessages(userId);
+          });
+        });
+        
+        if (window.lucide) window.lucide.createIcons();
+      } else {
+        chatSidebar.style.display = 'none';
+        toggleSidebarBtn.style.display = 'none';
+      }
+    } catch (error) {
+      console.error('Error loading chat list:', error);
+    }
+  }
+  
+  // Toggle sidebar visibility
+  if (toggleSidebarBtn) {
+    toggleSidebarBtn.addEventListener('click', () => {
+      const isVisible = chatSidebar.style.display !== 'none';
+      chatSidebar.style.display = isVisible ? 'none' : 'block';
+    });
+  }
   
   // Open chat with seller
   document.querySelectorAll('.btn-chat').forEach(btn => {
@@ -128,6 +206,9 @@ function initializeChat() {
       currentChatSellerId = sellerId;
       chatSellerName.textContent = `Chat with ${sellerName}`;
       chatPanel.style.display = 'flex';
+      
+      // Load chat list to check if sidebar should be shown
+      await loadChatList();
       
       // Load chat messages
       await loadChatMessages(sellerId);
