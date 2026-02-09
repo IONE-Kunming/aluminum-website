@@ -82,22 +82,37 @@ Added indexes for:
 
 ## Deployment Instructions
 
-### 1. Deploy Firestore Indexes
+### Prerequisites
+Before deploying, ensure you have:
+1. Firebase project set up with Phone Authentication enabled
+2. Firebase billing enabled (required for phone authentication)
+3. Test phone numbers configured in Firebase Console (for testing without SMS charges)
+
+### 1. Enable Firebase Phone Authentication
+```bash
+# In Firebase Console:
+# 1. Go to Authentication > Sign-in method
+# 2. Enable "Phone" sign-in provider
+# 3. Add your domain to authorized domains
+# 4. Configure reCAPTCHA settings
+```
+
+### 2. Deploy Firestore Indexes
 ```bash
 firebase deploy --only firestore:indexes
 ```
 
-### 2. Deploy Firestore Rules
+### 3. Deploy Firestore Rules
 ```bash
 firebase deploy --only firestore:rules
 ```
 
-### 3. Deploy Storage Rules
+### 4. Deploy Storage Rules
 ```bash
 firebase deploy --only storage
 ```
 
-### 4. Build and Deploy the Application
+### 5. Build and Deploy the Application
 ```bash
 npm run build
 firebase deploy --only hosting
@@ -107,6 +122,23 @@ Or deploy everything at once:
 ```bash
 npm run deploy:all
 ```
+
+## Phone Number Verification Setup
+
+### Firebase Configuration
+1. Enable Phone Authentication in Firebase Console
+2. Ensure billing is enabled (Phone Auth requires Spark or Blaze plan)
+3. Configure test phone numbers in Firebase Console for development:
+   - Go to Authentication > Settings
+   - Add test phone numbers with custom verification codes
+   - Example: +1 555-555-5555 with code 123456
+
+### Important Notes
+- Phone verification uses Firebase Phone Authentication
+- Real SMS messages are sent to actual phone numbers
+- reCAPTCHA verification is required (invisible mode)
+- SMS charges apply based on your Firebase plan and region
+- Test numbers can be used during development without charges
 
 ## Testing Checklist
 

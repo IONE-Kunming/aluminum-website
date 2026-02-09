@@ -64,6 +64,7 @@ export function renderProfile() {
                 Verify
               </button>
             </div>
+            <div id="recaptcha-container"></div>
             <div id="otp-verification" style="display: none; margin-top: 15px; padding: 15px; background: var(--hover-bg); border-radius: 8px;">
               <label style="margin-bottom: 8px; display: block;">Enter OTP Code</label>
               <div style="display: flex; gap: 10px;">
@@ -127,7 +128,40 @@ function initProfileHandlers(profile, user) {
   if (!form) return;
   
   let pendingPhoneNumber = null;
-  let verificationId = null;
+  let confirmationResult = null;
+  
+  // Initialize Firebase reCAPTCHA verifier
+  let recaptchaVerifier = null;
+  
+  function initRecaptcha() {
+    if (!window.firebase || !firebase.auth) {
+      console.error('Firebase Auth not available');
+      return;
+    }
+    
+    try {
+      // Create reCAPTCHA verifier if not already created
+      if (!recaptchaVerifier) {
+        recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+          'size': 'invisible',
+          'callback': function(response) {
+            // reCAPTCHA solved
+            console.log('reCAPTCHA verified');
+          },
+          'expired-callback': function() {
+            // Response expired
+            console.log('reCAPTCHA expired');
+            window.toast?.error('Verification expired. Please try again.');
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error initializing reCAPTCHA:', error);
+    }
+  }
+  
+  // Initialize reCAPTCHA on page load
+  setTimeout(initRecaptcha, 1000);
   
   // Prevent non-numeric characters in phone number (except +, -, space, parentheses)
   phoneInput.addEventListener('input', (e) => {
@@ -184,7 +218,7 @@ function initProfileHandlers(profile, user) {
     });
   }
   
-  // Verify phone number button
+  // Verify phone number button - Send real OTP via Firebase
   verifyPhoneBtn.addEventListener('click', async () => {
     const phoneNumber = phoneInput.value.trim();
     
@@ -198,13 +232,27 @@ function initProfileHandlers(profile, user) {
       return;
     }
     
+    if (!window.firebase || !firebase.auth) {
+      window.toast.error('Firebase Authentication is not available');
+      return;
+    }
+    
     try {
       verifyPhoneBtn.disabled = true;
       verifyPhoneBtn.innerHTML = '<i data-lucide="loader"></i> Sending...';
       if (window.lucide) window.lucide.createIcons();
       
-      // Send OTP (mock implementation - in production use Firebase Phone Auth or SMS service)
-      verificationId = await sendOTP(phoneNumber);
+      // Initialize reCAPTCHA if not already done
+      if (!recaptchaVerifier) {
+        initRecaptcha();
+        // Wait a moment for reCAPTCHA to initialize
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+      
+      // Send SMS verification code using Firebase Phone Authentication
+      const appVerifier = recaptchaVerifier;
+      confirmationResult = await firebase.auth().signInWithPhoneNumber(phoneNumber, appVerifier);
+      
       pendingPhoneNumber = phoneNumber;
       
       // Show OTP verification section
@@ -213,7 +261,33 @@ function initProfileHandlers(profile, user) {
       
     } catch (error) {
       console.error('Error sending OTP:', error);
-      window.toast.error('Failed to send verification code: ' + error.message);
+      
+      let errorMessage = 'Failed to send verification code';
+      
+      // Handle specific Firebase errors
+      if (error.code === 'auth/invalid-phone-number') {
+        errorMessage = 'Invalid phone number format. Please include country code.';
+      } else if (error.code === 'auth/too-many-requests') {
+        errorMessage = 'Too many requests. Please try again later.';
+      } else if (error.code === 'auth/quota-exceeded') {
+        errorMessage = 'SMS quota exceeded. Please try again later.';
+      } else if (error.message) {
+        errorMessage += ': ' + error.message;
+      }
+      
+      window.toast.error(errorMessage);
+      
+      // Reset reCAPTCHA on error
+      if (recaptchaVerifier) {
+        try {
+          recaptchaVerifier.clear();
+          recaptchaVerifier = null;
+          // Reinitialize
+          setTimeout(initRecaptcha, 500);
+        } catch (e) {
+          console.error('Error resetting reCAPTCHA:', e);
+        }
+      }
     } finally {
       verifyPhoneBtn.disabled = false;
       verifyPhoneBtn.innerHTML = '<i data-lucide="check-circle"></i> Verify';
@@ -221,7 +295,7 @@ function initProfileHandlers(profile, user) {
     }
   });
   
-  // Verify OTP button
+  // Verify OTP button - Verify real OTP with Firebase
   if (verifyOtpBtn) {
     verifyOtpBtn.addEventListener('click', async () => {
       const otpCode = otpCodeInput.value.trim();
@@ -231,36 +305,50 @@ function initProfileHandlers(profile, user) {
         return;
       }
       
+      if (!confirmationResult) {
+        window.toast.error('Please request a verification code first');
+        return;
+      }
+      
       try {
         verifyOtpBtn.disabled = true;
         verifyOtpBtn.innerHTML = '<i data-lucide="loader"></i> Verifying...';
         if (window.lucide) window.lucide.createIcons();
         
-        // Verify OTP (mock implementation)
-        const isValid = await verifyOTP(verificationId, otpCode);
+        // Verify OTP with Firebase
+        await confirmationResult.confirm(otpCode);
         
-        if (isValid) {
-          // Update profile with verified phone number
-          await authManager.updateProfileFields({
-            phoneNumber: pendingPhoneNumber,
-            phoneVerified: true
-          });
-          
-          window.toast.success('Phone number verified and updated successfully');
-          otpVerification.style.display = 'none';
-          otpCodeInput.value = '';
-          
-          // Reload page to show verified status
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
-        } else {
-          window.toast.error('Invalid verification code. Please try again.');
-        }
+        // Update profile with verified phone number
+        await authManager.updateProfileFields({
+          phoneNumber: pendingPhoneNumber,
+          phoneVerified: true
+        });
+        
+        window.toast.success('Phone number verified and updated successfully');
+        otpVerification.style.display = 'none';
+        otpCodeInput.value = '';
+        confirmationResult = null;
+        
+        // Reload page to show verified status
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
         
       } catch (error) {
         console.error('Error verifying OTP:', error);
-        window.toast.error('Verification failed: ' + error.message);
+        
+        let errorMessage = 'Verification failed';
+        
+        // Handle specific Firebase errors
+        if (error.code === 'auth/invalid-verification-code') {
+          errorMessage = 'Invalid verification code. Please try again.';
+        } else if (error.code === 'auth/code-expired') {
+          errorMessage = 'Verification code expired. Please request a new code.';
+        } else if (error.message) {
+          errorMessage += ': ' + error.message;
+        }
+        
+        window.toast.error(errorMessage);
       } finally {
         verifyOtpBtn.disabled = false;
         verifyOtpBtn.innerHTML = 'Verify OTP';
@@ -357,46 +445,6 @@ function initProfileHandlers(profile, user) {
       if (window.lucide) window.lucide.createIcons();
     }
   });
-}
-
-// Mock OTP sending function (replace with actual SMS service in production)
-// WARNING: This is for DEMO purposes only. In production, use a secure backend service.
-async function sendOTP(phoneNumber) {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  // In production, use Firebase Phone Authentication or SMS service like Twilio
-  // For now, generate a mock verification ID
-  const verificationId = 'mock_' + Date.now();
-  
-  // SECURITY WARNING: Storing OTP in sessionStorage is insecure and only for demo
-  // In production, OTP should be validated on the server side
-  const mockOTP = Math.floor(100000 + Math.random() * 900000).toString();
-  sessionStorage.setItem(verificationId, mockOTP);
-  
-  // Only log in development mode
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    console.log('[DEV ONLY] Mock OTP sent:', mockOTP);
-  }
-  
-  return verificationId;
-}
-
-// Mock OTP verification function (replace with actual verification in production)
-// WARNING: This is for DEMO purposes only. In production, use secure server-side validation.
-async function verifyOTP(verificationId, otpCode) {
-  // Simulate API call
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // SECURITY WARNING: This client-side validation is insecure and only for demo
-  const storedOTP = sessionStorage.getItem(verificationId);
-  
-  if (storedOTP === otpCode) {
-    sessionStorage.removeItem(verificationId);
-    return true;
-  }
-  
-  return false;
 }
 
 // Validate phone number format
