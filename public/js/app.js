@@ -11,6 +11,9 @@ import router from './router.js';
 import authManager from './auth.js';
 import cartManager from './cart.js';
 
+// Profile loading timeout in milliseconds
+const PROFILE_LOAD_TIMEOUT_MS = 8000;
+
 // Eagerly load landing and auth pages (always needed)
 import { renderLandingPage } from '../pages/landing.js';
 import { renderLoginPage } from '../pages/login.js';
@@ -103,8 +106,8 @@ function protectedRoute(handler, requireRole = null) {
     
     // Wait for user profile to load if a role is required
     if (requireRole) {
-      // Increased timeout to 8 seconds to ensure profile loads from Firestore
-      const profile = await authManager.waitForProfile(8000);
+      // Wait for profile to load with extended timeout
+      const profile = await authManager.waitForProfile(PROFILE_LOAD_TIMEOUT_MS);
       console.log('[protectedRoute] Profile loaded:', profile ? `role=${profile.role}` : 'null');
       
       if (!profile || !profile.role) {
@@ -199,9 +202,8 @@ async function initApp() {
       return;
     }
     
-    // Wait longer for profile to load and check if user already has a role
-    // Increased timeout to ensure profile is loaded from Firestore
-    const profile = await authManager.waitForProfile(8000);
+    // Wait for profile to load and check if user already has a role
+    const profile = await authManager.waitForProfile(PROFILE_LOAD_TIMEOUT_MS);
     
     if (profile && profile.role) {
       // User already has a role, redirect to their dashboard immediately

@@ -2,6 +2,29 @@ import router from '../js/router.js';
 import authManager from '../js/auth.js';
 import languageManager from '../js/language.js';
 
+// Profile loading timeout in milliseconds
+const PROFILE_LOAD_TIMEOUT_MS = 8000;
+
+// Helper function to navigate user based on their role
+function navigateByRole(profile) {
+  if (!profile) {
+    console.error('Cannot navigate: profile is null');
+    return;
+  }
+
+  if (profile.role === 'seller') {
+    router.navigate('/seller/dashboard');
+  } else if (profile.role === 'buyer') {
+    router.navigate('/buyer/dashboard');
+  } else if (profile.role === 'admin') {
+    router.navigate('/admin/dashboard');
+  } else {
+    // This should not happen if profile exists with role as per requirements
+    console.error('Profile loaded but has no valid role:', profile);
+    router.navigate('/profile-selection');
+  }
+}
+
 export function renderLoginPage() {
   const app = document.getElementById('app');
   const t = languageManager.t.bind(languageManager);
@@ -175,12 +198,12 @@ export function renderLoginPage() {
     if (result.success) {
       window.toast.success('Successfully logged in!');
       
-      // Wait longer for profile to load before navigation (increased to 8 seconds)
+      // Wait for profile to load before navigation
       // This ensures the profile with role is properly loaded from Firestore
-      const profile = await authManager.waitForProfile(8000);
+      const profile = await authManager.waitForProfile(PROFILE_LOAD_TIMEOUT_MS);
       
       if (!profile) {
-        // Profile failed to load after 8 seconds
+        // Profile failed to load after timeout
         // Since profile should exist per requirements, show error and retry
         showError('Failed to load user profile. Please try again.');
         setLoading(false);
@@ -188,18 +211,7 @@ export function renderLoginPage() {
       }
       
       // Profile loaded successfully - navigate based on role
-      if (profile.role === 'seller') {
-        router.navigate('/seller/dashboard');
-      } else if (profile.role === 'buyer') {
-        router.navigate('/buyer/dashboard');
-      } else if (profile.role === 'admin') {
-        router.navigate('/admin/dashboard');
-      } else {
-        // This should not happen if profile exists with role as per requirements
-        // But handle it gracefully
-        console.error('Profile loaded but has no role:', profile);
-        router.navigate('/profile-selection');
-      }
+      navigateByRole(profile);
     } else {
       showError(result.error || 'Failed to login. Please check your credentials.');
       setLoading(false);
@@ -215,12 +227,12 @@ export function renderLoginPage() {
     if (result.success) {
       window.toast.success('Successfully logged in with Google!');
       
-      // Wait longer for profile to load before navigation (increased to 8 seconds)
+      // Wait for profile to load before navigation
       // This ensures the profile with role is properly loaded from Firestore
-      const profile = await authManager.waitForProfile(8000);
+      const profile = await authManager.waitForProfile(PROFILE_LOAD_TIMEOUT_MS);
       
       if (!profile) {
-        // Profile failed to load after 8 seconds
+        // Profile failed to load after timeout
         // Since profile should exist per requirements, show error and retry
         showError('Failed to load user profile. Please try again.');
         setLoading(false);
@@ -228,18 +240,7 @@ export function renderLoginPage() {
       }
       
       // Profile loaded successfully - navigate based on role
-      if (profile.role === 'seller') {
-        router.navigate('/seller/dashboard');
-      } else if (profile.role === 'buyer') {
-        router.navigate('/buyer/dashboard');
-      } else if (profile.role === 'admin') {
-        router.navigate('/admin/dashboard');
-      } else {
-        // This should not happen if profile exists with role as per requirements
-        // But handle it gracefully
-        console.error('Profile loaded but has no role:', profile);
-        router.navigate('/profile-selection');
-      }
+      navigateByRole(profile);
     } else {
       showError(result.error || 'Failed to sign in with Google.');
       setLoading(false);
