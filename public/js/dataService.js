@@ -575,8 +575,9 @@ class DataService {
         
         // Sort by createdAt, putting orders without timestamps at the end
         orders.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+          // Handle Firestore Timestamp objects properly
+          const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
+          const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
           return dateB - dateA;
         });
         
