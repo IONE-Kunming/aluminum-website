@@ -180,10 +180,10 @@ service cloud.firestore {
     
     // Counters collection (for generating invoice numbers, etc.)
     match /_counters/{counterId} {
-      // Authenticated users can read and write counters
-      // This is needed for invoice number generation
-      allow read, write: if isAuthenticated();
-      // Admins can do anything
+      // Only allow invoice counter access during invoice creation
+      // Restrict to specific counter documents
+      allow read, write: if isAuthenticated() && counterId == 'invoices';
+      // Admins can access all counters
       allow read, write: if isAdmin();
     }
   }

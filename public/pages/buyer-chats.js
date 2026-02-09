@@ -2,6 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import languageManager from '../js/language.js';
+import { escapeHtml } from '../js/utils.js';
 
 let unsubscribers = [];
 
@@ -204,19 +205,26 @@ function displayMessages(messages) {
     const time = msg.createdAt?.toDate?.() || new Date(msg.createdAt);
     const timeStr = formatTime(time);
     
+    // Escape message text to prevent XSS
+    const safeMessage = escapeHtml(msg.message);
+    
     let attachmentsHtml = '';
     if (msg.attachments && msg.attachments.length > 0) {
       attachmentsHtml = '<div class="message-attachments">';
       
       msg.attachments.forEach(att => {
+        // Sanitize attachment name and URL
+        const safeName = escapeHtml(att.name);
+        const safeUrl = escapeHtml(att.url);
+        
         if (att.type.startsWith('image/')) {
           // Display images inline
           attachmentsHtml += `
             <div class="attachment attachment-inline">
-              <img src="${att.url}" alt="${att.name}" class="attachment-image" onclick="window.open('${att.url}', '_blank')" style="cursor: pointer; max-width: 300px; max-height: 300px; border-radius: 8px;" />
+              <img src="${safeUrl}" alt="${safeName}" class="attachment-image" data-url="${safeUrl}" style="cursor: pointer; max-width: 300px; max-height: 300px; border-radius: 8px;" />
               <div class="attachment-actions">
-                <span class="attachment-name">${att.name}</span>
-                <a href="${att.url}" download="${att.name}" class="btn btn-sm btn-secondary" title="Download" onclick="event.stopPropagation();">
+                <span class="attachment-name">${safeName}</span>
+                <a href="${safeUrl}" download="${safeName}" class="btn btn-sm btn-secondary" title="Download">
                   <i data-lucide="download"></i>
                 </a>
               </div>
@@ -227,12 +235,12 @@ function displayMessages(messages) {
           attachmentsHtml += `
             <div class="attachment attachment-inline">
               <video controls class="attachment-video" style="max-width: 300px; max-height: 300px; border-radius: 8px;">
-                <source src="${att.url}" type="${att.type}">
+                <source src="${safeUrl}" type="${escapeHtml(att.type)}">
                 Your browser does not support the video tag.
               </video>
               <div class="attachment-actions">
-                <span class="attachment-name">${att.name}</span>
-                <a href="${att.url}" download="${att.name}" class="btn btn-sm btn-secondary" title="Download">
+                <span class="attachment-name">${safeName}</span>
+                <a href="${safeUrl}" download="${safeName}" class="btn btn-sm btn-secondary" title="Download">
                   <i data-lucide="download"></i>
                 </a>
               </div>
@@ -244,10 +252,10 @@ function displayMessages(messages) {
             <div class="attachment attachment-file">
               <i data-lucide="file"></i>
               <div class="attachment-info">
-                <span class="attachment-name">${att.name}</span>
+                <span class="attachment-name">${safeName}</span>
                 <span class="attachment-size">${formatFileSize(att.size)}</span>
               </div>
-              <a href="${att.url}" download="${att.name}" class="btn btn-sm btn-secondary" title="Download">
+              <a href="${safeUrl}" download="${safeName}" class="btn btn-sm btn-secondary" title="Download">
                 <i data-lucide="download"></i>
               </a>
             </div>
@@ -261,7 +269,7 @@ function displayMessages(messages) {
     return `
       <div class="message ${isOwn ? 'message-own' : 'message-other'}">
         <div class="message-content">
-          ${msg.message ? `<div class="message-text">${msg.message}</div>` : ''}
+          ${safeMessage ? `<div class="message-text">${safeMessage}</div>` : ''}
           ${attachmentsHtml}
           <div class="message-time">${timeStr}</div>
         </div>
@@ -270,6 +278,14 @@ function displayMessages(messages) {
   }).join('');
   
   if (window.lucide) window.lucide.createIcons();
+  
+  // Add click handlers for images after rendering
+  const images = messagesContainer.querySelectorAll('.attachment-image');
+  images.forEach(img => {
+    img.addEventListener('click', function() {
+      window.open(this.dataset.url, '_blank');
+    });
+  });
   
   // Scroll to bottom
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
