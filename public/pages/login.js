@@ -175,22 +175,29 @@ export function renderLoginPage() {
     if (result.success) {
       window.toast.success('Successfully logged in!');
       
-      // Wait for profile to load before navigation
-      const profile = await authManager.waitForProfile();
+      // Wait longer for profile to load before navigation (increased to 8 seconds)
+      // This ensures the profile with role is properly loaded from Firestore
+      const profile = await authManager.waitForProfile(8000);
       
       if (!profile) {
-        // Profile failed to load, but user is authenticated
-        // Redirect to profile selection as fallback
-        console.warn('Profile not loaded after login, redirecting to profile selection');
+        // Profile failed to load after 8 seconds
+        // Since profile should exist per requirements, show error and retry
+        showError('Failed to load user profile. Please try again.');
+        setLoading(false);
+        return;
       }
       
-      if (profile?.role === 'seller') {
+      // Profile loaded successfully - navigate based on role
+      if (profile.role === 'seller') {
         router.navigate('/seller/dashboard');
-      } else if (profile?.role === 'buyer') {
+      } else if (profile.role === 'buyer') {
         router.navigate('/buyer/dashboard');
-      } else if (profile?.role === 'admin') {
+      } else if (profile.role === 'admin') {
         router.navigate('/admin/dashboard');
       } else {
+        // This should not happen if profile exists with role as per requirements
+        // But handle it gracefully
+        console.error('Profile loaded but has no role:', profile);
         router.navigate('/profile-selection');
       }
     } else {
@@ -208,22 +215,29 @@ export function renderLoginPage() {
     if (result.success) {
       window.toast.success('Successfully logged in with Google!');
       
-      // Wait for profile to load before navigation
-      const profile = await authManager.waitForProfile();
+      // Wait longer for profile to load before navigation (increased to 8 seconds)
+      // This ensures the profile with role is properly loaded from Firestore
+      const profile = await authManager.waitForProfile(8000);
       
       if (!profile) {
-        // Profile failed to load, but user is authenticated
-        // Redirect to profile selection as fallback
-        console.warn('Profile not loaded after login, redirecting to profile selection');
+        // Profile failed to load after 8 seconds
+        // Since profile should exist per requirements, show error and retry
+        showError('Failed to load user profile. Please try again.');
+        setLoading(false);
+        return;
       }
       
-      if (profile?.role === 'seller') {
+      // Profile loaded successfully - navigate based on role
+      if (profile.role === 'seller') {
         router.navigate('/seller/dashboard');
-      } else if (profile?.role === 'buyer') {
+      } else if (profile.role === 'buyer') {
         router.navigate('/buyer/dashboard');
-      } else if (profile?.role === 'admin') {
+      } else if (profile.role === 'admin') {
         router.navigate('/admin/dashboard');
       } else {
+        // This should not happen if profile exists with role as per requirements
+        // But handle it gracefully
+        console.error('Profile loaded but has no role:', profile);
         router.navigate('/profile-selection');
       }
     } else {

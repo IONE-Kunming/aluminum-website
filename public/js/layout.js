@@ -313,17 +313,23 @@ async function initCartOverlay() {
   cartManager.subscribe(updateCartOverlay);
   
   // Listen for route changes to update visibility
-  const originalNavigate = router.navigate.bind(router);
-  router.navigate = function(path) {
-    originalNavigate(path);
-    // Use setTimeout to ensure route is updated before checking
-    setTimeout(updateCartOverlay, 0);
-  };
-  
-  // Also listen for popstate (back/forward buttons)
-  window.addEventListener('popstate', () => {
-    setTimeout(updateCartOverlay, 0);
-  });
+  // Only wrap router.navigate once by checking if it's already wrapped
+  if (!router.navigate._cartOverlayWrapped) {
+    const originalNavigate = router.navigate.bind(router);
+    router.navigate = function(path) {
+      originalNavigate(path);
+      // Use setTimeout to ensure route is updated before checking
+      setTimeout(updateCartOverlay, 0);
+    };
+    // Mark as wrapped to prevent multiple wrapping
+    router.navigate._cartOverlayWrapped = true;
+    
+    // Also listen for popstate (back/forward buttons)
+    // Only add this listener once
+    window.addEventListener('popstate', () => {
+      setTimeout(updateCartOverlay, 0);
+    });
+  }
   
   // Checkout button
   cartCheckoutBtn.addEventListener('click', () => {
