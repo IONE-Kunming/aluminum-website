@@ -123,6 +123,62 @@ export async function renderProducts() {
         </div>
       </div>
 
+      <!-- Edit Product Modal -->
+      <div id="edit-product-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+          <div class="modal-header">
+            <h2>Edit Product</h2>
+            <button class="modal-close" id="close-edit-modal-btn">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="edit-product-form">
+              <input type="hidden" id="edit-product-id" />
+              
+              <div class="form-group">
+                <label for="edit-model-number">${t('products.modelNumber')} *</label>
+                <input type="text" id="edit-model-number" class="form-control" required />
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-category">${t('products.category')} *</label>
+                <input type="text" id="edit-category" class="form-control" required />
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-price">${t('products.pricePerMeter')} *</label>
+                <input type="number" id="edit-price" class="form-control" step="0.01" min="0" required />
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-stock">${t('products.stock')}</label>
+                <input type="number" id="edit-stock" class="form-control" min="0" value="0" />
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-description">${t('products.description')}</label>
+                <textarea id="edit-description" class="form-control" rows="3"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-image">${t('products.imagePath')}</label>
+                <input type="file" id="edit-image" class="form-control" accept="image/*" />
+                <small style="color: #6b7280; font-size: 12px;">Optional: Upload new product image (leave empty to keep current image)</small>
+              </div>
+              
+              <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                <button type="button" class="btn btn-secondary" id="cancel-edit-btn">${t('common.cancel')}</button>
+                <button type="submit" class="btn btn-primary" id="submit-edit-btn">
+                  <i data-lucide="save"></i>
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
       <!-- Bulk Import Modal -->
       <div id="bulk-import-modal" class="modal" style="display: none;">
         <div class="modal-content">
@@ -206,6 +262,9 @@ export async function renderProducts() {
   
   // Initialize add product functionality
   initializeAddProduct();
+  
+  // Initialize edit product functionality
+  initializeEditProduct();
   
   // Initialize bulk import functionality
   initializeBulkImport();
@@ -348,12 +407,37 @@ function displayProducts(products) {
   });
 }
 
-// Edit product (placeholder for future implementation)
-function editProduct(productId) {
-  if (window.toast) {
-    window.toast.info('Edit product feature coming soon');
+// Edit product
+async function editProduct(productId) {
+  try {
+    // Get product details
+    const product = await dataService.getProductById(productId);
+    
+    if (!product) {
+      if (window.toast) {
+        window.toast.error('Product not found');
+      }
+      return;
+    }
+    
+    // Open edit modal and populate with product data
+    const modal = document.getElementById('edit-product-modal');
+    document.getElementById('edit-product-id').value = productId;
+    document.getElementById('edit-model-number').value = product.modelNumber || '';
+    document.getElementById('edit-category').value = product.category || '';
+    document.getElementById('edit-price').value = product.pricePerMeter || product.price || '';
+    document.getElementById('edit-stock').value = product.stock || 0;
+    document.getElementById('edit-description').value = product.description || '';
+    
+    modal.style.display = 'flex';
+    if (window.lucide) window.lucide.createIcons();
+    
+  } catch (error) {
+    console.error('Error loading product for edit:', error);
+    if (window.toast) {
+      window.toast.error('Failed to load product details');
+    }
   }
-  console.log('Edit product:', productId);
 }
 
 // Delete product
@@ -473,6 +557,100 @@ function initializeAddProduct() {
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i data-lucide="plus"></i> Add Product';
+        if (window.lucide) window.lucide.createIcons();
+      }
+    });
+  }
+}
+
+// Initialize Edit Product functionality
+function initializeEditProduct() {
+  const modal = document.getElementById('edit-product-modal');
+  const closeModalBtn = document.getElementById('close-edit-modal-btn');
+  const cancelBtn = document.getElementById('cancel-edit-btn');
+  const form = document.getElementById('edit-product-form');
+  const submitBtn = document.getElementById('submit-edit-btn');
+  
+  const closeModal = () => {
+    modal.style.display = 'none';
+    form.reset();
+  };
+  
+  // Close modal
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', closeModal);
+  }
+  
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', closeModal);
+  }
+  
+  // Handle form submission
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const productId = document.getElementById('edit-product-id').value;
+      const modelNumber = document.getElementById('edit-model-number').value.trim();
+      const category = document.getElementById('edit-category').value.trim();
+      const pricePerMeter = parseFloat(document.getElementById('edit-price').value);
+      const stock = parseInt(document.getElementById('edit-stock').value) || 0;
+      const description = document.getElementById('edit-description').value.trim();
+      const imageFile = document.getElementById('edit-image').files[0];
+      
+      if (!modelNumber || !category || !pricePerMeter || pricePerMeter <= 0) {
+        if (window.toast) {
+          window.toast.error('Please fill in all required fields with valid values');
+        }
+        return;
+      }
+      
+      try {
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-lucide="loader"></i> Saving...';
+        if (window.lucide) window.lucide.createIcons();
+        
+        // Get current product to preserve existing imageUrl if no new image
+        const currentProduct = await dataService.getProductById(productId);
+        let imageUrl = currentProduct.imageUrl || '';
+        
+        // Upload new image if provided
+        if (imageFile) {
+          const storage = firebase.storage();
+          const user = authManager.getCurrentUser();
+          const imageRef = storage.ref(`products/${user.uid}/${Date.now()}_${imageFile.name}`);
+          await imageRef.put(imageFile);
+          imageUrl = await imageRef.getDownloadURL();
+        }
+        
+        // Update product in database
+        const productData = {
+          modelNumber,
+          category,
+          pricePerMeter,
+          stock,
+          description,
+          imageUrl
+        };
+        
+        await dataService.updateProduct(productId, productData);
+        
+        if (window.toast) {
+          window.toast.success('Product updated successfully!');
+        }
+        
+        // Close modal and reload products
+        closeModal();
+        await loadProducts();
+      } catch (error) {
+        console.error('Error updating product:', error);
+        if (window.toast) {
+          window.toast.error('Failed to update product: ' + error.message);
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i data-lucide="save"></i> Save Changes';
         if (window.lucide) window.lucide.createIcons();
       }
     });

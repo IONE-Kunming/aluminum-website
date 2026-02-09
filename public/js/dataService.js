@@ -345,6 +345,33 @@ class DataService {
     }
   }
 
+  // Update an existing product
+  async updateProduct(productId, productData) {
+    await this.init();
+
+    try {
+      if (!this.db || !productId) {
+        throw new Error('Invalid product ID or database not initialized');
+      }
+
+      // Add updated timestamp
+      const updateData = {
+        ...productData,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      await this.db.collection('products').doc(productId).update(updateData);
+      
+      return { 
+        success: true,
+        productId: productId
+      };
+    } catch (error) {
+      console.error('Error updating product:', error);
+      throw error;
+    }
+  }
+
   // Get unique categories from products
   async getCategories(sellerId = null) {
     await this.init();
@@ -800,45 +827,103 @@ class DataService {
       const buyerId = currentUser.uid;
       const chatId = [buyerId, sellerId].sort().join('_');
       
+      console.log('Subscribing to chat messages for chatId:', chatId);
+      
       // Debounce timer for marking messages as read
       let markReadTimeout = null;
       
       // Subscribe to messages in this chat
-      const unsubscribe = this.db
-        .collection('messages')
-        .where('chatId', '==', chatId)
-        .orderBy('createdAt', 'asc')
-        .onSnapshot((snapshot) => {
-          const messages = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          
-          callback(messages);
-          
-          // Debounce marking messages as read to avoid excessive writes
-          if (markReadTimeout) {
-            clearTimeout(markReadTimeout);
-          }
-          
-          markReadTimeout = setTimeout(() => {
-            // Mark unread messages as read (batched)
-            const unreadMessages = snapshot.docs.filter(doc => {
-              const msg = doc.data();
-              return msg.receiverId === buyerId && !msg.read;
-            });
+      // Try with orderBy first, fallback to without ordering if index doesn't exist
+      let unsubscribe;
+      
+      try {
+        unsubscribe = this.db
+          .collection('messages')
+          .where('chatId', '==', chatId)
+          .orderBy('createdAt', 'asc')
+          .onSnapshot((snapshot) => {
+            console.log('Messages snapshot received:', snapshot.docs.length, 'messages');
             
-            if (unreadMessages.length > 0) {
-              const batch = this.db.batch();
-              unreadMessages.forEach(doc => {
-                batch.update(this.db.collection('messages').doc(doc.id), { read: true });
-              });
-              batch.commit().catch(err => console.error('Error marking messages as read:', err));
+            const messages = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+            
+            console.log('Calling callback with messages:', messages.length);
+            callback(messages);
+            
+            // Debounce marking messages as read to avoid excessive writes
+            if (markReadTimeout) {
+              clearTimeout(markReadTimeout);
             }
-          }, 1000); // Wait 1 second before marking as read
-        }, (error) => {
-          console.error('Error in message subscription:', error);
-        });
+            
+            markReadTimeout = setTimeout(() => {
+              // Mark unread messages as read (batched)
+              const unreadMessages = snapshot.docs.filter(doc => {
+                const msg = doc.data();
+                return msg.receiverId === buyerId && !msg.read;
+              });
+              
+              if (unreadMessages.length > 0) {
+                const batch = this.db.batch();
+                unreadMessages.forEach(doc => {
+                  batch.update(this.db.collection('messages').doc(doc.id), { read: true });
+                });
+                batch.commit().catch(err => console.error('Error marking messages as read:', err));
+              }
+            }, 1000); // Wait 1 second before marking as read
+          }, (error) => {
+            console.error('Error in message subscription:', error);
+          });
+      } catch (orderByError) {
+        // If orderBy fails (missing index), subscribe without ordering
+        console.warn('Could not subscribe with orderBy, trying without ordering:', orderByError);
+        
+        unsubscribe = this.db
+          .collection('messages')
+          .where('chatId', '==', chatId)
+          .onSnapshot((snapshot) => {
+            console.log('Messages snapshot received (no ordering):', snapshot.docs.length, 'messages');
+            
+            // Sort messages by createdAt manually
+            const messages = snapshot.docs
+              .map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }))
+              .sort((a, b) => {
+                const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
+                const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+                return dateA - dateB;
+              });
+            
+            console.log('Calling callback with sorted messages:', messages.length);
+            callback(messages);
+            
+            // Debounce marking messages as read to avoid excessive writes
+            if (markReadTimeout) {
+              clearTimeout(markReadTimeout);
+            }
+            
+            markReadTimeout = setTimeout(() => {
+              // Mark unread messages as read (batched)
+              const unreadMessages = snapshot.docs.filter(doc => {
+                const msg = doc.data();
+                return msg.receiverId === buyerId && !msg.read;
+              });
+              
+              if (unreadMessages.length > 0) {
+                const batch = this.db.batch();
+                unreadMessages.forEach(doc => {
+                  batch.update(this.db.collection('messages').doc(doc.id), { read: true });
+                });
+                batch.commit().catch(err => console.error('Error marking messages as read:', err));
+              }
+            }, 1000); // Wait 1 second before marking as read
+          }, (error) => {
+            console.error('Error in message subscription (no ordering):', error);
+          });
+      }
       
       return unsubscribe;
       

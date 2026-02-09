@@ -367,6 +367,8 @@ function initializeChat() {
   
   // Display messages
   function displayMessages(messages) {
+    console.log('displayMessages called with', messages.length, 'messages');
+    
     if (messages.length === 0) {
       chatMessages.innerHTML = `
         <div class="chat-empty">
@@ -379,8 +381,10 @@ function initializeChat() {
     }
     
     const currentUser = authManager.getCurrentUser();
+    console.log('Current user:', currentUser?.uid);
     
     chatMessages.innerHTML = messages.map(msg => {
+      console.log('Rendering message:', msg.id, msg.message, msg.senderId);
       const isOwn = msg.senderId === currentUser.uid;
       const timestamp = msg.createdAt ? (msg.createdAt.toDate ? msg.createdAt.toDate() : new Date(msg.createdAt)) : new Date();
       
@@ -408,5 +412,6 @@ function initializeChat() {
     
     // Scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    console.log('Messages displayed, scrolled to bottom');
   }
 }

@@ -351,16 +351,19 @@ function initializeCheckout(cartItems, cartTotal) {
       // This ensures either all orders succeed or all fail - no partial orders
       await dataService.createOrdersBatch(ordersData);
       
+      console.log('Orders created successfully, clearing cart...');
+      
       // Clear cart
       await cartManager.clearCart();
       
       // Show success message
       window.toast.success(t('checkout.orderPlaced'));
       
-      // Redirect to orders page
+      // Add a longer delay to ensure Firestore replication completes
+      // before navigating to orders page
       setTimeout(() => {
         router.navigate('/buyer/orders');
-      }, 1500);
+      }, 2500);
       
     } catch (error) {
       console.error('Error placing order:', error);
