@@ -29,12 +29,18 @@ jobs:
         run: npm ci
 
       - name: Run npm audit
-        run: npm audit --audit-level=moderate
+        run: npm audit --audit-level=high
+
+      - name: Generate audit report
+        run: npm audit --json > audit-report.json
         continue-on-error: true
 
-      - name: Run npm audit fix
-        run: npm audit fix --dry-run
-        continue-on-error: true
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: audit-report.json
+        if: always()
 
   codeql-analysis:
     name: CodeQL Security Scan
