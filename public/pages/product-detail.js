@@ -8,6 +8,7 @@ import languageManager from '../js/language.js';
 
 // Constants
 const CM_TO_METERS = 100;
+const ZOOM_LENS_SIZE = 100; // pixels
 
 export async function renderProductDetail() {
   const t = languageManager.t.bind(languageManager);
@@ -205,9 +206,10 @@ export async function renderProductDetail() {
       productImage.style.transformOrigin = `${xPercent}% ${yPercent}%`;
       
       // Show and position zoom lens
+      const lensOffset = ZOOM_LENS_SIZE / 2;
       zoomLens.style.display = 'block';
-      zoomLens.style.left = `${x - 50}px`;
-      zoomLens.style.top = `${y - 50}px`;
+      zoomLens.style.left = `${x - lensOffset}px`;
+      zoomLens.style.top = `${y - lensOffset}px`;
     });
   }
 

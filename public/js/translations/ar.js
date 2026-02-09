@@ -207,7 +207,11 @@ export default {
     stock: 'المخزون:',
     addToCart: 'إضافة إلى السلة',
     loading: 'جارٍ تحميل المنتجات...',
-    noProducts: 'لا توجد منتجات متاحة'
+    noProducts: 'لا توجد منتجات متاحة',
+    viewDetails: 'عرض التفاصيل',
+    description: 'الوصف',
+    details: 'التفاصيل',
+    orderDetails: 'تفاصيل الطلب'
   },
   
   // البائعون

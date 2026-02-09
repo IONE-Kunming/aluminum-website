@@ -207,7 +207,11 @@ export default {
     stock: '库存：',
     addToCart: '加入购物车',
     loading: '加载产品中...',
-    noProducts: '暂无产品'
+    noProducts: '暂无产品',
+    viewDetails: '查看详情',
+    description: '描述',
+    details: '详细信息',
+    orderDetails: '订单详情'
   },
   
   // 卖家

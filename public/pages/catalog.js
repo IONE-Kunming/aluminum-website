@@ -73,7 +73,7 @@ export async function renderCatalog() {
           <div class="product-footer">
             <span class="view-details-text">
               <i data-lucide="eye"></i>
-              ${t('catalog.viewDetails') || 'View Details'}
+              ${t('catalog.viewDetails')}
             </span>
           </div>
         </div>
