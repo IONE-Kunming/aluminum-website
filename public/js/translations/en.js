@@ -136,6 +136,57 @@ export default {
     ordersWillAppear: 'Your orders will appear here once you make your first purchase'
   },
   
+  // Chats
+  chats: {
+    title: 'Chats',
+    subtitle: 'Your conversations with sellers',
+    conversations: 'Conversations',
+    selectChat: 'Select a conversation to start chatting',
+    documents: 'Documents',
+    typeMessage: 'Type a message...',
+    send: 'Send',
+    attachFile: 'Attach File',
+    noChats: 'No conversations yet',
+    startChatting: 'Start a conversation with a seller',
+    online: 'Online',
+    offline: 'Offline',
+    messageSending: 'Sending...',
+    messageFailed: 'Failed to send',
+    translate: 'Translate',
+    original: 'Original',
+    translated: 'Translated',
+    buyer: 'Buyer',
+    seller: 'Seller'
+  },
+  
+  // Invoices
+  invoices: {
+    title: 'Invoices',
+    subtitle: 'View and download your invoices',
+    invoiceNumber: 'Invoice Number',
+    invoiceId: 'Invoice ID',
+    date: 'Date',
+    dueDate: 'Due Date',
+    amount: 'Amount',
+    status: 'Status',
+    paid: 'Paid',
+    unpaid: 'Unpaid',
+    overdue: 'Overdue',
+    download: 'Download',
+    viewInvoice: 'View Invoice',
+    noInvoices: 'No invoices yet',
+    invoicesWillAppear: 'Your invoices will appear here after order completion',
+    orderNumber: 'Order Number',
+    billingAddress: 'Billing Address',
+    shippingAddress: 'Shipping Address',
+    items: 'Items',
+    subtotal: 'Subtotal',
+    tax: 'Tax',
+    total: 'Total',
+    buyer: 'Buyer',
+    seller: 'Seller'
+  },
+  
   // Cart
   cart: {
     title: 'Shopping Cart',

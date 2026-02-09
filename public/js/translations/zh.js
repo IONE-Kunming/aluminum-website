@@ -136,6 +136,57 @@ export default {
     ordersWillAppear: '您的订单将在首次购买后显示在这里'
   },
   
+  // 聊天
+  chats: {
+    title: '聊天',
+    subtitle: '与卖家的对话',
+    conversations: '对话',
+    selectChat: '选择一个对话开始聊天',
+    documents: '文档',
+    typeMessage: '输入消息...',
+    send: '发送',
+    attachFile: '附加文件',
+    noChats: '暂无对话',
+    startChatting: '开始与卖家对话',
+    online: '在线',
+    offline: '离线',
+    messageSending: '发送中...',
+    messageFailed: '发送失败',
+    translate: '翻译',
+    original: '原文',
+    translated: '已翻译',
+    buyer: '买家',
+    seller: '卖家'
+  },
+  
+  // 发票
+  invoices: {
+    title: '发票',
+    subtitle: '查看和下载您的发票',
+    invoiceNumber: '发票号',
+    invoiceId: '发票编号',
+    date: '日期',
+    dueDate: '到期日',
+    amount: '金额',
+    status: '状态',
+    paid: '已支付',
+    unpaid: '未支付',
+    overdue: '逾期',
+    download: '下载',
+    viewInvoice: '查看发票',
+    noInvoices: '暂无发票',
+    invoicesWillAppear: '订单完成后您的发票将显示在这里',
+    orderNumber: '订单号',
+    billingAddress: '账单地址',
+    shippingAddress: '送货地址',
+    items: '商品',
+    subtotal: '小计',
+    tax: '税费',
+    total: '总计',
+    buyer: '买家',
+    seller: '卖家'
+  },
+  
   // 购物车
   cart: {
     title: '购物车',
