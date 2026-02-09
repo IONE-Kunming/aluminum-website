@@ -7,8 +7,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     
     steps:
       - name: Checkout
@@ -26,9 +29,44 @@ jobs:
       - name: Build with Vite
         run: npm run build
         
-      - name: Deploy using Firebase CLI
+      - name: Setup Firebase CLI
         run: |
-          npm install -g firebase-tools
+          # Install without deprecated warnings
+          npm install -g firebase-tools@latest --quiet
+          firebase --version
+          
+      - name: Create and Validate Service Account Key
+        run: |
+          # Create service account file from GitHub Secret
           echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > service-account.json
-          export GOOGLE_APPLICATION_CREDENTIALS=service-account.json
+          
+          # Validate JSON format
+          if ! python3 -m json.tool service-account.json > /dev/null 2>&1; then
+            echo "❌ Invalid JSON in FIREBASE_SERVICE_ACCOUNT secret"
+            echo "First 100 chars of secret:"
+            echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' | head -c 100
+            exit 1
+          fi
+          
+          echo "✅ Service account key created and validated"
+          ls -la service-account.json
+          
+      - name: Authenticate with Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          token_format: 'access_token'
+          
+      - name: Deploy to Firebase
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: service-account.json
+        run: |
+          echo "🚀 Starting Firebase deployment..."
+          
+          # Set Firebase project
+          firebase use gen-lang-client-0988357303 --alias default
+          
+          # Deploy everything
           firebase deploy --project gen-lang-client-0988357303 --non-interactive
+          
+          echo "✅ Deployment completed successfully!"
