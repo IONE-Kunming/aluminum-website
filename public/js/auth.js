@@ -272,6 +272,10 @@ class AuthManager {
         updateData.phoneNumber = updates.phoneNumber;
       }
       
+      if (updates.preferredLanguage !== undefined) {
+        updateData.preferredLanguage = updates.preferredLanguage;
+      }
+      
       // Update Firestore user document if there are changes
       if (Object.keys(updateData).length > 0) {
         await this.db.collection('users').doc(this.user.uid).update(updateData);
