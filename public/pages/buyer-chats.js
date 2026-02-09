@@ -39,6 +39,9 @@ export async function renderBuyerChats() {
                   <p id="chat-user-status" class="text-muted">Online</p>
                 </div>
               </div>
+              <button class="btn-icon" id="toggle-documents-btn" title="${t('chats.documents') || 'Documents'}">
+                <i data-lucide="file-text"></i>
+              </button>
             </div>
             
             <div id="chat-messages" class="chat-messages">
@@ -60,6 +63,21 @@ export async function renderBuyerChats() {
             <div id="selected-files" class="selected-files"></div>
           </div>
         </div>
+
+        <div id="documents-sidebar" class="documents-sidebar card" style="display: none;">
+          <div class="documents-sidebar-header">
+            <h3>${t('chats.sharedDocuments') || 'Shared Documents'}</h3>
+            <button class="btn-icon" id="close-documents-btn">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div id="documents-list" class="documents-list">
+            <div class="empty-state">
+              <i data-lucide="file" style="width: 48px; height: 48px;"></i>
+              <p>${t('chats.noDocuments') || 'No documents shared yet'}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -75,6 +93,7 @@ export async function renderBuyerChats() {
 let selectedFiles = [];
 let currentChatId = null;
 let currentSellerId = null;
+let allMessages = []; // Store all messages for document extraction
 
 async function loadChats() {
   try {
@@ -127,6 +146,8 @@ function initializeChatEventHandlers() {
   const messageInput = document.getElementById('chat-message-input');
   const attachBtn = document.getElementById('attach-btn');
   const fileInput = document.getElementById('chat-file-input');
+  const toggleDocumentsBtn = document.getElementById('toggle-documents-btn');
+  const closeDocumentsBtn = document.getElementById('close-documents-btn');
   
   // Handle chat selection
   chatsList?.addEventListener('click', (e) => {
@@ -160,6 +181,27 @@ function initializeChatEventHandlers() {
     const files = Array.from(e.target.files || []);
     selectedFiles = [...selectedFiles, ...files];
     displaySelectedFiles();
+  });
+
+  // Handle documents sidebar toggle
+  toggleDocumentsBtn?.addEventListener('click', () => {
+    const sidebar = document.getElementById('documents-sidebar');
+    const container = document.querySelector('.chats-container');
+    if (sidebar.style.display === 'none') {
+      sidebar.style.display = 'flex';
+      container.classList.add('with-sidebar');
+    } else {
+      sidebar.style.display = 'none';
+      container.classList.remove('with-sidebar');
+    }
+    if (window.lucide) window.lucide.createIcons();
+  });
+
+  closeDocumentsBtn?.addEventListener('click', () => {
+    const sidebar = document.getElementById('documents-sidebar');
+    const container = document.querySelector('.chats-container');
+    sidebar.style.display = 'none';
+    container.classList.remove('with-sidebar');
   });
 }
 
@@ -204,6 +246,10 @@ async function loadMessages(sellerId) {
 function displayMessages(messages) {
   const messagesContainer = document.getElementById('chat-messages');
   const currentUser = authManager.getCurrentUser();
+  
+  // Store messages for document extraction
+  allMessages = messages;
+  updateDocumentsSidebar();
   
   if (!messages || messages.length === 0) {
     messagesContainer.innerHTML = '<div class="empty-state">No messages yet. Start the conversation!</div>';
@@ -396,6 +442,141 @@ function formatFileSize(bytes) {
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function updateDocumentsSidebar() {
+  const documentsList = document.getElementById('documents-list');
+  if (!documentsList) return;
+
+  // Extract all attachments from messages
+  const documents = [];
+  allMessages.forEach(msg => {
+    if (msg.attachments && msg.attachments.length > 0) {
+      msg.attachments.forEach(att => {
+        documents.push({
+          ...att,
+          messageTime: msg.createdAt,
+          senderName: msg.senderName || 'User'
+        });
+      });
+    }
+  });
+
+  if (documents.length === 0) {
+    documentsList.innerHTML = `
+      <div class="empty-state">
+        <i data-lucide="file" style="width: 48px; height: 48px;"></i>
+        <p>No documents shared yet</p>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  // Group documents by type
+  const images = documents.filter(doc => doc.type.startsWith('image/'));
+  const videos = documents.filter(doc => doc.type.startsWith('video/'));
+  const files = documents.filter(doc => !doc.type.startsWith('image/') && !doc.type.startsWith('video/'));
+
+  let html = '';
+
+  // Images section
+  if (images.length > 0) {
+    html += `
+      <div class="documents-section">
+        <div class="documents-section-header">
+          <h4><i data-lucide="image"></i> Images (${images.length})</h4>
+        </div>
+        <div class="documents-grid">
+          ${images.map(img => {
+            const safeUrl = sanitizeUrl(img.url);
+            const safeName = escapeHtml(img.name);
+            return `
+              <div class="document-item document-image">
+                <img src="${safeUrl}" alt="${safeName}" data-url="${safeUrl}" />
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Videos section
+  if (videos.length > 0) {
+    html += `
+      <div class="documents-section">
+        <div class="documents-section-header">
+          <h4><i data-lucide="video"></i> Videos (${videos.length})</h4>
+        </div>
+        <div class="documents-list-items">
+          ${videos.map(vid => {
+            const safeUrl = sanitizeUrl(vid.url);
+            const safeName = escapeHtml(vid.name);
+            const time = vid.messageTime?.toDate?.() || new Date(vid.messageTime);
+            return `
+              <div class="document-list-item">
+                <div class="document-icon">
+                  <i data-lucide="video"></i>
+                </div>
+                <div class="document-info">
+                  <div class="document-name">${safeName}</div>
+                  <div class="document-meta">${formatFileSize(vid.size)} • ${formatTime(time)}</div>
+                </div>
+                <a href="${safeUrl}" download="${safeName}" class="btn-icon" title="Download">
+                  <i data-lucide="download"></i>
+                </a>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  // Files section (PDFs and others)
+  if (files.length > 0) {
+    html += `
+      <div class="documents-section">
+        <div class="documents-section-header">
+          <h4><i data-lucide="file-text"></i> Documents (${files.length})</h4>
+        </div>
+        <div class="documents-list-items">
+          ${files.map(file => {
+            const safeUrl = sanitizeUrl(file.url);
+            const safeName = escapeHtml(file.name);
+            const time = file.messageTime?.toDate?.() || new Date(file.messageTime);
+            const fileIcon = file.type.includes('pdf') ? 'file-text' : 'file';
+            return `
+              <div class="document-list-item">
+                <div class="document-icon">
+                  <i data-lucide="${fileIcon}"></i>
+                </div>
+                <div class="document-info">
+                  <div class="document-name">${safeName}</div>
+                  <div class="document-meta">${formatFileSize(file.size)} • ${formatTime(time)}</div>
+                </div>
+                <a href="${safeUrl}" download="${safeName}" class="btn-icon" title="Download">
+                  <i data-lucide="download"></i>
+                </a>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  documentsList.innerHTML = html;
+  if (window.lucide) window.lucide.createIcons();
+
+  // Add click handlers for images
+  const imageElements = documentsList.querySelectorAll('.document-image img');
+  imageElements.forEach(img => {
+    img.addEventListener('click', function() {
+      window.open(this.dataset.url, '_blank');
+    });
+  });
 }
 
 // Cleanup on page unload
