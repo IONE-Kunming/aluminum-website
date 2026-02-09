@@ -749,6 +749,10 @@ function initializeBulkImport() {
       return;
     }
     
+    // Get Firebase instances at the start
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+    
     // Validate data before importing
     const validationErrors = [];
     const seenModelNumbers = new Set();
@@ -780,8 +784,6 @@ function initializeBulkImport() {
           validationErrors.push(`Row ${rowNum}: Invalid price "${pricePerMeter}" - must be a number`);
         } else if (price <= 0) {
           validationErrors.push(`Row ${rowNum}: Invalid price "${price}" - must be greater than 0`);
-        } else if (price < 0) {
-          validationErrors.push(`Row ${rowNum}: Negative price "${price}" is not allowed`);
         }
       }
     });
@@ -794,7 +796,6 @@ function initializeBulkImport() {
     }
     
     // Check for duplicates in database
-    const db = firebase.firestore();
     const existingProducts = await db.collection('products')
       .where('sellerId', '==', profile.uid)
       .get();
@@ -833,9 +834,6 @@ function initializeBulkImport() {
     document.getElementById('import-progress').style.display = 'block';
     
     try {
-      // Get Firebase instances
-      const storage = firebase.storage();
-      
       const totalProducts = excelData.length;
       let importedCount = 0;
       let skippedCount = 0;
