@@ -134,7 +134,8 @@ function initializeChatEventHandlers() {
     if (chatItem) {
       const sellerId = chatItem.dataset.sellerId;
       const chatId = chatItem.dataset.chatId;
-      selectChat(chatId, sellerId);
+      const sellerName = chatItem.querySelector('.chat-name')?.textContent || 'Seller';
+      selectChat(chatId, sellerId, sellerName);
       
       // Mark as active
       document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
@@ -162,9 +163,16 @@ function initializeChatEventHandlers() {
   });
 }
 
-async function selectChat(chatId, sellerId) {
+async function selectChat(chatId, sellerId, sellerName) {
   currentChatId = chatId;
   currentSellerId = sellerId;
+  
+  // Update chat header with seller info
+  const displayName = sellerName || 'Seller';
+  const chatUserName = document.getElementById('chat-user-name');
+  const chatUserAvatar = document.getElementById('chat-user-avatar');
+  if (chatUserName) chatUserName.textContent = displayName;
+  if (chatUserAvatar) chatUserAvatar.textContent = displayName.charAt(0).toUpperCase();
   
   // Show chat window
   document.getElementById('chat-window-placeholder').style.display = 'none';
