@@ -716,16 +716,27 @@ class DataService {
       // Upload files if any (in parallel for better performance)
       const attachments = [];
       if (files.length > 0) {
+        console.log(`[Buyer] Uploading ${files.length} files...`);
         const uploadPromises = files.map(file => 
           this.uploadChatFile(chatId, file)
             .catch(error => {
               console.error('Error uploading file:', file.name, error);
+              window.toast?.error(`Failed to upload: ${file.name}`);
               return null; // Return null for failed uploads
             })
         );
         const results = await Promise.all(uploadPromises);
         // Filter out failed uploads (null values)
-        attachments.push(...results.filter(att => att !== null));
+        const successfulUploads = results.filter(att => att !== null);
+        attachments.push(...successfulUploads);
+        
+        const failedCount = files.length - successfulUploads.length;
+        if (failedCount > 0) {
+          console.warn(`${failedCount} file(s) failed to upload`);
+        }
+        if (successfulUploads.length > 0) {
+          console.log(`${successfulUploads.length} file(s) uploaded successfully`);
+        }
       }
       
       // Get sender's preferred language from their profile
@@ -779,6 +790,7 @@ class DataService {
       // Validate file
       const maxSize = 10 * 1024 * 1024; // 10MB
       if (file.size > maxSize) {
+        window.toast?.error(`File "${file.name}" exceeds 10MB limit`);
         throw new Error('File size exceeds 10MB limit');
       }
       
@@ -790,6 +802,7 @@ class DataService {
       ];
       
       if (!allowedTypes.includes(file.type)) {
+        window.toast?.error(`File type "${file.type}" not supported`);
         throw new Error('File type not supported');
       }
       
@@ -798,10 +811,14 @@ class DataService {
       const fileName = `${timestamp}_${file.name}`;
       const path = `chats/${chatId}/${fileName}`;
       
+      console.log('Uploading file:', file.name, 'to path:', path);
+      
       // Upload to Firebase Storage
       const storageRef = firebase.storage().ref(path);
       const uploadTask = await storageRef.put(file);
       const downloadURL = await uploadTask.ref.getDownloadURL();
+      
+      console.log('File uploaded successfully:', file.name, 'URL:', downloadURL);
       
       return {
         name: file.name,
@@ -812,7 +829,7 @@ class DataService {
       };
       
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Error uploading file:', file.name, error);
       throw error;
     }
   }
@@ -987,16 +1004,27 @@ class DataService {
       // Upload files if any (in parallel for better performance)
       const attachments = [];
       if (files.length > 0) {
+        console.log(`[Seller] Uploading ${files.length} files...`);
         const uploadPromises = files.map(file => 
           this.uploadChatFile(chatId, file)
             .catch(error => {
               console.error('Error uploading file:', file.name, error);
+              window.toast?.error(`Failed to upload: ${file.name}`);
               return null; // Return null for failed uploads
             })
         );
         const results = await Promise.all(uploadPromises);
         // Filter out failed uploads (null values)
-        attachments.push(...results.filter(att => att !== null));
+        const successfulUploads = results.filter(att => att !== null);
+        attachments.push(...successfulUploads);
+        
+        const failedCount = files.length - successfulUploads.length;
+        if (failedCount > 0) {
+          console.warn(`${failedCount} file(s) failed to upload`);
+        }
+        if (successfulUploads.length > 0) {
+          console.log(`${successfulUploads.length} file(s) uploaded successfully`);
+        }
       }
       
       // Get sender's preferred language from their profile
