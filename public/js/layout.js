@@ -4,6 +4,9 @@ import { escapeHtml } from './utils.js';
 import themeManager from './theme.js';
 import languageManager from './language.js';
 
+// Track if cart overlay has wrapped router.navigate to prevent multiple wrapping
+let cartOverlayInitialized = false;
+
 export function renderLayout(content, userRole = null) {
   const profile = authManager.getUserProfile();
   const role = userRole || profile?.role || 'buyer';
@@ -313,17 +316,24 @@ async function initCartOverlay() {
   cartManager.subscribe(updateCartOverlay);
   
   // Listen for route changes to update visibility
-  const originalNavigate = router.navigate.bind(router);
-  router.navigate = function(path) {
-    originalNavigate(path);
-    // Use setTimeout to ensure route is updated before checking
-    setTimeout(updateCartOverlay, 0);
-  };
-  
-  // Also listen for popstate (back/forward buttons)
-  window.addEventListener('popstate', () => {
-    setTimeout(updateCartOverlay, 0);
-  });
+  // Only wrap router.navigate once by checking module-level flag
+  if (!cartOverlayInitialized) {
+    const originalNavigate = router.navigate.bind(router);
+    router.navigate = function(path) {
+      originalNavigate(path);
+      // Use setTimeout to ensure route is updated before checking
+      setTimeout(updateCartOverlay, 0);
+    };
+    
+    // Also listen for popstate (back/forward buttons)
+    // Only add this listener once
+    window.addEventListener('popstate', () => {
+      setTimeout(updateCartOverlay, 0);
+    });
+    
+    // Mark as initialized to prevent multiple wrapping
+    cartOverlayInitialized = true;
+  }
   
   // Checkout button
   cartCheckoutBtn.addEventListener('click', () => {

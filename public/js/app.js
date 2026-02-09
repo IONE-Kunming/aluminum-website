@@ -11,6 +11,9 @@ import router from './router.js';
 import authManager from './auth.js';
 import cartManager from './cart.js';
 
+// Profile loading timeout in milliseconds
+const PROFILE_LOAD_TIMEOUT_MS = 8000;
+
 // Eagerly load landing and auth pages (always needed)
 import { renderLandingPage } from '../pages/landing.js';
 import { renderLoginPage } from '../pages/login.js';
@@ -45,10 +48,14 @@ const lazyPages = {
 function lazyRoute(pageLoader) {
   return async () => {
     try {
+      console.log('[lazyRoute] Starting to load page...');
       const renderFn = await pageLoader();
+      console.log('[lazyRoute] Page module loaded, render function:', typeof renderFn);
       await renderFn();
+      console.log('[lazyRoute] Page rendered successfully');
     } catch (error) {
-      console.error('Error loading page:', error);
+      console.error('[lazyRoute] Error loading page:', error);
+      console.error('[lazyRoute] Error stack:', error.stack);
       if (window.toast) {
         window.toast.error('Failed to load page');
       }
@@ -84,26 +91,34 @@ function showToast(message, type = 'info') {
 // Protected route wrapper
 function protectedRoute(handler, requireRole = null) {
   return async () => {
+    console.log('[protectedRoute] Starting, requireRole:', requireRole);
     // Wait for Firebase to determine the initial auth state
     // This prevents premature redirects to login on page refresh
     await authManager.waitForAuthState(5000);
     
     if (!authManager.isAuthenticated()) {
+      console.log('[protectedRoute] User not authenticated, redirecting to login');
       router.navigate('/login');
       return;
     }
     
+    console.log('[protectedRoute] User authenticated');
+    
     // Wait for user profile to load if a role is required
     if (requireRole) {
-      const profile = await authManager.waitForProfile(5000);
+      // Wait for profile to load with extended timeout
+      const profile = await authManager.waitForProfile(PROFILE_LOAD_TIMEOUT_MS);
+      console.log('[protectedRoute] Profile loaded:', profile ? `role=${profile.role}` : 'null');
       
       if (!profile || !profile.role) {
         // User has no role set, redirect to profile selection
+        console.log('[protectedRoute] No profile or role, redirecting to profile selection');
         router.navigate('/profile-selection');
         return;
       }
       
       if (profile.role !== requireRole) {
+        console.log('[protectedRoute] Role mismatch: required=' + requireRole + ', actual=' + profile.role);
         // Only show error if user is trying to access a different role's page
         // Don't show error if we're just redirecting them to their correct dashboard
         const currentPath = window.location.pathname.replace(router.basePath, '') || '/';
@@ -127,6 +142,7 @@ function protectedRoute(handler, requireRole = null) {
       }
     }
     
+    console.log('[protectedRoute] Calling handler');
     handler();
   };
 }
@@ -187,10 +203,11 @@ async function initApp() {
     }
     
     // Wait for profile to load and check if user already has a role
-    const profile = await authManager.waitForProfile(3000);
+    const profile = await authManager.waitForProfile(PROFILE_LOAD_TIMEOUT_MS);
     
     if (profile && profile.role) {
-      // User already has a role, redirect to their dashboard
+      // User already has a role, redirect to their dashboard immediately
+      // This prevents the profile selection page from ever showing
       if (profile.role === 'seller') {
         router.navigate('/seller/dashboard');
       } else if (profile.role === 'buyer') {
@@ -247,7 +264,13 @@ async function initApp() {
     }
     
     // Re-render current route when auth state changes
-    router.handleRoute();
+    // Skip re-rendering for public pages (login, signup, landing, profile-selection)
+    // to avoid conflicts with navigation during authentication flow
+    const currentPath = window.location.pathname.replace(router.basePath, '') || '/';
+    const publicPaths = ['/', '/login', '/signup', '/profile-selection'];
+    if (!publicPaths.includes(currentPath)) {
+      router.handleRoute();
+    }
   });
   
   // Export toast and router globally
