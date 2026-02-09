@@ -2,6 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import languageManager from '../js/language.js';
+import translationService from '../js/translationService.js';
 import { escapeHtml, sanitizeUrl } from '../js/utils.js';
 
 let unsubscribers = [];
@@ -176,7 +177,8 @@ function initializeChatEventHandlers() {
   // Handle send message
   sendBtn?.addEventListener('click', sendMessage);
   messageInput?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault(); // Prevent form submission or other default behavior
       sendMessage();
     }
   });
@@ -352,10 +354,24 @@ function displayMessages(messages) {
       attachmentsHtml += '</div>';
     }
     
+    // Get current user's preferred language
+    const userProfile = authManager.getUserProfile();
+    const userLanguage = userProfile?.preferredLanguage || 'en';
+    const messageLanguage = msg.originalLanguage || 'en';
+    
+    // Show translate button if message is in a different language
+    const showTranslateButton = messageLanguage !== userLanguage && safeMessage;
+    
     const messageHtml = `
-      <div class="message ${isOwn ? 'message-own' : 'message-other'}" data-message-id="${msg.id}">
+      <div class="message ${isOwn ? 'message-own' : 'message-other'}" data-message-id="${msg.id}" data-original-language="${messageLanguage}">
         <div class="message-content">
-          ${safeMessage ? `<div class="message-text">${safeMessage}</div>` : ''}
+          ${safeMessage ? `<div class="message-text" data-original-text="${msg.message}">${safeMessage}</div>` : ''}
+          ${showTranslateButton ? `
+            <button class="btn-translate" data-message-id="${msg.id}" title="Translate">
+              <i data-lucide="languages" style="width: 14px; height: 14px;"></i>
+              Translate
+            </button>
+          ` : ''}
           ${attachmentsHtml}
           <div class="message-time">${timeStr}</div>
         </div>
@@ -379,6 +395,14 @@ function displayMessages(messages) {
       });
     });
     
+    // Add click handler for translate button
+    const translateBtn = messageElement.querySelector('.btn-translate');
+    if (translateBtn) {
+      translateBtn.addEventListener('click', async function() {
+        await handleTranslateMessage(this);
+      });
+    }
+    
     renderedMessageIds.add(msg.id);
   });
   
@@ -388,6 +412,56 @@ function displayMessages(messages) {
   // Scroll to bottom if user was at bottom or if fresh load
   if (wasAtBottom || isFreshLoad) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+}
+
+async function handleTranslateMessage(button) {
+  const messageElement = button.closest('.message');
+  const messageTextElement = messageElement.querySelector('.message-text');
+  const originalText = messageTextElement.dataset.originalText;
+  const originalLanguage = messageElement.dataset.originalLanguage || 'en';
+  
+  // Get user's preferred language
+  const userProfile = authManager.getUserProfile();
+  const targetLanguage = userProfile?.preferredLanguage || 'en';
+  
+  // Check if already translated
+  if (button.classList.contains('translated')) {
+    // Show original text
+    messageTextElement.textContent = originalText;
+    button.innerHTML = '<i data-lucide="languages" style="width: 14px; height: 14px;"></i> Translate';
+    button.classList.remove('translated');
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+  
+  // Show loading state
+  button.disabled = true;
+  button.innerHTML = '<i data-lucide="loader-2" class="spin" style="width: 14px; height: 14px;"></i> Translating...';
+  if (window.lucide) window.lucide.createIcons();
+  
+  try {
+    const translatedText = await translationService.translateText(
+      originalText,
+      originalLanguage,
+      targetLanguage
+    );
+    
+    if (translatedText) {
+      messageTextElement.textContent = translatedText;
+      button.innerHTML = '<i data-lucide="languages" style="width: 14px; height: 14px;"></i> Show Original';
+      button.classList.add('translated');
+    } else {
+      window.toast?.error('Translation failed. Please try again.');
+      button.innerHTML = '<i data-lucide="languages" style="width: 14px; height: 14px;"></i> Translate';
+    }
+  } catch (error) {
+    console.error('Translation error:', error);
+    window.toast?.error('Translation failed. Please try again.');
+    button.innerHTML = '<i data-lucide="languages" style="width: 14px; height: 14px;"></i> Translate';
+  } finally {
+    button.disabled = false;
+    if (window.lucide) window.lucide.createIcons();
   }
 }
 
@@ -404,24 +478,56 @@ async function sendMessage() {
     return;
   }
   
+  // Optimistically clear input and show message immediately
+  const tempMessage = message;
+  const tempFiles = [...selectedFiles];
+  messageInput.value = '';
+  selectedFiles = [];
+  displaySelectedFiles();
+  
+  // Clear file input
+  const fileInput = document.getElementById('chat-file-input');
+  if (fileInput) fileInput.value = '';
+  
+  // Add temporary message to UI for immediate feedback
+  const messagesContainer = document.getElementById('chat-messages');
+  const currentUser = authManager.getCurrentUser();
+  const userProfile = authManager.getUserProfile();
+  
+  const tempMessageElement = document.createElement('div');
+  tempMessageElement.className = 'message message-own message-sending';
+  tempMessageElement.innerHTML = `
+    <div class="message-content">
+      ${tempMessage ? `<div class="message-text">${escapeHtml(tempMessage)}</div>` : ''}
+      ${tempFiles.length > 0 ? `<div class="message-attachments"><div class="attachment-file"><i data-lucide="file"></i> ${tempFiles.length} file(s) uploading...</div></div>` : ''}
+      <div class="message-time">Sending...</div>
+    </div>
+  `;
+  messagesContainer.appendChild(tempMessageElement);
+  if (window.lucide) window.lucide.createIcons();
+  
+  // Scroll to bottom to show new message
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
   try {
     await dataService.sendChatMessage({
       sellerId: currentSellerId,
-      message: message,
-      files: selectedFiles
+      message: tempMessage,
+      files: tempFiles
     });
     
-    messageInput.value = '';
-    selectedFiles = [];
-    displaySelectedFiles();
-    
-    // Clear file input
-    const fileInput = document.getElementById('chat-file-input');
-    if (fileInput) fileInput.value = '';
+    // Remove temporary message - real one will come from subscription
+    tempMessageElement.remove();
     
   } catch (error) {
     console.error('Error sending message:', error);
     window.toast?.error('Failed to send message');
+    
+    // Remove temporary message and restore input
+    tempMessageElement.remove();
+    messageInput.value = tempMessage;
+    selectedFiles = tempFiles;
+    displaySelectedFiles();
   }
 }
 
