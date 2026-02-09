@@ -136,6 +136,57 @@ export default {
     ordersWillAppear: 'آپ کی پہلی خریداری کے بعد آپ کے آرڈرز یہاں ظاہر ہوں گے'
   },
   
+  // گفتگو
+  chats: {
+    title: 'گفتگو',
+    subtitle: 'فروخت کنندگان کے ساتھ آپ کی گفتگو',
+    conversations: 'گفتگوئیں',
+    selectChat: 'گفتگو شروع کرنے کے لیے ایک گفتگو منتخب کریں',
+    documents: 'دستاویزات',
+    typeMessage: 'پیغام ٹائپ کریں...',
+    send: 'بھیجیں',
+    attachFile: 'فائل منسلک کریں',
+    noChats: 'ابھی تک کوئی گفتگو نہیں',
+    startChatting: 'فروخت کنندہ کے ساتھ گفتگو شروع کریں',
+    online: 'آن لائن',
+    offline: 'آف لائن',
+    messageSending: 'بھیجا جا رہا ہے...',
+    messageFailed: 'بھیجنے میں ناکام',
+    translate: 'ترجمہ کریں',
+    original: 'اصل',
+    translated: 'ترجمہ شدہ',
+    buyer: 'خریدار',
+    seller: 'فروخت کنندہ'
+  },
+  
+  // رسیدیں
+  invoices: {
+    title: 'رسیدیں',
+    subtitle: 'اپنی رسیدیں دیکھیں اور ڈاؤن لوڈ کریں',
+    invoiceNumber: 'رسید نمبر',
+    invoiceId: 'رسید آئی ڈی',
+    date: 'تاریخ',
+    dueDate: 'آخری تاریخ',
+    amount: 'رقم',
+    status: 'حیثیت',
+    paid: 'ادا شدہ',
+    unpaid: 'غیر ادا شدہ',
+    overdue: 'میعاد ختم',
+    download: 'ڈاؤن لوڈ',
+    viewInvoice: 'رسید دیکھیں',
+    noInvoices: 'ابھی تک کوئی رسید نہیں',
+    invoicesWillAppear: 'آرڈر مکمل ہونے کے بعد آپ کی رسیدیں یہاں ظاہر ہوں گی',
+    orderNumber: 'آرڈر نمبر',
+    billingAddress: 'بلنگ ایڈریس',
+    shippingAddress: 'شپنگ ایڈریس',
+    items: 'اشیاء',
+    subtotal: 'ذیلی کل',
+    tax: 'ٹیکس',
+    total: 'کل',
+    buyer: 'خریدار',
+    seller: 'فروخت کنندہ'
+  },
+  
   // ٹوکری
   cart: {
     title: 'خریداری کی ٹوکری',

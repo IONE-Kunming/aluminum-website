@@ -239,6 +239,18 @@ function initializeBranchHandlers() {
       editingBranchId = null;
       document.getElementById('modal-title').textContent = 'Add Branch';
       branchForm.reset();
+      
+      // Disable email field for new branches and set to user's email
+      const emailField = document.getElementById('branch-email');
+      const user = authManager.getCurrentUser();
+      const profile = authManager.getUserProfile();
+      if (emailField && user) {
+        emailField.value = user.email || profile?.email || '';
+        emailField.disabled = true;
+        emailField.style.backgroundColor = '#f3f4f6';
+        emailField.style.cursor = 'not-allowed';
+      }
+      
       modal.style.display = 'flex';
       if (window.lucide) window.lucide.createIcons();
     });
@@ -265,6 +277,15 @@ function initializeBranchHandlers() {
     document.getElementById('branch-country').value = branch.country || '';
     document.getElementById('branch-phone').value = branch.phone || '';
     document.getElementById('branch-email').value = branch.email || '';
+    
+    // Enable email field for editing (allow updating)
+    const emailField = document.getElementById('branch-email');
+    if (emailField) {
+      emailField.disabled = false;
+      emailField.style.backgroundColor = '';
+      emailField.style.cursor = '';
+    }
+    
     modal.style.display = 'flex';
     if (window.lucide) window.lucide.createIcons();
   };
@@ -284,6 +305,68 @@ function initializeBranchHandlers() {
         email: document.getElementById('branch-email').value.trim(),
       };
       
+      // Validation
+      const errors = [];
+      
+      // Required field validation
+      if (!branchData.name) {
+        errors.push('Branch Name is required');
+      } else if (branchData.name.length < 2) {
+        errors.push('Branch Name must be at least 2 characters');
+      } else if (branchData.name.length > 100) {
+        errors.push('Branch Name must be less than 100 characters');
+      }
+      
+      if (!branchData.address) {
+        errors.push('Address is required');
+      } else if (branchData.address.length < 5) {
+        errors.push('Address must be at least 5 characters');
+      }
+      
+      if (!branchData.city) {
+        errors.push('City is required');
+      } else if (branchData.city.length < 2) {
+        errors.push('City must be at least 2 characters');
+      }
+      
+      if (!branchData.country) {
+        errors.push('Country is required');
+      } else if (branchData.country.length < 2) {
+        errors.push('Country must be at least 2 characters');
+      }
+      
+      // Email validation (if provided) - using a more comprehensive regex
+      if (branchData.email) {
+        // This regex validates most common email formats
+        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+        if (!emailRegex.test(branchData.email)) {
+          errors.push('Invalid email format');
+        }
+      }
+      
+      // Phone validation (if provided)
+      // Accepts formats like: +1234567890, (123) 456-7890, 123-456-7890, etc.
+      // After removing formatting, must be 7-15 digits
+      if (branchData.phone) {
+        // Remove spaces, dashes, and parentheses for validation
+        const cleanPhone = branchData.phone.replace(/[\s\-\(\)]/g, '');
+        // Check if it contains only digits and optional + at start
+        const phoneRegex = /^\+?[0-9]{7,15}$/;
+        if (!phoneRegex.test(cleanPhone)) {
+          errors.push('Invalid phone number (accepted formats: +1234567890, (123) 456-7890, 123-456-7890)');
+        }
+      }
+      
+      // Show validation errors
+      if (errors.length > 0) {
+        if (window.toast) {
+          errors.forEach(error => window.toast.error(error));
+        } else {
+          alert('Validation errors:\n\n' + errors.join('\n'));
+        }
+        return;
+      }
+      
       try {
         const user = authManager.getCurrentUser();
         if (!user) throw new Error('User not authenticated');
@@ -294,6 +377,32 @@ function initializeBranchHandlers() {
         if (window.lucide) window.lucide.createIcons();
         
         const db = firebase.firestore();
+        
+        // Check for duplicate branch names (case-insensitive)
+        const existingBranches = await db.collection('branches')
+          .where('sellerId', '==', user.uid)
+          .get();
+        
+        const duplicateName = existingBranches.docs.find(doc => {
+          const branch = doc.data();
+          // Skip the current branch when editing
+          if (editingBranchId && doc.id === editingBranchId) {
+            return false;
+          }
+          return branch.name.toLowerCase() === branchData.name.toLowerCase();
+        });
+        
+        if (duplicateName) {
+          if (window.toast) {
+            window.toast.error('A branch with this name already exists');
+          } else {
+            alert('A branch with this name already exists');
+          }
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '<i data-lucide="save"></i> Save Branch';
+          if (window.lucide) window.lucide.createIcons();
+          return;
+        }
         
         if (editingBranchId) {
           // Update existing branch

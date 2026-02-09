@@ -1,18 +1,21 @@
 import { renderPageWithLayout } from '../js/layout.js';
+import languageManager from '../js/language.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml, formatDate } from '../js/utils.js';
 import router from '../js/router.js';
 
 export async function renderSellerInvoices() {
+  const t = languageManager.t.bind(languageManager);
+  
   // Get current user (seller)
   const user = authManager.getCurrentUser();
   if (!user) {
     const content = `
       <div class="invoices-page">
         <div class="page-header">
-          <h1>Invoices</h1>
-          <p>Manage and generate invoices</p>
+          <h1>${t('invoices.title')}</h1>
+          <p>${t('invoices.subtitle')}</p>
         </div>
         <div class="empty-state">
           <i data-lucide="alert-circle" style="width: 64px; height: 64px; opacity: 0.3;"></i>
@@ -27,20 +30,22 @@ export async function renderSellerInvoices() {
   }
   
   // Fetch invoices for this seller
+  console.log('Fetching invoices for seller:', user.uid);
   const invoices = await dataService.getInvoices({ sellerId: user.uid });
+  console.log('Seller invoices fetched:', invoices.length);
   
   const content = `
     <div class="invoices-page">
       <div class="page-header">
-        <h1>Invoices</h1>
-        <p>Manage and generate invoices</p>
+        <h1>${t('invoices.title')}</h1>
+        <p>${t('invoices.subtitle')}</p>
       </div>
 
       ${invoices.length === 0 ? `
         <div class="empty-state">
           <i data-lucide="file-text" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>No invoices yet</h2>
-          <p>Invoices will be generated for completed orders</p>
+          <h2>${t('invoices.noInvoices')}</h2>
+          <p>${t('invoices.invoicesWillAppear')}</p>
         </div>
       ` : `
         <div class="invoices-list">

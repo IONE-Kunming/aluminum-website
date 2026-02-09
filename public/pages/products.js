@@ -749,17 +749,94 @@ function initializeBulkImport() {
       return;
     }
     
+    // Get Firebase instances at the start
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+    
+    // Validate data before importing
+    const validationErrors = [];
+    const seenModelNumbers = new Set();
+    const duplicatesInFile = [];
+    
+    excelData.forEach((row, index) => {
+      const rowNum = index + 2; // +2 because Excel starts at 1 and has header row
+      const modelNumber = row['Model Number'] || row['model_number'] || row['ModelNumber'];
+      const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
+      
+      // Check for required fields
+      if (!modelNumber) {
+        validationErrors.push(`Row ${rowNum}: Model Number is required`);
+      }
+      
+      // Check for duplicate model numbers in file
+      if (modelNumber) {
+        if (seenModelNumbers.has(modelNumber)) {
+          duplicatesInFile.push(`Row ${rowNum}: Duplicate Model Number "${modelNumber}"`);
+        } else {
+          seenModelNumbers.add(modelNumber);
+        }
+      }
+      
+      // Validate price
+      if (pricePerMeter !== undefined && pricePerMeter !== null && pricePerMeter !== '') {
+        const price = parseFloat(pricePerMeter);
+        if (isNaN(price)) {
+          validationErrors.push(`Row ${rowNum}: Invalid price "${pricePerMeter}" - must be a number`);
+        } else if (price <= 0) {
+          validationErrors.push(`Row ${rowNum}: Invalid price "${price}" - must be greater than 0`);
+        }
+      }
+    });
+    
+    // Show validation errors
+    if (validationErrors.length > 0) {
+      const errorMessage = `Found ${validationErrors.length} validation error(s):\n\n${validationErrors.slice(0, 10).join('\n')}${validationErrors.length > 10 ? `\n... and ${validationErrors.length - 10} more errors` : ''}`;
+      alert(errorMessage);
+      return;
+    }
+    
+    // Check for duplicates in database
+    const existingProducts = await db.collection('products')
+      .where('sellerId', '==', profile.uid)
+      .get();
+    
+    const existingModelNumbers = new Set(
+      existingProducts.docs.map(doc => doc.data().modelNumber)
+    );
+    
+    const duplicatesInDb = [];
+    seenModelNumbers.forEach(modelNumber => {
+      if (existingModelNumbers.has(modelNumber)) {
+        duplicatesInDb.push(modelNumber);
+      }
+    });
+    
+    // Warn about duplicates in file
+    if (duplicatesInFile.length > 0) {
+      const warningMessage = `Found ${duplicatesInFile.length} duplicate(s) within the file:\n\n${duplicatesInFile.slice(0, 5).join('\n')}${duplicatesInFile.length > 5 ? `\n... and ${duplicatesInFile.length - 5} more` : ''}\n\nPlease remove duplicates from the file and try again.`;
+      alert(warningMessage);
+      return;
+    }
+    
+    // Warn about duplicates in database and ask for confirmation
+    if (duplicatesInDb.length > 0) {
+      const confirmed = confirm(
+        `Warning: ${duplicatesInDb.length} product(s) with the same Model Number already exist in your catalog:\n\n${duplicatesInDb.slice(0, 5).join('\n')}${duplicatesInDb.length > 5 ? `\n... and ${duplicatesInDb.length - 5} more` : ''}\n\nImporting will create duplicate products. Do you want to continue?`
+      );
+      
+      if (!confirmed) {
+        return;
+      }
+    }
+    
     startImportBtn.disabled = true;
     cancelImportBtn.disabled = true;
     document.getElementById('import-progress').style.display = 'block';
     
     try {
-      // Get Firebase instances
-      const db = firebase.firestore();
-      const storage = firebase.storage();
-      
       const totalProducts = excelData.length;
       let importedCount = 0;
+      let skippedCount = 0;
       
       // Process products in batches for better performance
       const BATCH_SIZE = 10; // Process 10 products at a time
@@ -779,6 +856,9 @@ function initializeBulkImport() {
             const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
             const imagePath = row['Image Path'] || row['image_path'] || row['ImagePath'];
             
+            // Parse and use the validated price
+            const price = parseFloat(pricePerMeter);
+            
             // Upload image if provided (parallel with other images in batch)
             let imageUrl = '';
             if (imagePath && uploadedImages) {
@@ -797,7 +877,7 @@ function initializeBulkImport() {
               sellerName: profile.displayName,
               modelNumber: modelNumber,
               category: category,
-              pricePerMeter: parseFloat(pricePerMeter),
+              pricePerMeter: price,
               imageUrl: imageUrl,
               createdAt: new Date().toISOString(),
               stock: 0,
@@ -805,6 +885,7 @@ function initializeBulkImport() {
             };
           } catch (rowError) {
             console.error('Error processing row:', row, rowError);
+            skippedCount++;
             return null;
           }
         });
@@ -826,13 +907,16 @@ function initializeBulkImport() {
         await firestoreBatch.commit();
         
         // Update progress
-        const progress = (importedCount / totalProducts) * 100;
+        const progress = ((importedCount + skippedCount) / totalProducts) * 100;
         document.getElementById('progress-fill').style.width = `${progress}%`;
         document.getElementById('progress-text').textContent = 
-          `Importing products... ${importedCount} of ${totalProducts}`;
+          `Importing products... ${importedCount} imported, ${skippedCount} skipped of ${totalProducts}`;
       }
       
-      alert(`Successfully imported ${importedCount} products!`);
+      const message = skippedCount > 0 
+        ? `Successfully imported ${importedCount} products! ${skippedCount} products were skipped due to errors.`
+        : `Successfully imported ${importedCount} products!`;
+      alert(message);
       modal.style.display = 'none';
       
       // Reload the page to show new products

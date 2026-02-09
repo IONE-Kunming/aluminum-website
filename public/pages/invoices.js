@@ -30,7 +30,9 @@ export async function renderInvoices() {
   }
   
   // Fetch invoices for this buyer
+  console.log('Fetching invoices for buyer:', user.uid);
   const invoices = await dataService.getInvoices({ buyerId: user.uid });
+  console.log('Buyer invoices fetched:', invoices.length);
   
   const content = `
     <div class="invoices-page">
@@ -42,8 +44,8 @@ export async function renderInvoices() {
       ${invoices.length === 0 ? `
         <div class="empty-state">
           <i data-lucide="file-text" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>No invoices yet</h2>
-          <p>Your invoices will appear here after order completion</p>
+          <h2>${t('invoices.noInvoices')}</h2>
+          <p>${t('invoices.invoicesWillAppear')}</p>
         </div>
       ` : `
         <div class="invoices-list">

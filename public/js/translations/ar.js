@@ -136,6 +136,57 @@ export default {
     ordersWillAppear: 'ستظهر طلباتك هنا بمجرد إجراء أول عملية شراء'
   },
   
+  // المحادثات
+  chats: {
+    title: 'المحادثات',
+    subtitle: 'محادثاتك مع البائعين',
+    conversations: 'المحادثات',
+    selectChat: 'اختر محادثة لبدء الدردشة',
+    documents: 'المستندات',
+    typeMessage: 'اكتب رسالة...',
+    send: 'إرسال',
+    attachFile: 'إرفاق ملف',
+    noChats: 'لا توجد محادثات بعد',
+    startChatting: 'ابدأ محادثة مع بائع',
+    online: 'متصل',
+    offline: 'غير متصل',
+    messageSending: 'جارٍ الإرسال...',
+    messageFailed: 'فشل الإرسال',
+    translate: 'ترجمة',
+    original: 'الأصلي',
+    translated: 'مترجم',
+    buyer: 'مشتري',
+    seller: 'بائع'
+  },
+  
+  // الفواتير
+  invoices: {
+    title: 'الفواتير',
+    subtitle: 'عرض وتحميل فواتيرك',
+    invoiceNumber: 'رقم الفاتورة',
+    invoiceId: 'رقم الفاتورة',
+    date: 'التاريخ',
+    dueDate: 'تاريخ الاستحقاق',
+    amount: 'المبلغ',
+    status: 'الحالة',
+    paid: 'مدفوع',
+    unpaid: 'غير مدفوع',
+    overdue: 'متأخر',
+    download: 'تحميل',
+    viewInvoice: 'عرض الفاتورة',
+    noInvoices: 'لا توجد فواتير بعد',
+    invoicesWillAppear: 'ستظهر فواتيرك هنا بعد اكتمال الطلب',
+    orderNumber: 'رقم الطلب',
+    billingAddress: 'عنوان الفاتورة',
+    shippingAddress: 'عنوان الشحن',
+    items: 'العناصر',
+    subtotal: 'المجموع الفرعي',
+    tax: 'الضريبة',
+    total: 'الإجمالي',
+    buyer: 'المشتري',
+    seller: 'البائع'
+  },
+  
   // سلة التسوق
   cart: {
     title: 'سلة التسوق',

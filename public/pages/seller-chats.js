@@ -6,6 +6,8 @@ import translationService from '../js/translationService.js';
 import { escapeHtml, sanitizeUrl } from '../js/utils.js';
 
 let unsubscribers = [];
+let sendingMessages = new Set(); // Track messages being sent
+let tempMessageCounter = 0; // Counter for unique message IDs
 
 export async function renderSellerChats() {
   const profile = authManager.getUserProfile();
@@ -495,8 +497,13 @@ async function sendMessage() {
   const currentUser = authManager.getCurrentUser();
   const userProfile = authManager.getUserProfile();
   
+  // Generate unique ID for temp message
+  const tempId = `temp_${Date.now()}_${++tempMessageCounter}`;
+  sendingMessages.add(tempId);
+  
   const tempMessageElement = document.createElement('div');
   tempMessageElement.className = 'message message-own message-sending';
+  tempMessageElement.setAttribute('data-temp-id', tempId);
   tempMessageElement.innerHTML = `
     <div class="message-content">
       ${tempMessage ? `<div class="message-text">${escapeHtml(tempMessage)}</div>` : ''}
@@ -511,20 +518,26 @@ async function sendMessage() {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
   
   try {
-    await dataService.sendSellerChatMessage({
+    const result = await dataService.sendSellerChatMessage({
       buyerId: currentBuyerId,
       message: tempMessage,
       files: tempFiles
     });
     
-    // Remove temporary message - real one will come from subscription
-    tempMessageElement.remove();
+    // Wait a bit for the message to appear in subscription, then remove temp
+    setTimeout(() => {
+      if (sendingMessages.has(tempId)) {
+        sendingMessages.delete(tempId);
+        tempMessageElement.remove();
+      }
+    }, 2000);
     
   } catch (error) {
     console.error('Error sending message:', error);
     window.toast?.error('Failed to send message');
     
     // Remove temporary message and restore input
+    sendingMessages.delete(tempId);
     tempMessageElement.remove();
     messageInput.value = tempMessage;
     selectedFiles = tempFiles;
