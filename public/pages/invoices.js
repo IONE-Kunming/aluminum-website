@@ -84,10 +84,6 @@ export async function renderInvoices() {
                   <i data-lucide="eye"></i>
                   View Details
                 </button>
-                <button class="btn btn-secondary btn-sm print-invoice-btn" data-invoice-id="${invoice.id}">
-                  <i data-lucide="printer"></i>
-                  Print
-                </button>
               </div>
             </div>
           `).join('')}
@@ -101,14 +97,6 @@ export async function renderInvoices() {
   
   // Add event listeners
   document.querySelectorAll('.view-invoice-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const invoiceId = btn.dataset.invoiceId;
-      router.navigate(`/buyer/invoice?id=${invoiceId}`);
-    });
-  });
-  
-  document.querySelectorAll('.print-invoice-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const invoiceId = btn.dataset.invoiceId;

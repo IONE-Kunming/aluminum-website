@@ -1021,7 +1021,7 @@ class DataService {
 
   // ==================== Invoice Methods ====================
 
-  // Generate unique invoice number
+  // Generate unique invoice number using Firestore transaction
   async generateInvoiceNumber() {
     await this.init();
     
@@ -1030,30 +1030,43 @@ class DataService {
         throw new Error('Database not initialized');
       }
       
-      // Get the latest invoice to determine next number
-      const snapshot = await this.db
-        .collection('invoices')
-        .orderBy('createdAt', 'desc')
-        .limit(1)
-        .get();
+      // Use a counter document to ensure atomic increment
+      const counterRef = this.db.collection('_counters').doc('invoices');
       
-      let nextNumber = 1;
-      if (!snapshot.empty) {
-        const lastInvoice = snapshot.docs[0].data();
-        // Extract number from invoice number like "INV-2024-00001"
-        const match = lastInvoice.invoiceNumber?.match(/INV-(\d{4})-(\d{5})/);
-        if (match) {
-          nextNumber = parseInt(match[2]) + 1;
+      // Run a transaction to safely increment the counter
+      const invoiceNumber = await this.db.runTransaction(async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        
+        let nextNumber = 1;
+        const currentYear = new Date().getFullYear();
+        
+        if (counterDoc.exists) {
+          const data = counterDoc.data();
+          // Check if we need to reset the counter for a new year
+          if (data.year === currentYear) {
+            nextNumber = (data.lastNumber || 0) + 1;
+          } else {
+            // New year, reset counter to 1
+            nextNumber = 1;
+          }
         }
-      }
-      
-      const year = new Date().getFullYear();
-      const invoiceNumber = `INV-${year}-${String(nextNumber).padStart(5, '0')}`;
+        
+        // Update the counter
+        transaction.set(counterRef, {
+          lastNumber: nextNumber,
+          year: currentYear,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Generate invoice number
+        return `INV-${currentYear}-${String(nextNumber).padStart(5, '0')}`;
+      });
       
       return invoiceNumber;
+      
     } catch (error) {
       console.error('Error generating invoice number:', error);
-      // Fallback to timestamp-based number
+      // Fallback to timestamp-based number if transaction fails
       return `INV-${Date.now()}`;
     }
   }

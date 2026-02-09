@@ -82,10 +82,6 @@ export async function renderSellerInvoices() {
                   <i data-lucide="eye"></i>
                   View Details
                 </button>
-                <button class="btn btn-secondary btn-sm print-invoice-btn" data-invoice-id="${invoice.id}">
-                  <i data-lucide="printer"></i>
-                  Print
-                </button>
                 ${invoice.status !== 'paid' ? `
                   <button class="btn btn-primary btn-sm mark-paid-btn" data-invoice-id="${invoice.id}">
                     <i data-lucide="check-circle"></i>
@@ -105,14 +101,6 @@ export async function renderSellerInvoices() {
   
   // Add event listeners
   document.querySelectorAll('.view-invoice-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const invoiceId = btn.dataset.invoiceId;
-      router.navigate(`/seller/invoice?id=${invoiceId}`);
-    });
-  });
-  
-  document.querySelectorAll('.print-invoice-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const invoiceId = btn.dataset.invoiceId;
