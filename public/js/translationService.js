@@ -4,9 +4,9 @@
 
 class TranslationService {
   constructor() {
-    this.apiKey = null; // Set this with your translation API key (e.g., Google Cloud Translation API)
-    this.apiEndpoint = null; // Set this with your translation API endpoint
-    this.enabled = false; // Set to true when API is configured
+    this.apiKey = 'AIzaSyDLumkxN_6uKWwqJKs5QwOT8jP9sGCW0hQ'; // Gemini API key
+    this.apiEndpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent'; // Gemini API endpoint
+    this.enabled = true; // Set to true when API is configured
   }
 
   /**
@@ -87,15 +87,58 @@ class TranslationService {
       return text; // No translation needed
     }
 
-    // Stub implementation - return null to indicate translation not available
-    // Replace this with actual API call when implementing
-    console.log(`Translation requested: "${text}" from ${sourceLanguage} to ${targetLanguage}`);
-    console.log('To enable automatic translation:');
-    console.log('1. Get an API key from Google Cloud Translation API or similar service');
-    console.log('2. Configure the translation service in your application');
-    console.log('3. Call translationService.init({ apiKey: "YOUR_KEY", apiEndpoint: "YOUR_ENDPOINT" })');
-    
-    return null;
+    try {
+      // Map language codes to full language names for Gemini
+      const languageNames = {
+        en: 'English',
+        zh: 'Chinese',
+        ar: 'Arabic',
+        ur: 'Urdu'
+      };
+      
+      const sourceLangName = languageNames[sourceLanguage] || sourceLanguage;
+      const targetLangName = languageNames[targetLanguage] || targetLanguage;
+      
+      // Create prompt for Gemini to translate
+      const prompt = `Translate the following text from ${sourceLangName} to ${targetLangName}. Only provide the translation, nothing else:\n\n${text}`;
+      
+      // Call Gemini API
+      const response = await fetch(`${this.apiEndpoint}?key=${this.apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }]
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Gemini API error:', response.status, errorData);
+        return null;
+      }
+      
+      const data = await response.json();
+      
+      // Extract translated text from Gemini response
+      if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) {
+        const translatedText = data.candidates[0].content.parts[0].text.trim();
+        console.log(`Translated: "${text}" → "${translatedText}"`);
+        return translatedText;
+      }
+      
+      console.error('Unexpected Gemini API response format:', data);
+      return null;
+      
+    } catch (error) {
+      console.error('Translation error:', error);
+      return null;
+    }
   }
 
   /**

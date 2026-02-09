@@ -940,7 +940,8 @@ class DataService {
           id: doc.id,
           ...chatData,
           otherUserId,
-          otherUser
+          otherUser,
+          otherUserName: otherUser.displayName
         };
       }));
       
@@ -948,6 +949,144 @@ class DataService {
       
     } catch (error) {
       console.error('Error getting user chats:', error);
+      throw error;
+    }
+  }
+
+  // Send a chat message from seller to buyer
+  async sendSellerChatMessage({ buyerId, message, files = [] }) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      const currentUser = authManager.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      const sellerId = currentUser.uid;
+      
+      // Create chat conversation ID (consistent ordering: buyer_seller)
+      const chatId = [buyerId, sellerId].sort().join('_');
+      
+      // Upload files if any (in parallel for better performance)
+      const attachments = [];
+      if (files.length > 0) {
+        const uploadPromises = files.map(file => 
+          this.uploadChatFile(chatId, file)
+            .catch(error => {
+              console.error('Error uploading file:', file.name, error);
+              return null; // Return null for failed uploads
+            })
+        );
+        const results = await Promise.all(uploadPromises);
+        // Filter out failed uploads (null values)
+        attachments.push(...results.filter(att => att !== null));
+      }
+      
+      // Get sender's preferred language from their profile
+      const senderProfile = authManager.getUserProfile();
+      const senderLanguage = senderProfile?.preferredLanguage || 'en';
+      
+      // Create message data
+      const messageData = {
+        chatId: chatId,
+        senderId: sellerId,
+        receiverId: buyerId,
+        message: message,
+        originalLanguage: senderLanguage,
+        attachments: attachments,
+        read: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      // Add message to Firestore
+      const messageRef = await this.db.collection('messages').add(messageData);
+      
+      // Create or update chat conversation
+      const chatData = {
+        participants: [buyerId, sellerId],
+        lastMessage: message || this.ATTACHMENT_PLACEHOLDER,
+        lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
+        lastSenderId: sellerId,
+        buyerId: buyerId,
+        sellerId: sellerId
+      };
+      
+      await this.db.collection('chats').doc(chatId).set(chatData, { merge: true });
+      
+      // Create notification for receiver (buyer)
+      await this.createChatNotification(buyerId, sellerId, message);
+      
+      console.log('Message sent successfully:', messageRef.id);
+      return { success: true, messageId: messageRef.id };
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      throw error;
+    }
+  }
+
+  // Subscribe to chat messages for seller (real-time)
+  async subscribeToSellerChatMessages(buyerId, callback) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      const currentUser = authManager.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      const sellerId = currentUser.uid;
+      
+      // Create chat conversation ID (consistent ordering: buyer_seller)
+      const chatId = [buyerId, sellerId].sort().join('_');
+      
+      console.log('Subscribing to chat messages for chatId:', chatId);
+      
+      // Subscribe to messages in this chat without orderBy to avoid index issues
+      // We'll sort in memory instead
+      const unsubscribe = this.db
+        .collection('messages')
+        .where('chatId', '==', chatId)
+        .onSnapshot(
+          (snapshot) => {
+            // Sort messages by createdAt in memory
+            const messages = snapshot.docs
+              .map(doc => {
+                const data = doc.data();
+                return {
+                  id: doc.id,
+                  ...data,
+                  // Handle serverTimestamp that might not be set yet
+                  createdAt: data.createdAt || new Date()
+                };
+              })
+              .sort((a, b) => {
+                const timeA = a.createdAt?.toDate?.() || a.createdAt;
+                const timeB = b.createdAt?.toDate?.() || b.createdAt;
+                return timeA - timeB;
+              });
+            
+            callback(messages);
+          },
+          (error) => {
+            console.error('Error subscribing to messages:', error);
+            callback([]);
+          }
+        );
+      
+      return unsubscribe;
+      
+    } catch (error) {
+      console.error('Error setting up message subscription:', error);
       throw error;
     }
   }

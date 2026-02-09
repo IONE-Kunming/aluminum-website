@@ -34,6 +34,8 @@ const lazyPages = {
   sellerInvoices: () => import('../pages/seller-invoices.js').then(m => m.renderSellerInvoices),
   branches: () => import('../pages/branches.js').then(m => m.renderBranches),
   profile: () => import('../pages/profile.js').then(m => m.renderProfile),
+  buyerChats: () => import('../pages/buyer-chats.js').then(m => m.renderBuyerChats),
+  sellerChats: () => import('../pages/seller-chats.js').then(m => m.renderSellerChats),
   support: () => import('../pages/support.js').then(m => m.renderSupport),
   notifications: () => import('../pages/notifications.js').then(m => m.renderNotifications),
   adminDashboard: () => import('../pages/admin-dashboard.js').then(m => m.renderAdminDashboard),
@@ -212,6 +214,7 @@ async function initApp() {
   router.register('/buyer/invoices', protectedRoute(lazyRoute(lazyPages.invoices), 'buyer'));
   router.register('/buyer/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'buyer'));
   router.register('/buyer/sellers', protectedRoute(lazyRoute(lazyPages.sellers), 'buyer'));
+  router.register('/buyer/chats', protectedRoute(lazyRoute(lazyPages.buyerChats), 'buyer'));
   router.register('/buyer/support', protectedRoute(lazyRoute(lazyPages.support), 'buyer'));
   router.register('/buyer/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'buyer'));
   router.register('/buyer/profile', protectedRoute(lazyRoute(lazyPages.profile), 'buyer'));
@@ -223,6 +226,7 @@ async function initApp() {
   router.register('/seller/invoices', protectedRoute(lazyRoute(lazyPages.sellerInvoices), 'seller'));
   router.register('/seller/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'seller'));
   router.register('/seller/branches', protectedRoute(lazyRoute(lazyPages.branches), 'seller'));
+  router.register('/seller/chats', protectedRoute(lazyRoute(lazyPages.sellerChats), 'seller'));
   router.register('/seller/support', protectedRoute(lazyRoute(lazyPages.support), 'seller'));
   router.register('/seller/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'seller'));
   router.register('/seller/profile', protectedRoute(lazyRoute(lazyPages.profile), 'seller'));

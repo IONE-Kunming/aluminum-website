@@ -77,6 +77,9 @@ service cloud.firestore {
       // Sellers can read their own invoices
       allow read: if isAuthenticated() && 
                      resource.data.sellerId == request.auth.uid;
+      // Buyers can create invoices for their orders
+      allow create: if hasRole('buyer') && 
+                       request.resource.data.buyerId == request.auth.uid;
       // Sellers can create and update invoices
       allow create, update: if hasRole('seller') && 
                                request.resource.data.sellerId == request.auth.uid;
@@ -172,6 +175,15 @@ service cloud.firestore {
       allow update: if isAuthenticated() && 
                        resource.data.userId == request.auth.uid;
       // Admins can do anything
+      allow read, write: if isAdmin();
+    }
+    
+    // Counters collection (for generating invoice numbers, etc.)
+    match /_counters/{counterId} {
+      // Only allow invoice counter access during invoice creation
+      // Restrict to specific counter documents
+      allow read, write: if isAuthenticated() && counterId == 'invoices';
+      // Admins can access all counters
       allow read, write: if isAdmin();
     }
   }
