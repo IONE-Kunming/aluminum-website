@@ -96,6 +96,9 @@ let currentBuyerId = null;
 let allMessages = []; // Store all messages for document extraction
 let renderedMessageIds = new Set(); // Track which messages are already rendered
 
+// Constants
+const SCROLL_BOTTOM_THRESHOLD = 100; // Pixels from bottom to consider "at bottom"
+
 async function loadChats() {
   try {
     const chats = await dataService.getUserChats();
@@ -271,7 +274,7 @@ function displayMessages(messages) {
   const isFreshLoad = renderedMessageIds.size === 0;
   
   // Save scroll position
-  const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + 100;
+  const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + SCROLL_BOTTOM_THRESHOLD;
   
   // Only render new messages (incremental update for better performance)
   messages.forEach((msg, index) => {
@@ -365,24 +368,9 @@ function displayMessages(messages) {
     tempDiv.innerHTML = messageHtml;
     const messageElement = tempDiv.firstElementChild;
     
-    // Find correct insertion position (maintain chronological order)
-    let inserted = false;
-    const existingMessages = messagesContainer.querySelectorAll('.message[data-message-id]');
-    
-    for (let i = 0; i < existingMessages.length; i++) {
-      const existingMsgId = existingMessages[i].dataset.messageId;
-      const existingMsgIndex = messages.findIndex(m => m.id === existingMsgId);
-      
-      if (existingMsgIndex > index) {
-        messagesContainer.insertBefore(messageElement, existingMessages[i]);
-        inserted = true;
-        break;
-      }
-    }
-    
-    if (!inserted) {
-      messagesContainer.appendChild(messageElement);
-    }
+    // Since messages are already sorted, just append new messages to the end
+    // (Real-time updates typically add at the end, and messages array is pre-sorted)
+    messagesContainer.appendChild(messageElement);
     
     // Add click handler for images
     const images = messageElement.querySelectorAll('.attachment-image');
