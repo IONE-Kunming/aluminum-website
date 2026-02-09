@@ -97,13 +97,15 @@ async function loadChats() {
       const lastMessageTime = chat.lastMessageTime?.toDate?.() || new Date(chat.lastMessageTime);
       const timeStr = formatTime(lastMessageTime);
       const avatarLetter = (chat.otherUserName || 'U').charAt(0).toUpperCase();
+      const safeName = escapeHtml(chat.otherUserName || 'User');
+      const safeLastMessage = escapeHtml(chat.lastMessage || 'No messages yet');
       
       return `
         <div class="chat-item" data-chat-id="${chat.id}" data-seller-id="${chat.otherUserId}">
           <div class="chat-avatar">${avatarLetter}</div>
           <div class="chat-info">
-            <div class="chat-name">${chat.otherUserName || 'User'}</div>
-            <div class="chat-last-message">${chat.lastMessage || 'No messages yet'}</div>
+            <div class="chat-name">${safeName}</div>
+            <div class="chat-last-message">${safeLastMessage}</div>
           </div>
           <div class="chat-time">${timeStr}</div>
         </div>
@@ -339,8 +341,8 @@ function displaySelectedFiles() {
       ${selectedFiles.map((file, index) => `
         <div class="selected-file">
           <i data-lucide="file"></i>
-          <span>${file.name}</span>
-          <button class="btn-icon" onclick="removeFile(${index})">
+          <span>${escapeHtml(file.name)}</span>
+          <button class="btn-icon file-remove-btn" data-file-index="${index}">
             <i data-lucide="x"></i>
           </button>
         </div>
@@ -349,12 +351,16 @@ function displaySelectedFiles() {
   `;
   
   if (window.lucide) window.lucide.createIcons();
+  
+  // Attach event handlers for remove buttons
+  container.querySelectorAll('.file-remove-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const index = parseInt(this.dataset.fileIndex);
+      selectedFiles.splice(index, 1);
+      displaySelectedFiles();
+    });
+  });
 }
-
-window.removeFile = function(index) {
-  selectedFiles.splice(index, 1);
-  displaySelectedFiles();
-};
 
 function formatTime(date) {
   if (!date) return '';
