@@ -345,6 +345,33 @@ class DataService {
     }
   }
 
+  // Update an existing product
+  async updateProduct(productId, productData) {
+    await this.init();
+
+    try {
+      if (!this.db || !productId) {
+        throw new Error('Invalid product ID or database not initialized');
+      }
+
+      // Add updated timestamp
+      const updateData = {
+        ...productData,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      await this.db.collection('products').doc(productId).update(updateData);
+      
+      return { 
+        success: true,
+        productId: productId
+      };
+    } catch (error) {
+      console.error('Error updating product:', error);
+      throw error;
+    }
+  }
+
   // Get unique categories from products
   async getCategories(sellerId = null) {
     await this.init();
@@ -686,18 +713,19 @@ class DataService {
       // Create chat conversation ID (consistent ordering: buyer_seller)
       const chatId = [buyerId, sellerId].sort().join('_');
       
-      // Upload files if any
+      // Upload files if any (in parallel for better performance)
       const attachments = [];
       if (files.length > 0) {
-        for (const file of files) {
-          try {
-            const attachment = await this.uploadChatFile(chatId, file);
-            attachments.push(attachment);
-          } catch (error) {
-            console.error('Error uploading file:', file.name, error);
-            // Continue with other files
-          }
-        }
+        const uploadPromises = files.map(file => 
+          this.uploadChatFile(chatId, file)
+            .catch(error => {
+              console.error('Error uploading file:', file.name, error);
+              return null; // Return null for failed uploads
+            })
+        );
+        const results = await Promise.all(uploadPromises);
+        // Filter out failed uploads (null values)
+        attachments.push(...results.filter(att => att !== null));
       }
       
       // Create message data
@@ -799,50 +827,168 @@ class DataService {
       const buyerId = currentUser.uid;
       const chatId = [buyerId, sellerId].sort().join('_');
       
+      console.log('Subscribing to chat messages for chatId:', chatId);
+      
       // Debounce timer for marking messages as read
       let markReadTimeout = null;
       
       // Subscribe to messages in this chat
-      const unsubscribe = this.db
-        .collection('messages')
-        .where('chatId', '==', chatId)
-        .orderBy('createdAt', 'asc')
-        .onSnapshot((snapshot) => {
-          const messages = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          }));
-          
-          callback(messages);
-          
-          // Debounce marking messages as read to avoid excessive writes
-          if (markReadTimeout) {
-            clearTimeout(markReadTimeout);
-          }
-          
-          markReadTimeout = setTimeout(() => {
-            // Mark unread messages as read (batched)
-            const unreadMessages = snapshot.docs.filter(doc => {
-              const msg = doc.data();
-              return msg.receiverId === buyerId && !msg.read;
-            });
+      // Try with orderBy first, fallback to without ordering if index doesn't exist
+      let unsubscribe;
+      
+      try {
+        unsubscribe = this.db
+          .collection('messages')
+          .where('chatId', '==', chatId)
+          .orderBy('createdAt', 'asc')
+          .onSnapshot((snapshot) => {
+            console.log('Messages snapshot received:', snapshot.docs.length, 'messages');
             
-            if (unreadMessages.length > 0) {
-              const batch = this.db.batch();
-              unreadMessages.forEach(doc => {
-                batch.update(this.db.collection('messages').doc(doc.id), { read: true });
-              });
-              batch.commit().catch(err => console.error('Error marking messages as read:', err));
+            const messages = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+            
+            console.log('Calling callback with messages:', messages.length);
+            callback(messages);
+            
+            // Debounce marking messages as read to avoid excessive writes
+            if (markReadTimeout) {
+              clearTimeout(markReadTimeout);
             }
-          }, 1000); // Wait 1 second before marking as read
-        }, (error) => {
-          console.error('Error in message subscription:', error);
-        });
+            
+            markReadTimeout = setTimeout(() => {
+              // Mark unread messages as read (batched)
+              const unreadMessages = snapshot.docs.filter(doc => {
+                const msg = doc.data();
+                return msg.receiverId === buyerId && !msg.read;
+              });
+              
+              if (unreadMessages.length > 0) {
+                const batch = this.db.batch();
+                unreadMessages.forEach(doc => {
+                  batch.update(this.db.collection('messages').doc(doc.id), { read: true });
+                });
+                batch.commit().catch(err => console.error('Error marking messages as read:', err));
+              }
+            }, 1000); // Wait 1 second before marking as read
+          }, (error) => {
+            console.error('Error in message subscription:', error);
+          });
+      } catch (orderByError) {
+        // If orderBy fails (missing index), subscribe without ordering
+        console.warn('Could not subscribe with orderBy, trying without ordering:', orderByError);
+        
+        unsubscribe = this.db
+          .collection('messages')
+          .where('chatId', '==', chatId)
+          .onSnapshot((snapshot) => {
+            console.log('Messages snapshot received (no ordering):', snapshot.docs.length, 'messages');
+            
+            // Sort messages by createdAt manually
+            const messages = snapshot.docs
+              .map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }))
+              .sort((a, b) => {
+                const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
+                const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+                return dateA - dateB;
+              });
+            
+            console.log('Calling callback with sorted messages:', messages.length);
+            callback(messages);
+            
+            // Debounce marking messages as read to avoid excessive writes
+            if (markReadTimeout) {
+              clearTimeout(markReadTimeout);
+            }
+            
+            markReadTimeout = setTimeout(() => {
+              // Mark unread messages as read (batched)
+              const unreadMessages = snapshot.docs.filter(doc => {
+                const msg = doc.data();
+                return msg.receiverId === buyerId && !msg.read;
+              });
+              
+              if (unreadMessages.length > 0) {
+                const batch = this.db.batch();
+                unreadMessages.forEach(doc => {
+                  batch.update(this.db.collection('messages').doc(doc.id), { read: true });
+                });
+                batch.commit().catch(err => console.error('Error marking messages as read:', err));
+              }
+            }, 1000); // Wait 1 second before marking as read
+          }, (error) => {
+            console.error('Error in message subscription (no ordering):', error);
+          });
+      }
       
       return unsubscribe;
       
     } catch (error) {
       console.error('Error subscribing to messages:', error);
+      throw error;
+    }
+  }
+
+  // Get all chats for a user
+  async getUserChats() {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      const currentUser = authManager.getCurrentUser();
+      if (!currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      const userId = currentUser.uid;
+      
+      // Get all chats where user is a participant
+      const snapshot = await this.db
+        .collection('chats')
+        .where('participants', 'array-contains', userId)
+        .orderBy('lastMessageTime', 'desc')
+        .get();
+      
+      // Get user details for each chat participant
+      const chats = await Promise.all(snapshot.docs.map(async (doc) => {
+        const chatData = doc.data();
+        const otherUserId = chatData.participants.find(id => id !== userId);
+        
+        // Get other user's details
+        let otherUser = { displayName: 'Unknown User', email: '' };
+        try {
+          const userDoc = await this.db.collection('users').doc(otherUserId).get();
+          if (userDoc.exists) {
+            const userData = userDoc.data();
+            otherUser = {
+              displayName: userData.displayName || userData.email || 'Unknown User',
+              email: userData.email || '',
+              role: userData.role || 'user'
+            };
+          }
+        } catch (err) {
+          console.error('Error fetching user details:', err);
+        }
+        
+        return {
+          id: doc.id,
+          ...chatData,
+          otherUserId,
+          otherUser
+        };
+      }));
+      
+      return chats;
+      
+    } catch (error) {
+      console.error('Error getting user chats:', error);
       throw error;
     }
   }
