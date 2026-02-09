@@ -584,8 +584,8 @@ class DataService {
       
       // Try to order by creation date descending
       try {
-        query = query.orderBy('createdAt', 'desc');
-        const snapshot = await query.get();
+        const orderedQuery = query.orderBy('createdAt', 'desc');
+        const snapshot = await orderedQuery.get();
         
         return snapshot.docs.map(doc => ({
           id: doc.id,
@@ -832,98 +832,52 @@ class DataService {
       // Debounce timer for marking messages as read
       let markReadTimeout = null;
       
-      // Subscribe to messages in this chat
-      // Try with orderBy first, fallback to without ordering if index doesn't exist
-      let unsubscribe;
-      
-      try {
-        unsubscribe = this.db
-          .collection('messages')
-          .where('chatId', '==', chatId)
-          .orderBy('createdAt', 'asc')
-          .onSnapshot((snapshot) => {
-            console.log('Messages snapshot received:', snapshot.docs.length, 'messages');
-            
-            const messages = snapshot.docs.map(doc => ({
+      // Subscribe to messages in this chat without orderBy to avoid index issues
+      // We'll sort in memory instead
+      const unsubscribe = this.db
+        .collection('messages')
+        .where('chatId', '==', chatId)
+        .onSnapshot((snapshot) => {
+          console.log('Messages snapshot received:', snapshot.docs.length, 'messages');
+          
+          // Sort messages by createdAt manually
+          const messages = snapshot.docs
+            .map(doc => ({
               id: doc.id,
               ...doc.data()
-            }));
+            }))
+            .sort((a, b) => {
+              const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
+              const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+              return dateA - dateB;
+            });
+          
+          console.log('Calling callback with sorted messages:', messages.length);
+          callback(messages);
+          
+          // Debounce marking messages as read to avoid excessive writes
+          if (markReadTimeout) {
+            clearTimeout(markReadTimeout);
+          }
+          
+          markReadTimeout = setTimeout(() => {
+            // Mark unread messages as read (batched)
+            const unreadMessages = snapshot.docs.filter(doc => {
+              const msg = doc.data();
+              return msg.receiverId === buyerId && !msg.read;
+            });
             
-            console.log('Calling callback with messages:', messages.length);
-            callback(messages);
-            
-            // Debounce marking messages as read to avoid excessive writes
-            if (markReadTimeout) {
-              clearTimeout(markReadTimeout);
+            if (unreadMessages.length > 0) {
+              const batch = this.db.batch();
+              unreadMessages.forEach(doc => {
+                batch.update(this.db.collection('messages').doc(doc.id), { read: true });
+              });
+              batch.commit().catch(err => console.error('Error marking messages as read:', err));
             }
-            
-            markReadTimeout = setTimeout(() => {
-              // Mark unread messages as read (batched)
-              const unreadMessages = snapshot.docs.filter(doc => {
-                const msg = doc.data();
-                return msg.receiverId === buyerId && !msg.read;
-              });
-              
-              if (unreadMessages.length > 0) {
-                const batch = this.db.batch();
-                unreadMessages.forEach(doc => {
-                  batch.update(this.db.collection('messages').doc(doc.id), { read: true });
-                });
-                batch.commit().catch(err => console.error('Error marking messages as read:', err));
-              }
-            }, 1000); // Wait 1 second before marking as read
-          }, (error) => {
-            console.error('Error in message subscription:', error);
-          });
-      } catch (orderByError) {
-        // If orderBy fails (missing index), subscribe without ordering
-        console.warn('Could not subscribe with orderBy, trying without ordering:', orderByError);
-        
-        unsubscribe = this.db
-          .collection('messages')
-          .where('chatId', '==', chatId)
-          .onSnapshot((snapshot) => {
-            console.log('Messages snapshot received (no ordering):', snapshot.docs.length, 'messages');
-            
-            // Sort messages by createdAt manually
-            const messages = snapshot.docs
-              .map(doc => ({
-                id: doc.id,
-                ...doc.data()
-              }))
-              .sort((a, b) => {
-                const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
-                const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
-                return dateA - dateB;
-              });
-            
-            console.log('Calling callback with sorted messages:', messages.length);
-            callback(messages);
-            
-            // Debounce marking messages as read to avoid excessive writes
-            if (markReadTimeout) {
-              clearTimeout(markReadTimeout);
-            }
-            
-            markReadTimeout = setTimeout(() => {
-              // Mark unread messages as read (batched)
-              const unreadMessages = snapshot.docs.filter(doc => {
-                const msg = doc.data();
-                return msg.receiverId === buyerId && !msg.read;
-              });
-              
-              if (unreadMessages.length > 0) {
-                const batch = this.db.batch();
-                unreadMessages.forEach(doc => {
-                  batch.update(this.db.collection('messages').doc(doc.id), { read: true });
-                });
-                batch.commit().catch(err => console.error('Error marking messages as read:', err));
-              }
-            }, 1000); // Wait 1 second before marking as read
-          }, (error) => {
-            console.error('Error in message subscription (no ordering):', error);
-          });
-      }
+          }, 1000); // Wait 1 second before marking as read
+        }, (error) => {
+          console.error('Error in message subscription:', error);
+        });
       
       return unsubscribe;
       
@@ -1062,6 +1016,275 @@ class DataService {
       
     } catch (error) {
       console.error('Error marking notification as read:', error);
+    }
+  }
+
+  // ==================== Invoice Methods ====================
+
+  // Generate unique invoice number using Firestore transaction
+  async generateInvoiceNumber() {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      // Use a counter document to ensure atomic increment
+      const counterRef = this.db.collection('_counters').doc('invoices');
+      
+      // Run a transaction to safely increment the counter
+      const invoiceNumber = await this.db.runTransaction(async (transaction) => {
+        const counterDoc = await transaction.get(counterRef);
+        
+        let nextNumber = 1;
+        const currentYear = new Date().getFullYear();
+        
+        if (counterDoc.exists) {
+          const data = counterDoc.data();
+          // Check if we need to reset the counter for a new year
+          if (data.year === currentYear) {
+            nextNumber = (data.lastNumber || 0) + 1;
+          } else {
+            // New year, reset counter to 1
+            nextNumber = 1;
+          }
+        }
+        
+        // Update the counter
+        transaction.set(counterRef, {
+          lastNumber: nextNumber,
+          year: currentYear,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Generate invoice number
+        return `INV-${currentYear}-${String(nextNumber).padStart(5, '0')}`;
+      });
+      
+      return invoiceNumber;
+      
+    } catch (error) {
+      console.error('Error generating invoice number:', error);
+      // Fallback to timestamp-based number if transaction fails
+      return `INV-${Date.now()}`;
+    }
+  }
+
+  // Create invoice from order
+  async createInvoice(orderId) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      // Get order data
+      const orderDoc = await this.db.collection('orders').doc(orderId).get();
+      if (!orderDoc.exists) {
+        throw new Error('Order not found');
+      }
+      
+      const order = orderDoc.data();
+      
+      // Get seller info
+      const sellerDoc = await this.db.collection('users').doc(order.sellerId).get();
+      const sellerData = sellerDoc.exists ? sellerDoc.data() : {};
+      
+      // Generate invoice number
+      const invoiceNumber = await this.generateInvoiceNumber();
+      
+      // Calculate due date (30 days from now)
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 30);
+      
+      // Create invoice data
+      const invoiceData = {
+        invoiceNumber: invoiceNumber,
+        orderId: orderId,
+        
+        // Buyer information
+        buyerId: order.buyerId,
+        buyerName: order.buyerName || 'N/A',
+        buyerEmail: order.buyerEmail || 'N/A',
+        buyerCompany: order.buyerCompany || 'N/A',
+        buyerAddress: order.buyerAddress || {
+          street: '',
+          city: '',
+          state: '',
+          zip: '',
+          country: ''
+        },
+        
+        // Seller information
+        sellerId: order.sellerId,
+        sellerName: sellerData.displayName || 'N/A',
+        sellerEmail: sellerData.email || 'N/A',
+        sellerCompany: sellerData.company || 'N/A',
+        sellerAddress: sellerData.address || {
+          street: '',
+          city: '',
+          state: '',
+          zip: '',
+          country: ''
+        },
+        
+        // Items
+        items: order.items || [],
+        
+        // Amounts
+        subtotal: order.subtotal || 0,
+        tax: order.tax || 0,
+        taxRate: order.taxRate || 10,
+        total: order.total || 0,
+        depositPaid: order.depositAmount || 0,
+        remainingBalance: order.remainingBalance || 0,
+        
+        // Payment info
+        paymentMethod: order.paymentMethod || 'N/A',
+        paymentTerms: `${order.depositPercentage || 30}% deposit, ${100 - (order.depositPercentage || 30)}% on delivery`,
+        
+        // Dates
+        dueDate: firebase.firestore.Timestamp.fromDate(dueDate),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        
+        // Status
+        status: 'issued', // issued, paid, overdue, cancelled
+        
+        // Notes
+        notes: 'Thank you for your business!'
+      };
+      
+      // Create invoice
+      const invoiceRef = await this.db.collection('invoices').add(invoiceData);
+      
+      console.log('Invoice created successfully:', invoiceRef.id, invoiceNumber);
+      
+      return {
+        success: true,
+        invoiceId: invoiceRef.id,
+        invoiceNumber: invoiceNumber
+      };
+      
+    } catch (error) {
+      console.error('Error creating invoice:', error);
+      throw error;
+    }
+  }
+
+  // Get invoices for user
+  async getInvoices(filters = {}) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        return [];
+      }
+      
+      let query = this.db.collection('invoices');
+      
+      // Apply filters
+      if (filters.buyerId) {
+        query = query.where('buyerId', '==', filters.buyerId);
+      }
+      
+      if (filters.sellerId) {
+        query = query.where('sellerId', '==', filters.sellerId);
+      }
+      
+      if (filters.status) {
+        query = query.where('status', '==', filters.status);
+      }
+      
+      // Try to order by creation date descending
+      try {
+        const orderedQuery = query.orderBy('createdAt', 'desc');
+        const snapshot = await orderedQuery.get();
+        
+        return snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+      } catch (indexError) {
+        // If index error, try without orderBy
+        console.warn('Firestore index not available for invoices, fetching without ordering:', indexError);
+        const snapshot = await query.get();
+        
+        // Sort in memory
+        const invoices = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        // Sort by createdAt
+        invoices.sort((a, b) => {
+          const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
+          const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+          return dateB - dateA;
+        });
+        
+        return invoices;
+      }
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      return [];
+    }
+  }
+
+  // Get single invoice
+  async getInvoice(invoiceId) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      const doc = await this.db.collection('invoices').doc(invoiceId).get();
+      
+      if (!doc.exists) {
+        throw new Error('Invoice not found');
+      }
+      
+      return {
+        id: doc.id,
+        ...doc.data()
+      };
+    } catch (error) {
+      console.error('Error fetching invoice:', error);
+      throw error;
+    }
+  }
+
+  // Update invoice status
+  async updateInvoiceStatus(invoiceId, status) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      const updateData = {
+        status: status,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      // If marking as paid, set paidAt timestamp
+      if (status === 'paid') {
+        updateData.paidAt = firebase.firestore.FieldValue.serverTimestamp();
+      }
+      
+      await this.db.collection('invoices').doc(invoiceId).update(updateData);
+      
+      console.log('Invoice status updated:', invoiceId, status);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating invoice status:', error);
+      throw error;
     }
   }
 }
