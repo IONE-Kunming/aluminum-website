@@ -856,13 +856,8 @@ function initializeBulkImport() {
             const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
             const imagePath = row['Image Path'] || row['image_path'] || row['ImagePath'];
             
-            // Validate price one more time
+            // Parse and use the validated price
             const price = parseFloat(pricePerMeter);
-            if (isNaN(price) || price <= 0) {
-              console.warn(`Skipping product with invalid price: ${modelNumber}`);
-              skippedCount++;
-              return null;
-            }
             
             // Upload image if provided (parallel with other images in batch)
             let imageUrl = '';

@@ -7,6 +7,7 @@ import { escapeHtml, sanitizeUrl } from '../js/utils.js';
 
 let unsubscribers = [];
 let sendingMessages = new Set(); // Track messages being sent
+let tempMessageCounter = 0; // Counter for unique message IDs
 
 export async function renderBuyerChats() {
   const profile = authManager.getUserProfile();
@@ -496,7 +497,7 @@ async function sendMessage() {
   const userProfile = authManager.getUserProfile();
   
   // Generate unique ID for temp message
-  const tempId = `temp_${Date.now()}_${Math.random()}`;
+  const tempId = `temp_${Date.now()}_${++tempMessageCounter}`;
   sendingMessages.add(tempId);
   
   const tempMessageElement = document.createElement('div');

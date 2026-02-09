@@ -335,22 +335,25 @@ function initializeBranchHandlers() {
         errors.push('Country must be at least 2 characters');
       }
       
-      // Email validation (if provided)
+      // Email validation (if provided) - using a more comprehensive regex
       if (branchData.email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // This regex validates most common email formats
+        const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
         if (!emailRegex.test(branchData.email)) {
           errors.push('Invalid email format');
         }
       }
       
       // Phone validation (if provided)
+      // Accepts formats like: +1234567890, (123) 456-7890, 123-456-7890, etc.
+      // After removing formatting, must be 7-15 digits
       if (branchData.phone) {
         // Remove spaces, dashes, and parentheses for validation
         const cleanPhone = branchData.phone.replace(/[\s\-\(\)]/g, '');
         // Check if it contains only digits and optional + at start
         const phoneRegex = /^\+?[0-9]{7,15}$/;
         if (!phoneRegex.test(cleanPhone)) {
-          errors.push('Invalid phone number format (must be 7-15 digits, optionally starting with +)');
+          errors.push('Invalid phone number (accepted formats: +1234567890, (123) 456-7890, 123-456-7890)');
         }
       }
       
