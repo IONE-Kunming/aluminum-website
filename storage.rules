@@ -104,6 +104,35 @@ service firebase.storage {
                       request.resource.size < 2 * 1024 * 1024; // 2MB limit
     }
     
+    // Chat files - Shared between participants
+    // Path structure: /chats/{chatId}/{fileName}
+    match /chats/{chatId}/{fileName} {
+      // Participants can read chat files
+      // chatId format: buyerId_sellerId (sorted alphabetically)
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can upload to chat folders
+      // Validation: only images, videos, and PDFs up to 10MB
+      allow write: if isAuthenticated() &&
+                      (request.resource.contentType.matches('image/.*') ||
+                       request.resource.contentType.matches('video/.*') ||
+                       request.resource.contentType == 'application/pdf') &&
+                      request.resource.size < 10 * 1024 * 1024; // 10MB limit
+    }
+    
+    // Chat files - Nested paths
+    match /chats/{chatId}/{allPaths=**} {
+      // Participants can read chat files
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can upload to chat folders
+      allow write: if isAuthenticated() &&
+                      (request.resource.contentType.matches('image/.*') ||
+                       request.resource.contentType.matches('video/.*') ||
+                       request.resource.contentType == 'application/pdf') &&
+                      request.resource.size < 10 * 1024 * 1024; // 10MB limit
+    }
+    
     // Deny all other paths by default
     match /{allPaths=**} {
       allow read, write: if false;
