@@ -40,6 +40,14 @@ export default {
     or: 'یا'
   },
   
+  // زبانیں
+  languages: {
+    en: 'English',
+    zh: '中文 (Chinese)',
+    ar: 'العربية (Arabic)',
+    ur: 'اردو (Urdu)'
+  },
+  
   // مصنوعات
   products: {
     title: 'مصنوعات',
@@ -265,7 +273,9 @@ export default {
     updateProfile: 'پروفائل اپ ڈیٹ کریں',
     changePassword: 'پاس ورڈ تبدیل کریں',
     manageAccountInfo: 'اپنے اکاؤنٹ کی معلومات کا انتظام کریں',
-    accountInformation: 'اکاؤنٹ کی معلومات'
+    accountInformation: 'اکاؤنٹ کی معلومات',
+    preferredLanguage: 'ترجیحی زبان',
+    languageDescription: 'انٹرفیس اور خودکار پیغام کی ترجمہ کے لیے اپنی ترجیحی زبان منتخب کریں'
   },
   // لینڈنگ پیج
   landing: {

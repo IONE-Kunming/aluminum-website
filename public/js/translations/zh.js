@@ -40,6 +40,14 @@ export default {
     or: '或'
   },
   
+  // 语言
+  languages: {
+    en: 'English',
+    zh: '中文 (Chinese)',
+    ar: 'العربية (Arabic)',
+    ur: 'اردو (Urdu)'
+  },
+  
   // 产品
   products: {
     title: '产品',
@@ -265,7 +273,9 @@ export default {
     updateProfile: '更新资料',
     changePassword: '更改密码',
     manageAccountInfo: '管理您的账户信息',
-    accountInformation: '账户信息'
+    accountInformation: '账户信息',
+    preferredLanguage: '首选语言',
+    languageDescription: '选择您的界面首选语言和自动消息翻译语言'
   },
   
   // 着陆页

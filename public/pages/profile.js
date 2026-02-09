@@ -58,6 +58,16 @@ export function renderProfile() {
             <small style="color: #6b7280; font-size: 12px;">Enter your phone number with country code (letters not allowed)</small>
           </div>
           <div class="form-group">
+            <label>${t('profile.preferredLanguage')}</label>
+            <select class="form-control" id="preferredLanguage">
+              <option value="en" ${(profile?.preferredLanguage || 'en') === 'en' ? 'selected' : ''}>${t('languages.en')}</option>
+              <option value="zh" ${(profile?.preferredLanguage || 'en') === 'zh' ? 'selected' : ''}>${t('languages.zh')}</option>
+              <option value="ar" ${(profile?.preferredLanguage || 'en') === 'ar' ? 'selected' : ''}>${t('languages.ar')}</option>
+              <option value="ur" ${(profile?.preferredLanguage || 'en') === 'ur' ? 'selected' : ''}>${t('languages.ur')}</option>
+            </select>
+            <small style="color: #6b7280; font-size: 12px;">${t('profile.languageDescription')}</small>
+          </div>
+          <div class="form-group">
             <label>${t('profile.role')}</label>
             <input type="text" class="form-control" id="role" value="${escapeHtml(profile?.role || 'guest')}" readonly>
             <small style="color: #6b7280; font-size: 12px;">Role cannot be changed</small>
@@ -85,6 +95,7 @@ function initProfileHandlers(profile, user) {
   const displayNameInput = document.getElementById('displayName');
   const emailInput = document.getElementById('email');
   const phoneInput = document.getElementById('phoneNumber');
+  const preferredLanguageSelect = document.getElementById('preferredLanguage');
   const saveBtn = document.getElementById('save-profile-btn');
   
   if (!form) return;
@@ -123,13 +134,15 @@ function initProfileHandlers(profile, user) {
     const newDisplayName = displayNameInput?.value.trim();
     const newEmail = emailInput?.value.trim();
     const newPhone = phoneInput?.value.trim();
+    const newPreferredLanguage = preferredLanguageSelect?.value;
     
     // Check if anything changed
     const displayNameChanged = newDisplayName !== (profile?.displayName || '');
     const emailChanged = newEmail !== user?.email;
     const phoneChanged = newPhone !== (profile?.phoneNumber || '');
+    const languageChanged = newPreferredLanguage !== (profile?.preferredLanguage || 'en');
     
-    if (!displayNameChanged && !emailChanged && !phoneChanged) {
+    if (!displayNameChanged && !emailChanged && !phoneChanged && !languageChanged) {
       if (window.toast) {
         window.toast.info('No changes to save');
       }
@@ -170,12 +183,18 @@ function initProfileHandlers(profile, user) {
       if (displayNameChanged) updates.displayName = newDisplayName;
       if (emailChanged) updates.email = newEmail;
       if (phoneChanged) updates.phoneNumber = newPhone;
+      if (languageChanged) updates.preferredLanguage = newPreferredLanguage;
       
       const result = await authManager.updateProfileFields(updates);
       
       if (result.success) {
         if (window.toast) {
           window.toast.success('Profile updated successfully');
+        }
+        
+        // If language was changed, update the UI language
+        if (languageChanged) {
+          languageManager.setLanguage(newPreferredLanguage);
         }
         
         // If email was changed, inform user they might need to verify

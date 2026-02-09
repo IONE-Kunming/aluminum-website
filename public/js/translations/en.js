@@ -40,6 +40,14 @@ export default {
     or: 'OR'
   },
   
+  // Languages
+  languages: {
+    en: 'English',
+    zh: '中文 (Chinese)',
+    ar: 'العربية (Arabic)',
+    ur: 'اردو (Urdu)'
+  },
+  
   // Products
   products: {
     title: 'Products',
@@ -265,7 +273,9 @@ export default {
     updateProfile: 'Update Profile',
     changePassword: 'Change Password',
     manageAccountInfo: 'Manage your account information',
-    accountInformation: 'Account Information'
+    accountInformation: 'Account Information',
+    preferredLanguage: 'Preferred Language',
+    languageDescription: 'Select your preferred language for the interface and automatic message translation'
   },
   // Landing Page
   landing: {

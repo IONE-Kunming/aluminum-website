@@ -40,6 +40,14 @@ export default {
     or: 'أو'
   },
   
+  // اللغات
+  languages: {
+    en: 'English',
+    zh: '中文 (Chinese)',
+    ar: 'العربية (Arabic)',
+    ur: 'اردو (Urdu)'
+  },
+  
   // المنتجات
   products: {
     title: 'المنتجات',
@@ -265,7 +273,9 @@ export default {
     updateProfile: 'تحديث الملف الشخصي',
     changePassword: 'تغيير كلمة المرور',
     manageAccountInfo: 'إدارة معلومات حسابك',
-    accountInformation: 'معلومات الحساب'
+    accountInformation: 'معلومات الحساب',
+    preferredLanguage: 'اللغة المفضلة',
+    languageDescription: 'حدد لغتك المفضلة للواجهة والترجمة التلقائية للرسائل'
   },
   
   // الصفحة الرئيسية
