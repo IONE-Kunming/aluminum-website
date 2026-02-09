@@ -349,9 +349,33 @@ function initializeCheckout(cartItems, cartTotal) {
       
       // Create all orders atomically using batched write
       // This ensures either all orders succeed or all fail - no partial orders
-      await dataService.createOrdersBatch(ordersData);
+      const orderResult = await dataService.createOrdersBatch(ordersData);
       
-      console.log('Orders created successfully, clearing cart...');
+      console.log('Orders created successfully:', orderResult.orderIds);
+      
+      // Create invoices for each order
+      try {
+        const invoicePromises = orderResult.orderIds.map(orderId => 
+          dataService.createInvoice(orderId)
+            .catch(error => {
+              console.error('Error creating invoice for order:', orderId, error);
+              return null; // Don't fail checkout if invoice creation fails
+            })
+        );
+        
+        const invoiceResults = await Promise.all(invoicePromises);
+        const successfulInvoices = invoiceResults.filter(r => r !== null);
+        console.log('Invoices created:', successfulInvoices.length, 'of', orderResult.orderIds.length);
+        
+        if (successfulInvoices.length > 0) {
+          console.log('Invoice numbers:', successfulInvoices.map(i => i.invoiceNumber).join(', '));
+        }
+      } catch (invoiceError) {
+        console.error('Error creating invoices:', invoiceError);
+        // Continue with checkout even if invoice creation fails
+      }
+      
+      console.log('Orders and invoices created, clearing cart...');
       
       // Clear cart
       await cartManager.clearCart();

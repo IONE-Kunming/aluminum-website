@@ -27,6 +27,7 @@ const lazyPages = {
   checkout: () => import('../pages/checkout.js').then(m => m.renderCheckout),
   orders: () => import('../pages/orders.js').then(m => m.renderOrders),
   invoices: () => import('../pages/invoices.js').then(m => m.renderInvoices),
+  invoiceDetail: () => import('../pages/invoice-detail.js').then(m => m.renderInvoiceDetail),
   sellers: () => import('../pages/sellers.js').then(m => m.renderSellers),
   products: () => import('../pages/products.js').then(m => m.renderProducts),
   sellerOrders: () => import('../pages/seller-orders.js').then(m => m.renderSellerOrders),
@@ -209,6 +210,7 @@ async function initApp() {
   router.register('/buyer/checkout', protectedRoute(lazyRoute(lazyPages.checkout), 'buyer'));
   router.register('/buyer/orders', protectedRoute(lazyRoute(lazyPages.orders), 'buyer'));
   router.register('/buyer/invoices', protectedRoute(lazyRoute(lazyPages.invoices), 'buyer'));
+  router.register('/buyer/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'buyer'));
   router.register('/buyer/sellers', protectedRoute(lazyRoute(lazyPages.sellers), 'buyer'));
   router.register('/buyer/support', protectedRoute(lazyRoute(lazyPages.support), 'buyer'));
   router.register('/buyer/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'buyer'));
@@ -219,6 +221,7 @@ async function initApp() {
   router.register('/seller/products', protectedRoute(lazyRoute(lazyPages.products), 'seller'));
   router.register('/seller/orders', protectedRoute(lazyRoute(lazyPages.sellerOrders), 'seller'));
   router.register('/seller/invoices', protectedRoute(lazyRoute(lazyPages.sellerInvoices), 'seller'));
+  router.register('/seller/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'seller'));
   router.register('/seller/branches', protectedRoute(lazyRoute(lazyPages.branches), 'seller'));
   router.register('/seller/support', protectedRoute(lazyRoute(lazyPages.support), 'seller'));
   router.register('/seller/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'seller'));
