@@ -728,12 +728,17 @@ class DataService {
         attachments.push(...results.filter(att => att !== null));
       }
       
+      // Get sender's preferred language from their profile
+      const senderProfile = authManager.getUserProfile();
+      const senderLanguage = senderProfile?.preferredLanguage || 'en';
+      
       // Create message data
       const messageData = {
         chatId: chatId,
         senderId: buyerId,
         receiverId: sellerId,
         message: message,
+        originalLanguage: senderLanguage,
         attachments: attachments,
         read: false,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
