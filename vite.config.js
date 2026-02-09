@@ -9,6 +9,8 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    // Don't generate source maps in production for security
+    sourcemap: false,
     rollupOptions: {
       input: {
         main: '/index.html',
@@ -24,7 +26,15 @@ export default defineConfig({
     terserOptions: {
       compress: {
         drop_console: true, // Remove console.logs in production
+        drop_debugger: true, // Remove debugger statements
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
       },
+      mangle: {
+        toplevel: true, // Mangle top-level variable names for obfuscation
+      },
+      format: {
+        comments: false, // Remove all comments
+      }
     },
   },
   server: {
@@ -34,6 +44,12 @@ export default defineConfig({
     middlewareMode: false,
     // This is critical for SPA routing - all routes fall back to index.html
     historyApiFallback: true,
+    // Add security headers for development server
+    headers: {
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'SAMEORIGIN',
+      'X-XSS-Protection': '1; mode=block',
+    }
   },
   preview: {
     port: 4173,

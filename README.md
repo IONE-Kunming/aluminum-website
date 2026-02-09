@@ -100,6 +100,15 @@ The project uses Firebase for:
 - **Cloud Storage**: Image uploads for products
 - **Hosting**: Static site hosting
 
+### Security
+See [SOURCE_CODE_SECURITY.md](SOURCE_CODE_SECURITY.md) for comprehensive security documentation including:
+- Code obfuscation and minification
+- Repository security settings
+- Firebase security rules
+- Security best practices
+
+Quick reference: [SECURITY_CHECKLIST.md](SECURITY_CHECKLIST.md)
+
 ## 📱 Features
 
 - Multi-seller marketplace
