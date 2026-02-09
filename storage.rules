@@ -106,14 +106,20 @@ service firebase.storage {
     
     // Chat files - Shared between participants
     // Path structure: /chats/{chatId}/{fileName}
+    // chatId format: buyerId_sellerId (sorted alphabetically)
     match /chats/{chatId}/{fileName} {
-      // Participants can read chat files
-      // chatId format: buyerId_sellerId (sorted alphabetically)
-      allow read: if isAuthenticated();
+      // Helper function to check if user is participant in chat
+      function isParticipant(chatId) {
+        return chatId.matches('.*' + request.auth.uid + '.*');
+      }
       
-      // Authenticated users can upload to chat folders
+      // Participants can read chat files
+      allow read: if isAuthenticated() && isParticipant(chatId);
+      
+      // Authenticated chat participants can upload to chat folders
       // Validation: only images, videos, and PDFs up to 10MB
       allow write: if isAuthenticated() &&
+                      isParticipant(chatId) &&
                       (request.resource.contentType.matches('image/.*') ||
                        request.resource.contentType.matches('video/.*') ||
                        request.resource.contentType == 'application/pdf') &&
@@ -122,11 +128,17 @@ service firebase.storage {
     
     // Chat files - Nested paths
     match /chats/{chatId}/{allPaths=**} {
-      // Participants can read chat files
-      allow read: if isAuthenticated();
+      // Helper function to check if user is participant in chat
+      function isParticipant(chatId) {
+        return chatId.matches('.*' + request.auth.uid + '.*');
+      }
       
-      // Authenticated users can upload to chat folders
+      // Participants can read chat files
+      allow read: if isAuthenticated() && isParticipant(chatId);
+      
+      // Authenticated chat participants can upload to chat folders
       allow write: if isAuthenticated() &&
+                      isParticipant(chatId) &&
                       (request.resource.contentType.matches('image/.*') ||
                        request.resource.contentType.matches('video/.*') ||
                        request.resource.contentType == 'application/pdf') &&

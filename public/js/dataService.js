@@ -12,6 +12,8 @@ class DataService {
       products: { data: null, timestamp: null, ttl: 60000 }, // 1 minute TTL
       categories: { data: null, timestamp: null, ttl: 300000 }, // 5 minutes TTL
     };
+    // Constants
+    this.ATTACHMENT_PLACEHOLDER = '📎 Attachment';
   }
 
   // Initialize Firestore connection
@@ -715,7 +717,7 @@ class DataService {
       // Create or update chat conversation
       const chatData = {
         participants: [buyerId, sellerId],
-        lastMessage: message || '📎 Attachment',
+        lastMessage: message || this.ATTACHMENT_PLACEHOLDER,
         lastMessageTime: firebase.firestore.FieldValue.serverTimestamp(),
         lastSenderId: buyerId,
         buyerId: buyerId,
@@ -810,13 +812,19 @@ class DataService {
           
           callback(messages);
           
-          // Mark messages as read
-          snapshot.docs.forEach(doc => {
+          // Mark unread messages as read (batched to avoid excessive writes)
+          const unreadMessages = snapshot.docs.filter(doc => {
             const msg = doc.data();
-            if (msg.receiverId === buyerId && !msg.read) {
-              this.db.collection('messages').doc(doc.id).update({ read: true });
-            }
+            return msg.receiverId === buyerId && !msg.read;
           });
+          
+          if (unreadMessages.length > 0) {
+            const batch = this.db.batch();
+            unreadMessages.forEach(doc => {
+              batch.update(this.db.collection('messages').doc(doc.id), { read: true });
+            });
+            batch.commit().catch(err => console.error('Error marking messages as read:', err));
+          }
         }, (error) => {
           console.error('Error in message subscription:', error);
         });
@@ -845,7 +853,7 @@ class DataService {
         userId: receiverId,
         type: 'chat',
         title: 'New Message',
-        message: `${senderName}: ${message || '📎 Sent an attachment'}`,
+        message: `${senderName}: ${message || this.ATTACHMENT_PLACEHOLDER}`,
         senderId: senderId,
         senderName: senderName,
         read: false,

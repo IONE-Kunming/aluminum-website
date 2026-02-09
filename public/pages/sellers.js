@@ -156,7 +156,29 @@ function initializeChat() {
   
   chatFileInput.addEventListener('change', (e) => {
     const files = Array.from(e.target.files);
-    selectedFiles = [...selectedFiles, ...files];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'application/pdf'];
+    
+    // Validate each file
+    const validFiles = [];
+    const errors = [];
+    
+    files.forEach(file => {
+      if (file.size > maxSize) {
+        errors.push(`${file.name} exceeds 10MB limit`);
+      } else if (!allowedTypes.includes(file.type)) {
+        errors.push(`${file.name} is not a supported file type`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+    
+    // Show errors if any
+    if (errors.length > 0) {
+      window.toast?.error(`Some files were skipped:\n${errors.join('\n')}`);
+    }
+    
+    selectedFiles = [...selectedFiles, ...validFiles];
     displayAttachments();
   });
   

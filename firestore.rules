@@ -106,8 +106,10 @@ service cloud.firestore {
       // Users can only create notifications for themselves
       allow create: if isAuthenticated() && 
                        request.resource.data.userId == request.auth.uid;
-      // System can create notifications for any user (chat messages, orders, etc.)
-      allow create: if isAuthenticated();
+      // Chat participants can create notifications (sender creates notification for receiver)
+      allow create: if isAuthenticated() && 
+                       request.resource.data.type == 'chat' &&
+                       request.resource.data.senderId == request.auth.uid;
       // Users can update their own notifications (mark as read)
       allow update: if isAuthenticated() && 
                        resource.data.userId == request.auth.uid;
