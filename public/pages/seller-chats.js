@@ -168,10 +168,11 @@ async function selectChat(chatId, buyerId, buyerName) {
   currentBuyerId = buyerId;
   
   // Update chat header with buyer info
+  const displayName = buyerName || 'Buyer';
   const chatUserName = document.getElementById('chat-user-name');
   const chatUserAvatar = document.getElementById('chat-user-avatar');
-  if (chatUserName) chatUserName.textContent = buyerName || 'Buyer';
-  if (chatUserAvatar) chatUserAvatar.textContent = (buyerName || 'B').charAt(0).toUpperCase();
+  if (chatUserName) chatUserName.textContent = displayName;
+  if (chatUserAvatar) chatUserAvatar.textContent = displayName.charAt(0).toUpperCase();
   
   // Show chat window
   document.getElementById('chat-window-placeholder').style.display = 'none';
