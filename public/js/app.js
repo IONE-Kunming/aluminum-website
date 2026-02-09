@@ -247,7 +247,13 @@ async function initApp() {
     }
     
     // Re-render current route when auth state changes
-    router.handleRoute();
+    // Skip re-rendering for public pages (login, signup, landing, profile-selection)
+    // to avoid conflicts with navigation during authentication flow
+    const currentPath = window.location.pathname.replace(router.basePath, '') || '/';
+    const publicPaths = ['/', '/login', '/signup', '/profile-selection'];
+    if (!publicPaths.includes(currentPath)) {
+      router.handleRoute();
+    }
   });
   
   // Export toast and router globally
