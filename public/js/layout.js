@@ -105,6 +105,26 @@ export function renderLayout(content, userRole = null) {
       <!-- Overlay for mobile -->
       <div class="sidebar-overlay" id="sidebar-overlay"></div>
 
+      <!-- Cart Overlay Widget (only for buyers) -->
+      ${role === 'buyer' ? `
+        <div class="cart-overlay-widget" id="cart-overlay-widget">
+          <div class="cart-overlay-header">
+            <i data-lucide="shopping-cart"></i>
+            <span class="cart-overlay-title">Cart</span>
+            <span class="cart-overlay-count" id="cart-overlay-count">0</span>
+          </div>
+          <div class="cart-overlay-body" id="cart-overlay-body">
+            <p class="cart-overlay-empty">Your cart is empty</p>
+          </div>
+          <div class="cart-overlay-footer">
+            <button class="btn btn-sm btn-primary" id="cart-overlay-checkout">
+              <i data-lucide="credit-card"></i>
+              Checkout
+            </button>
+          </div>
+        </div>
+      ` : ''}
+
       <!-- Main Content -->
       <main class="main-content" id="main-content">
         ${content}
@@ -222,6 +242,74 @@ export function renderLayout(content, userRole = null) {
       });
     });
   }
+
+  // Initialize cart overlay for buyers
+  if (role === 'buyer') {
+    initCartOverlay();
+  }
+}
+
+// Initialize cart overlay widget
+async function initCartOverlay() {
+  const cartOverlay = document.getElementById('cart-overlay-widget');
+  const cartOverlayCount = document.getElementById('cart-overlay-count');
+  const cartOverlayBody = document.getElementById('cart-overlay-body');
+  const cartCheckoutBtn = document.getElementById('cart-overlay-checkout');
+  
+  if (!cartOverlay) return;
+  
+  // Import cart manager dynamically
+  const { default: cartManager } = await import('./cart.js');
+  
+  // Update cart display
+  function updateCartOverlay() {
+    const cartItems = cartManager.getCart();
+    const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    
+    cartOverlayCount.textContent = itemCount;
+    
+    if (cartItems.length === 0) {
+      cartOverlayBody.innerHTML = '<p class="cart-overlay-empty">Your cart is empty</p>';
+    } else {
+      const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      
+      cartOverlayBody.innerHTML = `
+        <div class="cart-overlay-items">
+          ${cartItems.slice(0, 3).map(item => `
+            <div class="cart-overlay-item">
+              <span class="cart-overlay-item-name">${escapeHtml(item.name || item.modelNumber)}</span>
+              <span class="cart-overlay-item-qty">×${item.quantity}</span>
+            </div>
+          `).join('')}
+          ${cartItems.length > 3 ? `<p class="cart-overlay-more">+${cartItems.length - 3} more items</p>` : ''}
+        </div>
+        <div class="cart-overlay-total">
+          <span>Total:</span>
+          <span class="cart-overlay-total-amount">$${total.toFixed(2)}</span>
+        </div>
+      `;
+    }
+    
+    if (window.lucide) window.lucide.createIcons();
+  }
+  
+  // Initial update
+  updateCartOverlay();
+  
+  // Subscribe to cart changes
+  cartManager.subscribe(updateCartOverlay);
+  
+  // Checkout button
+  cartCheckoutBtn.addEventListener('click', () => {
+    router.navigate('/buyer/cart');
+  });
+  
+  // Make cart overlay clickable to navigate to cart
+  cartOverlay.addEventListener('click', (e) => {
+    if (e.target !== cartCheckoutBtn && !cartCheckoutBtn.contains(e.target)) {
+      router.navigate('/buyer/cart');
+    }
+  });
 }
 
 // Helper function to render page with layout
