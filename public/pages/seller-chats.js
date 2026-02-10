@@ -288,8 +288,8 @@ function displayMessages(messages) {
       const tempId = tempMsg.getAttribute('data-temp-id');
       if (sendingMessages.has(tempId)) {
         sendingMessages.delete(tempId);
+        tempMsg.remove();
       }
-      tempMsg.remove();
     });
   }
   
