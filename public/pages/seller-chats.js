@@ -124,18 +124,20 @@ async function loadChats() {
       const timeStr = formatTime(lastMessageTime);
       const avatarLetter = (chat.otherUserName || 'U').charAt(0).toUpperCase();
       const safeName = escapeHtml(chat.otherUserName || 'User');
+      const safeCompany = chat.otherUserCompany ? escapeHtml(chat.otherUserCompany) : '';
       const safeLastMessage = escapeHtml(chat.lastMessage || 'No messages yet');
       const role = chat.otherUserRole || 'buyer';
       const roleLabel = role === 'buyer' ? 'Buyer' : role.charAt(0).toUpperCase() + role.slice(1);
       
       return `
-        <div class="chat-item" data-chat-id="${chat.id}" data-buyer-id="${chat.otherUserId}">
+        <div class="chat-item" data-chat-id="${chat.id}" data-buyer-id="${chat.otherUserId}" data-buyer-name="${safeName}" data-buyer-company="${safeCompany}">
           <div class="chat-avatar">${avatarLetter}</div>
           <div class="chat-info">
             <div class="chat-name">
               ${safeName}
               <span class="chat-role-badge" style="font-size: 0.75rem; color: var(--text-muted); margin-left: 4px;">${roleLabel}</span>
             </div>
+            ${safeCompany ? `<div class="chat-company" style="font-size: 0.8rem; color: var(--text-muted);">${safeCompany}</div>` : ''}
             <div class="chat-last-message">${safeLastMessage}</div>
           </div>
           <div class="chat-time">${timeStr}</div>
@@ -167,8 +169,9 @@ function initializeChatEventHandlers() {
     if (chatItem) {
       const buyerId = chatItem.dataset.buyerId;
       const chatId = chatItem.dataset.chatId;
-      const buyerName = chatItem.querySelector('.chat-name')?.textContent || 'Buyer';
-      selectChat(chatId, buyerId, buyerName);
+      const buyerName = chatItem.dataset.buyerName || 'Buyer';
+      const buyerCompany = chatItem.dataset.buyerCompany || '';
+      selectChat(chatId, buyerId, buyerName, buyerCompany);
       
       // Mark as active
       document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
@@ -218,28 +221,42 @@ function initializeChatEventHandlers() {
   });
 }
 
-async function selectChat(chatId, buyerId, buyerName) {
+async function selectChat(chatId, buyerId, buyerName, buyerCompany = '') {
   currentChatId = chatId;
   currentBuyerId = buyerId;
+  
+  console.log('[Seller Chat] Selected chat:', { chatId, buyerId, buyerName, buyerCompany });
+  console.log('[Seller Chat] This chatId will be used for ALL messages in this conversation');
   
   // Update chat header with buyer info
   const displayName = buyerName || 'Buyer';
   const chatUserName = document.getElementById('chat-user-name');
+  const chatUserStatus = document.getElementById('chat-user-status');
   const chatUserAvatar = document.getElementById('chat-user-avatar');
+  
   if (chatUserName) chatUserName.textContent = displayName;
   if (chatUserAvatar) chatUserAvatar.textContent = displayName.charAt(0).toUpperCase();
+  
+  // Show company name as status/subtitle if available
+  if (chatUserStatus && buyerCompany) {
+    chatUserStatus.textContent = buyerCompany;
+  } else if (chatUserStatus) {
+    chatUserStatus.textContent = 'Online';
+  }
   
   // Show chat window
   document.getElementById('chat-window-placeholder').style.display = 'none';
   document.getElementById('chat-window').style.display = 'flex';
   
-  // Load messages - for sellers, we need to subscribe using buyer ID
+  // Load messages
   loadMessages(buyerId);
 }
 
 async function loadMessages(buyerId) {
   const messagesContainer = document.getElementById('chat-messages');
   messagesContainer.innerHTML = '<div class="loading">Loading messages...</div>';
+  
+  console.log('[Seller Chat] Loading messages for buyer:', buyerId);
   
   // Unsubscribe from previous chat
   unsubscribers.forEach(unsub => unsub());
@@ -249,36 +266,57 @@ async function loadMessages(buyerId) {
   renderedMessageIds.clear();
   
   try {
-    // For seller, we subscribe using buyer ID but reverse the chat logic
+    console.log('[Seller Chat] Subscribing to chat messages...');
     const unsubscribe = await dataService.subscribeToSellerChatMessages(buyerId, (messages) => {
+      console.log('[Seller Chat] Received messages update:', messages.length, 'messages');
       displayMessages(messages);
     });
     unsubscribers.push(unsubscribe);
+    console.log('[Seller Chat] Successfully subscribed to messages');
   } catch (error) {
-    console.error('Error loading messages:', error);
-    messagesContainer.innerHTML = '<div class="error">Failed to load messages</div>';
+    console.error('[Seller Chat] Error loading messages:', error);
+    messagesContainer.innerHTML = `<div class="error">Failed to load messages: ${error.message}</div>`;
   }
 }
 
 function displayMessages(messages) {
+  console.log('[Seller Chat] displayMessages called with', messages.length, 'messages');
+  
   const messagesContainer = document.getElementById('chat-messages');
   const currentUser = authManager.getCurrentUser();
+  
+  if (!currentUser) {
+    console.error('[Seller Chat] No current user found');
+    messagesContainer.innerHTML = '<div class="error">User not authenticated</div>';
+    return;
+  }
+  
+  console.log('[Seller Chat] Current user:', currentUser.uid);
   
   // Store messages for document extraction
   allMessages = messages;
   updateDocumentsSidebar();
   
   if (!messages || messages.length === 0) {
+    console.log('[Seller Chat] No messages to display');
     messagesContainer.innerHTML = '<div class="empty-state">No messages yet. Start the conversation!</div>';
     renderedMessageIds.clear();
     return;
   }
+  
+  console.log('[Seller Chat] Rendering', messages.length, 'messages');
   
   // Check if this is a fresh load (no messages rendered yet)
   const isFreshLoad = renderedMessageIds.size === 0;
   
   // Save scroll position
   const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + SCROLL_BOTTOM_THRESHOLD;
+  
+  // On fresh load, clear the container completely
+  if (isFreshLoad) {
+    console.log('[Seller Chat] Fresh load - clearing container');
+    messagesContainer.innerHTML = '';
+  }
   
   // Remove any temporary "sending" messages when real messages arrive
   // This prevents accumulation and handles the case where real messages arrive during the timeout
@@ -289,15 +327,22 @@ function displayMessages(messages) {
       if (sendingMessages.has(tempId)) {
         sendingMessages.delete(tempId);
         tempMsg.remove();
+        console.log('[Seller Chat] Removed temp message:', tempId);
       }
     });
   }
   
+  console.log('[Seller Chat] Rendering messages. Already rendered:', renderedMessageIds.size, 'New:', messages.length);
+  
   // Only render new messages (incremental update for better performance)
+  let newMessagesCount = 0;
   messages.forEach((msg, index) => {
     if (renderedMessageIds.has(msg.id)) {
       return; // Skip already rendered messages
     }
+    
+    console.log('[Seller Chat] Rendering new message:', msg.id, 'from:', msg.senderId, 'isOwn:', msg.senderId === currentUser?.uid);
+    newMessagesCount++;
     
     const isOwn = msg.senderId === currentUser?.uid;
     const time = msg.createdAt?.toDate?.() || new Date(msg.createdAt);
@@ -422,6 +467,8 @@ function displayMessages(messages) {
     renderedMessageIds.add(msg.id);
   });
   
+  console.log('[Seller Chat] Rendered', newMessagesCount, 'new messages. Total rendered:', renderedMessageIds.size);
+  
   // Initialize lucide icons for new elements only
   if (window.lucide) window.lucide.createIcons();
   
@@ -485,14 +532,20 @@ async function sendMessage() {
   const messageInput = document.getElementById('chat-message-input');
   const message = messageInput?.value?.trim();
   
+  console.log('[Seller Chat] sendMessage called:', { message, filesCount: selectedFiles.length, buyerId: currentBuyerId });
+  
   if (!message && selectedFiles.length === 0) {
+    console.log('[Seller Chat] No message or files to send');
     return;
   }
   
   if (!currentBuyerId) {
+    console.error('[Seller Chat] No buyer selected');
     window.toast?.error('Please select a chat first');
     return;
   }
+  
+  console.log('[Seller Chat] Sending message to buyer:', currentBuyerId);
   
   // Optimistically clear input and show message immediately
   const tempMessage = message;
@@ -531,17 +584,20 @@ async function sendMessage() {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
   
   try {
+    console.log('[Seller Chat] Calling dataService.sendSellerChatMessage...');
     const result = await dataService.sendSellerChatMessage({
       buyerId: currentBuyerId,
       message: tempMessage,
       files: tempFiles
     });
+    console.log('[Seller Chat] Message sent successfully:', result);
     
     // Fallback timeout to remove temp message if real message doesn't arrive
     // Real messages are cleaned up immediately when they arrive in displayMessages()
     setTimeout(() => {
       if (sendingMessages.has(tempId)) {
         sendingMessages.delete(tempId);
+        console.log('[Seller Chat] Removing temp message after timeout');
         // Check if temp message still exists before removing
         if (tempMessageElement.parentNode) {
           tempMessageElement.remove();
