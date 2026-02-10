@@ -309,6 +309,12 @@ function displayMessages(messages) {
   // Save scroll position
   const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + SCROLL_BOTTOM_THRESHOLD;
   
+  // On fresh load, clear the container completely
+  if (isFreshLoad) {
+    console.log('[Buyer Chat] Fresh load - clearing container');
+    messagesContainer.innerHTML = '';
+  }
+  
   // Remove any temporary "sending" messages when real messages arrive
   // This prevents accumulation and handles the case where real messages arrive during the timeout
   if (messages.length > 0) {
@@ -318,15 +324,22 @@ function displayMessages(messages) {
       if (sendingMessages.has(tempId)) {
         sendingMessages.delete(tempId);
         tempMsg.remove();
+        console.log('[Buyer Chat] Removed temp message:', tempId);
       }
     });
   }
   
+  console.log('[Buyer Chat] Rendering messages. Already rendered:', renderedMessageIds.size, 'New:', messages.length);
+  
   // Only render new messages (incremental update for better performance)
+  let newMessagesCount = 0;
   messages.forEach((msg, index) => {
     if (renderedMessageIds.has(msg.id)) {
       return; // Skip already rendered messages
     }
+    
+    console.log('[Buyer Chat] Rendering new message:', msg.id, 'from:', msg.senderId, 'isOwn:', msg.senderId === currentUser?.uid);
+    newMessagesCount++;
     
     const isOwn = msg.senderId === currentUser?.uid;
     const time = msg.createdAt?.toDate?.() || new Date(msg.createdAt);
@@ -450,6 +463,8 @@ function displayMessages(messages) {
     
     renderedMessageIds.add(msg.id);
   });
+  
+  console.log('[Buyer Chat] Rendered', newMessagesCount, 'new messages. Total rendered:', renderedMessageIds.size);
   
   // Initialize lucide icons for new elements only
   if (window.lucide) window.lucide.createIcons();
