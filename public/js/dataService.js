@@ -11,6 +11,8 @@ class DataService {
     this.cache = {
       products: { data: null, timestamp: null, ttl: 60000 }, // 1 minute TTL
       categories: { data: null, timestamp: null, ttl: 300000 }, // 5 minutes TTL
+      userProfiles: { data: new Map(), timestamp: null, ttl: 300000 }, // Cache user profiles for 5 minutes
+      chats: { data: null, timestamp: null, ttl: 30000 }, // 30 seconds TTL for chat list
     };
     // Constants
     this.ATTACHMENT_PLACEHOLDER = 'Attachment';
@@ -25,6 +27,21 @@ class DataService {
     
     if (window.firebase && window.firebase.firestore) {
       this.db = window.firebase.firestore();
+      
+      // Enable offline persistence for faster loading
+      try {
+        await this.db.enablePersistence({ synchronizeTabs: true });
+        console.log('Firestore persistence enabled - data will be cached locally');
+      } catch (err) {
+        if (err.code === 'failed-precondition') {
+          console.warn('Persistence failed: Multiple tabs open, persistence enabled in first tab only');
+        } else if (err.code === 'unimplemented') {
+          console.warn('Persistence not available in this browser');
+        } else {
+          console.warn('Error enabling persistence:', err);
+        }
+      }
+      
       this.initialized = true;
       console.log('DataService initialized with Firestore');
     } else {
@@ -760,6 +777,9 @@ class DataService {
       // Add message to Firestore
       const messageRef = await this.db.collection('messages').add(messageData);
       
+      // Invalidate chat cache to force refresh on next load
+      this.cache.chats.timestamp = null;
+      
       // Create or update chat conversation
       const chatData = {
         participants: [buyerId, sellerId],
@@ -912,7 +932,7 @@ class DataService {
   }
 
   // Get all chats for a user
-  async getUserChats() {
+  async getUserChats(forceRefresh = false) {
     await this.init();
     
     try {
@@ -927,6 +947,15 @@ class DataService {
       
       const userId = currentUser.uid;
       
+      // Check cache first (unless force refresh)
+      if (!forceRefresh && this.cache.chats.data && this.cache.chats.timestamp) {
+        const age = Date.now() - this.cache.chats.timestamp;
+        if (age < this.cache.chats.ttl) {
+          console.log('Returning cached chat list');
+          return this.cache.chats.data;
+        }
+      }
+      
       // Get all chats where user is a participant
       const snapshot = await this.db
         .collection('chats')
@@ -934,72 +963,115 @@ class DataService {
         .orderBy('lastMessageTime', 'desc')
         .get();
       
-      // Get user details for each chat participant
-      const chats = await Promise.all(snapshot.docs.map(async (doc) => {
+      // Collect all unique user IDs to fetch (batch fetch optimization)
+      const userIdsToFetch = new Set();
+      snapshot.docs.forEach(doc => {
         const chatData = doc.data();
         const otherUserId = chatData.participants.find(id => id !== userId);
-        
-        // Get other user's details
-        let otherUser = { displayName: 'Unknown User', email: '', role: 'user', company: '' };
-        try {
-          if (!otherUserId) {
-            console.error('No other user ID found in chat participants:', chatData);
-          } else {
-            const userDoc = await this.db.collection('users').doc(otherUserId).get();
-            if (userDoc.exists) {
-              const userData = userDoc.data();
-              console.log('Fetched user data for chat:', { userId: otherUserId, userData });
-              const role = userData.role || 'user';
-              
-              // Try multiple fields for display name in order of preference:
-              // 1. displayName (primary field from signup)
-              // 2. name (alternative field)
-              // 3. email username (before @)
-              // 4. email (full)
-              // 5. role as last resort
-              let displayName = userData.displayName || userData.name;
-              
-              if (!displayName && userData.email) {
-                // Extract name from email (part before @)
-                displayName = userData.email.split('@')[0];
-              }
-              
-              if (!displayName) {
-                displayName = `${role.charAt(0).toUpperCase() + role.slice(1)}`;
-                console.warn('No displayName found for user, using role:', otherUserId);
-              }
-              
-              // Use companyName field (correct field name from signup)
-              const companyName = userData.companyName || userData.company || '';
-              
-              otherUser = {
-                displayName: displayName,
-                email: userData.email || '',
-                role: role,
-                company: companyName
-              };
-              
-              console.log('Processed user for chat display:', { displayName, companyName, role });
-            } else {
-              console.error('User document does not exist for userId:', otherUserId);
-            }
-          }
-        } catch (err) {
-          console.error('Error fetching user details for userId:', otherUserId, err);
+        if (otherUserId) {
+          userIdsToFetch.add(otherUserId);
         }
+      });
+      
+      // Batch fetch user profiles that aren't cached
+      const userProfiles = new Map();
+      const uncachedUserIds = [];
+      
+      // Check cache for each user
+      userIdsToFetch.forEach(uid => {
+        if (this.cache.userProfiles.data.has(uid)) {
+          const cached = this.cache.userProfiles.data.get(uid);
+          const age = Date.now() - cached.timestamp;
+          if (age < this.cache.userProfiles.ttl) {
+            userProfiles.set(uid, cached.data);
+          } else {
+            uncachedUserIds.push(uid);
+          }
+        } else {
+          uncachedUserIds.push(uid);
+        }
+      });
+      
+      // Fetch uncached users in parallel
+      if (uncachedUserIds.length > 0) {
+        const userFetchPromises = uncachedUserIds.map(uid => 
+          this.db.collection('users').doc(uid).get()
+            .then(doc => ({ uid, doc }))
+            .catch(err => {
+              console.error('Error fetching user:', uid, err);
+              return { uid, doc: null };
+            })
+        );
         
-        // Use person name (displayName), not company name
-        // Company name can be shown separately if needed
+        const userResults = await Promise.all(userFetchPromises);
+        
+        // Process fetched users
+        userResults.forEach(({ uid, doc }) => {
+          if (doc && doc.exists) {
+            const userData = doc.data();
+            const role = userData.role || 'user';
+            
+            let displayName = userData.displayName || userData.name;
+            if (!displayName && userData.email) {
+              displayName = userData.email.split('@')[0];
+            }
+            if (!displayName) {
+              displayName = `${role.charAt(0).toUpperCase() + role.slice(1)}`;
+            }
+            
+            const companyName = userData.companyName || userData.company || '';
+            
+            const userProfile = {
+              displayName,
+              email: userData.email || '',
+              role,
+              company: companyName
+            };
+            
+            // Cache the user profile
+            this.cache.userProfiles.data.set(uid, {
+              data: userProfile,
+              timestamp: Date.now()
+            });
+            
+            userProfiles.set(uid, userProfile);
+          } else {
+            const defaultProfile = {
+              displayName: 'Unknown User',
+              email: '',
+              role: 'user',
+              company: ''
+            };
+            userProfiles.set(uid, defaultProfile);
+          }
+        });
+      }
+      
+      // Build chat list with cached/fetched user data
+      const chats = snapshot.docs.map(doc => {
+        const chatData = doc.data();
+        const otherUserId = chatData.participants.find(id => id !== userId);
+        const otherUser = userProfiles.get(otherUserId) || {
+          displayName: 'Unknown User',
+          email: '',
+          role: 'user',
+          company: ''
+        };
+        
         return {
           id: doc.id,
           ...chatData,
           otherUserId,
           otherUser,
-          otherUserName: otherUser.displayName, // Show person name only
-          otherUserCompany: otherUser.company,   // Company available separately
+          otherUserName: otherUser.displayName,
+          otherUserCompany: otherUser.company,
           otherUserRole: otherUser.role
         };
-      }));
+      });
+      
+      // Cache the result
+      this.cache.chats.data = chats;
+      this.cache.chats.timestamp = Date.now();
       
       return chats;
       
@@ -1074,6 +1146,9 @@ class DataService {
       
       // Add message to Firestore
       const messageRef = await this.db.collection('messages').add(messageData);
+      
+      // Invalidate chat cache to force refresh on next load
+      this.cache.chats.timestamp = null;
       
       // Create or update chat conversation
       const chatData = {
