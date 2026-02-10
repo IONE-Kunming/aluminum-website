@@ -225,6 +225,9 @@ async function selectChat(chatId, sellerId, sellerName, sellerCompany = '') {
   currentChatId = chatId;
   currentSellerId = sellerId;
   
+  console.log('[Buyer Chat] Selected chat:', { chatId, sellerId, sellerName, sellerCompany });
+  console.log('[Buyer Chat] This chatId will be used for ALL messages in this conversation');
+  
   // Update chat header with seller info
   const displayName = sellerName || 'Seller';
   const chatUserName = document.getElementById('chat-user-name');
