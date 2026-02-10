@@ -72,6 +72,26 @@ class DataService {
     });
   }
 
+  // Invalidate cache for a specific key or all caches
+  invalidateCache(cacheKey = null) {
+    if (cacheKey && this.cache[cacheKey]) {
+      this.cache[cacheKey].timestamp = null;
+      this.cache[cacheKey].data = null;
+      console.log(`Cache invalidated: ${cacheKey}`);
+    } else if (!cacheKey) {
+      // Invalidate all caches
+      Object.keys(this.cache).forEach(key => {
+        this.cache[key].timestamp = null;
+        if (this.cache[key].data instanceof Map) {
+          this.cache[key].data.clear();
+        } else {
+          this.cache[key].data = null;
+        }
+      });
+      console.log('All caches invalidated');
+    }
+  }
+
   // Get user's dashboard stats
   async getDashboardStats(role) {
     await this.init();
@@ -778,7 +798,7 @@ class DataService {
       const messageRef = await this.db.collection('messages').add(messageData);
       
       // Invalidate chat cache to force refresh on next load
-      this.cache.chats.timestamp = null;
+      this.invalidateCache('chats');
       
       // Create or update chat conversation
       const chatData = {
@@ -1148,7 +1168,7 @@ class DataService {
       const messageRef = await this.db.collection('messages').add(messageData);
       
       // Invalidate chat cache to force refresh on next load
-      this.cache.chats.timestamp = null;
+      this.invalidateCache('chats');
       
       // Create or update chat conversation
       const chatData = {
