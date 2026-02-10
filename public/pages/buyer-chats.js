@@ -523,13 +523,14 @@ async function sendMessage() {
       files: tempFiles
     });
     
-    // Wait a bit for the message to appear in subscription, then remove temp
+    // Wait for the message to appear in subscription, then remove temp
+    // Increased timeout to 10 seconds to handle slower network conditions
     setTimeout(() => {
       if (sendingMessages.has(tempId)) {
         sendingMessages.delete(tempId);
         tempMessageElement.remove();
       }
-    }, 2000);
+    }, 10000);
     
   } catch (error) {
     console.error('Error sending message:', error);
