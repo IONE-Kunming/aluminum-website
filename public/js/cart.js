@@ -233,6 +233,13 @@ class CartManager {
     this.listeners = this.listeners.filter(cb => cb !== callback);
   }
 
+  // Alias for compatibility with different calling patterns
+  subscribe(callback) {
+    this.addListener(callback);
+    // Return unsubscribe function
+    return () => this.removeListener(callback);
+  }
+
   notifyListeners() {
     this.listeners.forEach(callback => callback(this.getCart()));
   }
