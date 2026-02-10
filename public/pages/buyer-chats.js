@@ -312,24 +312,30 @@ function displayMessages(messages) {
   // Save scroll position
   const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + SCROLL_BOTTOM_THRESHOLD;
   
-  // On fresh load, clear the container completely
+  // On fresh load, clear the container completely but preserve temp messages
   if (isFreshLoad) {
-    console.log('[Buyer Chat] Fresh load - clearing container');
+    console.log('[Buyer Chat] Fresh load - clearing container but preserving temp messages');
+    const tempMessages = messagesContainer.querySelectorAll('[data-temp-id]');
+    const tempElements = Array.from(tempMessages);
     messagesContainer.innerHTML = '';
+    // Re-add temp messages
+    tempElements.forEach(el => messagesContainer.appendChild(el));
   }
   
-  // Remove any temporary "sending" messages when real messages arrive
-  // This prevents accumulation and handles the case where real messages arrive during the timeout
-  if (messages.length > 0) {
-    const tempMessages = messagesContainer.querySelectorAll('[data-temp-id]');
-    tempMessages.forEach(tempMsg => {
-      const tempId = tempMsg.getAttribute('data-temp-id');
-      if (sendingMessages.has(tempId)) {
-        sendingMessages.delete(tempId);
-        tempMsg.remove();
-        console.log('[Buyer Chat] Removed temp message:', tempId);
-      }
-    });
+  // Only remove temporary messages after a short delay to allow Firebase to return the real message
+  // This prevents the message from disappearing immediately
+  if (messages.length > 0 && sendingMessages.size > 0) {
+    setTimeout(() => {
+      const tempMessages = messagesContainer.querySelectorAll('[data-temp-id]');
+      tempMessages.forEach(tempMsg => {
+        const tempId = tempMsg.getAttribute('data-temp-id');
+        if (sendingMessages.has(tempId)) {
+          sendingMessages.delete(tempId);
+          tempMsg.remove();
+          console.log('[Buyer Chat] Removed temp message after delay:', tempId);
+        }
+      });
+    }, 500); // 500ms delay to allow real message to render
   }
   
   console.log('[Buyer Chat] Rendering messages. Already rendered:', renderedMessageIds.size, 'New:', messages.length);
