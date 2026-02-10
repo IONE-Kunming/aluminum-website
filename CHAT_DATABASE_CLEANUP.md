@@ -63,15 +63,17 @@ async function fixChatIds() {
     console.log(`Participants: ${participants.join(', ')}`);
     
     // Find all messages that should belong to this chat
-    // Check for messages where senderId/receiverId match participants
+    // Query by senderId first, then filter by receiverId in code
+    // (Firestore doesn't support multiple 'in' clauses in one query)
     const messagesQuery = db.collection('messages')
-      .where('senderId', 'in', participants)
-      .where('receiverId', 'in', participants);
+      .where('senderId', 'in', participants);
     
     const messagesSnapshot = await messagesQuery.get();
     
     let fixedCount = 0;
-    const batch = db.batch();
+    let batch = db.batch();
+    let batchCount = 0;
+    const MAX_BATCH_SIZE = 500; // Firestore batch limit
     
     for (const messageDoc of messagesSnapshot.docs) {
       const messageData = messageDoc.data();
@@ -85,13 +87,23 @@ async function fixChatIds() {
         console.log(`  Fixing message ${messageDoc.id}: "${currentChatId}" → "${correctChatId}"`);
         batch.update(messageDoc.ref, { chatId: correctChatId });
         fixedCount++;
+        batchCount++;
+        
+        // Commit batch if it reaches max size
+        if (batchCount >= MAX_BATCH_SIZE) {
+          await batch.commit();
+          console.log(`  ✅ Committed batch of ${batchCount} updates`);
+          batchCount = 0;
+          batch = db.batch(); // Create new batch instance
+        }
       }
     }
     
-    if (fixedCount > 0) {
+    // Commit any remaining updates
+    if (batchCount > 0) {
       await batch.commit();
       console.log(`  ✅ Fixed ${fixedCount} messages for chat ${correctChatId}`);
-    } else {
+    } else if (fixedCount === 0) {
       console.log(`  ℹ️  No messages needed fixing for chat ${correctChatId}`);
     }
   }

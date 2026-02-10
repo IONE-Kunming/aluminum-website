@@ -92,7 +92,7 @@ async function fixChatIds() {
       const messagesSnapshot = await messagesQuery.get();
       
       let fixedCount = 0;
-      const batch = db.batch();
+      let batch = db.batch();
       let batchCount = 0;
       const MAX_BATCH_SIZE = 500; // Firestore batch limit
       
@@ -121,6 +121,7 @@ async function fixChatIds() {
               await batch.commit();
               console.log(`   ✅ Committed batch of ${batchCount} updates`);
               batchCount = 0;
+              batch = db.batch(); // Create new batch instance
             }
           }
         }
