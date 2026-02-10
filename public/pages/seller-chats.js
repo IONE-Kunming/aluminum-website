@@ -278,25 +278,6 @@ async function loadMessages(buyerId) {
     messagesContainer.innerHTML = `<div class="error">Failed to load messages: ${error.message}</div>`;
   }
 }
-  
-  // Unsubscribe from previous chat
-  unsubscribers.forEach(unsub => unsub());
-  unsubscribers = [];
-  
-  // Reset rendered messages tracking
-  renderedMessageIds.clear();
-  
-  try {
-    // For seller, we subscribe using buyer ID but reverse the chat logic
-    const unsubscribe = await dataService.subscribeToSellerChatMessages(buyerId, (messages) => {
-      displayMessages(messages);
-    });
-    unsubscribers.push(unsubscribe);
-  } catch (error) {
-    console.error('Error loading messages:', error);
-    messagesContainer.innerHTML = '<div class="error">Failed to load messages</div>';
-  }
-}
 
 function displayMessages(messages) {
   console.log('[Seller Chat] displayMessages called with', messages.length, 'messages');
