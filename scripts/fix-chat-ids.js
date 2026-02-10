@@ -172,7 +172,6 @@ async function verifyChatIds() {
   
   for (const chatDoc of chatsSnapshot.docs) {
     const chatData = chatDoc.data();
-    const chatDocId = chatDoc.id;
     const participants = chatData.participants || [];
     
     if (participants.length !== 2) continue;
