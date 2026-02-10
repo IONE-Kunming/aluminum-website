@@ -940,26 +940,46 @@ class DataService {
         const otherUserId = chatData.participants.find(id => id !== userId);
         
         // Get other user's details
-        let otherUser = { displayName: 'Unknown User', email: '', role: 'user' };
+        let otherUser = { displayName: 'Unknown User', email: '', role: 'user', company: '' };
         try {
           if (!otherUserId) {
-            console.error('No other user ID found in chat participants');
+            console.error('No other user ID found in chat participants:', chatData);
           } else {
             const userDoc = await this.db.collection('users').doc(otherUserId).get();
             if (userDoc.exists) {
               const userData = userDoc.data();
               console.log('Fetched user data for chat:', { userId: otherUserId, userData });
               const role = userData.role || 'user';
-              // Try displayName first, fallback to email, then role name
-              const displayName = userData.displayName || userData.email || `${role.charAt(0).toUpperCase() + role.slice(1)}`;
+              
+              // Try multiple fields for display name in order of preference:
+              // 1. displayName (primary field from signup)
+              // 2. name (alternative field)
+              // 3. email username (before @)
+              // 4. email (full)
+              // 5. role as last resort
+              let displayName = userData.displayName || userData.name;
+              
+              if (!displayName && userData.email) {
+                // Extract name from email (part before @)
+                displayName = userData.email.split('@')[0];
+              }
+              
+              if (!displayName) {
+                displayName = `${role.charAt(0).toUpperCase() + role.slice(1)}`;
+                console.warn('No displayName found for user, using role:', otherUserId);
+              }
+              
               // Use companyName field (correct field name from signup)
               const companyName = userData.companyName || userData.company || '';
+              
               otherUser = {
                 displayName: displayName,
                 email: userData.email || '',
                 role: role,
                 company: companyName
               };
+              
+              console.log('Processed user for chat display:', { displayName, companyName, role });
             } else {
               console.error('User document does not exist for userId:', otherUserId);
             }

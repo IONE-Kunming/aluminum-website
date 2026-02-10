@@ -253,6 +253,29 @@ async function loadMessages(buyerId) {
   const messagesContainer = document.getElementById('chat-messages');
   messagesContainer.innerHTML = '<div class="loading">Loading messages...</div>';
   
+  console.log('[Seller Chat] Loading messages for buyer:', buyerId);
+  
+  // Unsubscribe from previous chat
+  unsubscribers.forEach(unsub => unsub());
+  unsubscribers = [];
+  
+  // Reset rendered messages tracking
+  renderedMessageIds.clear();
+  
+  try {
+    console.log('[Seller Chat] Subscribing to chat messages...');
+    const unsubscribe = await dataService.subscribeToSellerChatMessages(buyerId, (messages) => {
+      console.log('[Seller Chat] Received messages update:', messages.length, 'messages');
+      displayMessages(messages);
+    });
+    unsubscribers.push(unsubscribe);
+    console.log('[Seller Chat] Successfully subscribed to messages');
+  } catch (error) {
+    console.error('[Seller Chat] Error loading messages:', error);
+    messagesContainer.innerHTML = `<div class="error">Failed to load messages: ${error.message}</div>`;
+  }
+}
+  
   // Unsubscribe from previous chat
   unsubscribers.forEach(unsub => unsub());
   unsubscribers = [];
@@ -273,18 +296,31 @@ async function loadMessages(buyerId) {
 }
 
 function displayMessages(messages) {
+  console.log('[Seller Chat] displayMessages called with', messages.length, 'messages');
+  
   const messagesContainer = document.getElementById('chat-messages');
   const currentUser = authManager.getCurrentUser();
+  
+  if (!currentUser) {
+    console.error('[Seller Chat] No current user found');
+    messagesContainer.innerHTML = '<div class="error">User not authenticated</div>';
+    return;
+  }
+  
+  console.log('[Seller Chat] Current user:', currentUser.uid);
   
   // Store messages for document extraction
   allMessages = messages;
   updateDocumentsSidebar();
   
   if (!messages || messages.length === 0) {
+    console.log('[Seller Chat] No messages to display');
     messagesContainer.innerHTML = '<div class="empty-state">No messages yet. Start the conversation!</div>';
     renderedMessageIds.clear();
     return;
   }
+  
+  console.log('[Seller Chat] Rendering', messages.length, 'messages');
   
   // Check if this is a fresh load (no messages rendered yet)
   const isFreshLoad = renderedMessageIds.size === 0;
@@ -497,14 +533,20 @@ async function sendMessage() {
   const messageInput = document.getElementById('chat-message-input');
   const message = messageInput?.value?.trim();
   
+  console.log('[Seller Chat] sendMessage called:', { message, filesCount: selectedFiles.length, buyerId: currentBuyerId });
+  
   if (!message && selectedFiles.length === 0) {
+    console.log('[Seller Chat] No message or files to send');
     return;
   }
   
   if (!currentBuyerId) {
+    console.error('[Seller Chat] No buyer selected');
     window.toast?.error('Please select a chat first');
     return;
   }
+  
+  console.log('[Seller Chat] Sending message to buyer:', currentBuyerId);
   
   // Optimistically clear input and show message immediately
   const tempMessage = message;
@@ -543,17 +585,20 @@ async function sendMessage() {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
   
   try {
+    console.log('[Seller Chat] Calling dataService.sendSellerChatMessage...');
     const result = await dataService.sendSellerChatMessage({
       buyerId: currentBuyerId,
       message: tempMessage,
       files: tempFiles
     });
+    console.log('[Seller Chat] Message sent successfully:', result);
     
     // Fallback timeout to remove temp message if real message doesn't arrive
     // Real messages are cleaned up immediately when they arrive in displayMessages()
     setTimeout(() => {
       if (sendingMessages.has(tempId)) {
         sendingMessages.delete(tempId);
+        console.log('[Seller Chat] Removing temp message after timeout');
         // Check if temp message still exists before removing
         if (tempMessageElement.parentNode) {
           tempMessageElement.remove();
