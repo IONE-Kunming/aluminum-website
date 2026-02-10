@@ -24,6 +24,8 @@ service cloud.firestore {
       allow read: if isAuthenticated() && request.auth.uid == userId;
       // Authenticated users can read other users' profiles (needed for chat display)
       // This allows displaying participant names, companies, and roles in chats
+      // Note: Profile data (displayName, companyName, role) is considered public info
+      // as it's already exposed via the seller directory (allow list below)
       allow get: if isAuthenticated();
       // Users can create their own document
       allow create: if isAuthenticated() && request.auth.uid == userId;
