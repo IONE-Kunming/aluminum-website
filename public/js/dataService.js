@@ -968,18 +968,15 @@ class DataService {
           console.error('Error fetching user details for userId:', otherUserId, err);
         }
         
-        // Create a more informative display name with role context
-        let displayNameWithRole = otherUser.displayName;
-        if (otherUser.company) {
-          displayNameWithRole = `${otherUser.displayName} (${otherUser.company})`;
-        }
-        
+        // Use person name (displayName), not company name
+        // Company name can be shown separately if needed
         return {
           id: doc.id,
           ...chatData,
           otherUserId,
           otherUser,
-          otherUserName: displayNameWithRole,
+          otherUserName: otherUser.displayName, // Show person name only
+          otherUserCompany: otherUser.company,   // Company available separately
           otherUserRole: otherUser.role
         };
       }));

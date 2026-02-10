@@ -124,18 +124,20 @@ async function loadChats() {
       const timeStr = formatTime(lastMessageTime);
       const avatarLetter = (chat.otherUserName || 'U').charAt(0).toUpperCase();
       const safeName = escapeHtml(chat.otherUserName || 'User');
+      const safeCompany = chat.otherUserCompany ? escapeHtml(chat.otherUserCompany) : '';
       const safeLastMessage = escapeHtml(chat.lastMessage || 'No messages yet');
       const role = chat.otherUserRole || 'seller';
       const roleLabel = role === 'seller' ? 'Seller' : role.charAt(0).toUpperCase() + role.slice(1);
       
       return `
-        <div class="chat-item" data-chat-id="${chat.id}" data-seller-id="${chat.otherUserId}">
+        <div class="chat-item" data-chat-id="${chat.id}" data-seller-id="${chat.otherUserId}" data-seller-name="${safeName}" data-seller-company="${safeCompany}">
           <div class="chat-avatar">${avatarLetter}</div>
           <div class="chat-info">
             <div class="chat-name">
               ${safeName}
               <span class="chat-role-badge" style="font-size: 0.75rem; color: var(--text-muted); margin-left: 4px;">${roleLabel}</span>
             </div>
+            ${safeCompany ? `<div class="chat-company" style="font-size: 0.8rem; color: var(--text-muted);">${safeCompany}</div>` : ''}
             <div class="chat-last-message">${safeLastMessage}</div>
           </div>
           <div class="chat-time">${timeStr}</div>
@@ -167,8 +169,9 @@ function initializeChatEventHandlers() {
     if (chatItem) {
       const sellerId = chatItem.dataset.sellerId;
       const chatId = chatItem.dataset.chatId;
-      const sellerName = chatItem.querySelector('.chat-name')?.textContent || 'Seller';
-      selectChat(chatId, sellerId, sellerName);
+      const sellerName = chatItem.dataset.sellerName || 'Seller';
+      const sellerCompany = chatItem.dataset.sellerCompany || '';
+      selectChat(chatId, sellerId, sellerName, sellerCompany);
       
       // Mark as active
       document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
@@ -218,16 +221,25 @@ function initializeChatEventHandlers() {
   });
 }
 
-async function selectChat(chatId, sellerId, sellerName) {
+async function selectChat(chatId, sellerId, sellerName, sellerCompany = '') {
   currentChatId = chatId;
   currentSellerId = sellerId;
   
   // Update chat header with seller info
   const displayName = sellerName || 'Seller';
   const chatUserName = document.getElementById('chat-user-name');
+  const chatUserStatus = document.getElementById('chat-user-status');
   const chatUserAvatar = document.getElementById('chat-user-avatar');
+  
   if (chatUserName) chatUserName.textContent = displayName;
   if (chatUserAvatar) chatUserAvatar.textContent = displayName.charAt(0).toUpperCase();
+  
+  // Show company name as status/subtitle if available
+  if (chatUserStatus && sellerCompany) {
+    chatUserStatus.textContent = sellerCompany;
+  } else if (chatUserStatus) {
+    chatUserStatus.textContent = 'Online';
+  }
   
   // Show chat window
   document.getElementById('chat-window-placeholder').style.display = 'none';
