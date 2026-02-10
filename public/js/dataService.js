@@ -896,25 +896,19 @@ class DataService {
       // Debounce timer for marking messages as read
       let markReadTimeout = null;
       
-      // Subscribe to messages in this chat without orderBy to avoid index issues
-      // We'll sort in memory instead
+      // Subscribe to messages in this chat - using composite index (chatId + createdAt)
       const unsubscribe = this.db
         .collection('messages')
         .where('chatId', '==', chatId)
+        .orderBy('createdAt', 'asc')
         .onSnapshot((snapshot) => {
           console.log('Messages snapshot received:', snapshot.docs.length, 'messages');
           
-          // Sort messages by createdAt manually
-          const messages = snapshot.docs
-            .map(doc => ({
-              id: doc.id,
-              ...doc.data()
-            }))
-            .sort((a, b) => {
-              const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
-              const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
-              return dateA - dateB;
-            });
+          // Messages are already sorted by Firestore using the index
+          const messages = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
           
           console.log('Calling callback with sorted messages:', messages.length);
           callback(messages);
@@ -1215,31 +1209,47 @@ class DataService {
       
       console.log('Subscribing to chat messages for chatId:', chatId);
       
-      // Subscribe to messages in this chat without orderBy to avoid index issues
-      // We'll sort in memory instead
+      // Debounce timer for marking messages as read
+      let markReadTimeout = null;
+      
+      // Subscribe to messages in this chat - using composite index (chatId + createdAt)
       const unsubscribe = this.db
         .collection('messages')
         .where('chatId', '==', chatId)
+        .orderBy('createdAt', 'asc')
         .onSnapshot(
           (snapshot) => {
-            // Sort messages by createdAt in memory
-            const messages = snapshot.docs
-              .map(doc => {
-                const data = doc.data();
-                return {
-                  id: doc.id,
-                  ...data,
-                  // Handle serverTimestamp that might not be set yet
-                  createdAt: data.createdAt || new Date()
-                };
-              })
-              .sort((a, b) => {
-                const timeA = a.createdAt?.toDate?.() || a.createdAt;
-                const timeB = b.createdAt?.toDate?.() || b.createdAt;
-                return timeA - timeB;
-              });
+            console.log('Messages snapshot received:', snapshot.docs.length, 'messages');
             
+            // Messages are already sorted by Firestore using the index
+            const messages = snapshot.docs.map(doc => ({
+              id: doc.id,
+              ...doc.data()
+            }));
+            
+            console.log('Calling callback with sorted messages:', messages.length);
             callback(messages);
+            
+            // Debounce marking messages as read to avoid excessive writes
+            if (markReadTimeout) {
+              clearTimeout(markReadTimeout);
+            }
+            
+            markReadTimeout = setTimeout(() => {
+              // Mark unread messages as read (batched)
+              const unreadMessages = snapshot.docs.filter(doc => {
+                const msg = doc.data();
+                return msg.receiverId === sellerId && !msg.read;
+              });
+              
+              if (unreadMessages.length > 0) {
+                const batch = this.db.batch();
+                unreadMessages.forEach(doc => {
+                  batch.update(this.db.collection('messages').doc(doc.id), { read: true });
+                });
+                batch.commit().catch(err => console.error('Error marking messages as read:', err));
+              }
+            }, 1000); // Wait 1 second before marking as read
           },
           (error) => {
             console.error('Error subscribing to messages:', error);
