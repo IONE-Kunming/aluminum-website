@@ -279,6 +279,19 @@ function displayMessages(messages) {
   // Save scroll position
   const wasAtBottom = messagesContainer.scrollHeight - messagesContainer.scrollTop <= messagesContainer.clientHeight + SCROLL_BOTTOM_THRESHOLD;
   
+  // Remove any temporary "sending" messages when real messages arrive
+  // This prevents accumulation and handles the case where real messages arrive during the timeout
+  if (messages.length > 0) {
+    const tempMessages = messagesContainer.querySelectorAll('[data-temp-id]');
+    tempMessages.forEach(tempMsg => {
+      const tempId = tempMsg.getAttribute('data-temp-id');
+      if (sendingMessages.has(tempId)) {
+        sendingMessages.delete(tempId);
+        tempMsg.remove();
+      }
+    });
+  }
+  
   // Only render new messages (incremental update for better performance)
   messages.forEach((msg, index) => {
     if (renderedMessageIds.has(msg.id)) {
@@ -523,13 +536,17 @@ async function sendMessage() {
       files: tempFiles
     });
     
-    // Wait a bit for the message to appear in subscription, then remove temp
+    // Fallback timeout to remove temp message if real message doesn't arrive
+    // Real messages are cleaned up immediately when they arrive in displayMessages()
     setTimeout(() => {
       if (sendingMessages.has(tempId)) {
         sendingMessages.delete(tempId);
-        tempMessageElement.remove();
+        // Check if temp message still exists before removing
+        if (tempMessageElement.parentNode) {
+          tempMessageElement.remove();
+        }
       }
-    }, 2000);
+    }, 5000);
     
   } catch (error) {
     console.error('Error sending message:', error);
