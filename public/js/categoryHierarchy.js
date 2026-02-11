@@ -5,25 +5,8 @@ export const CATEGORY_HIERARCHY = {
   'Construction': {
     name: 'Construction',
     subcategories: [
-      'Balustrades',
-      'Barrier Systems',
-      'Fencing',
-      'Handrails',
-      'Gates',
-      'Railings',
-      'Screens',
-      'Partitions',
-      'Aluminum',
-      'Steel',
-      'Glass',
-      'Concrete',
-      'Tools',
-      'Equipment',
-      'Hardware',
-      'Electrical',
-      'Plumbing',
-      'Paint',
-      'Wood'
+      'Exterior Gates',
+      'Fences'
     ]
   }
   // Add more main categories here as needed

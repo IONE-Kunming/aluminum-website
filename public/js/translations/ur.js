@@ -297,6 +297,8 @@ export default {
   // زمرہ کے نام (اصل زمرہ کی قدروں کا ترجمہ کرنے کے لیے)
   categoryNames: {
     'Construction': 'تعمیرات',
+    'Exterior Gates': 'بیرونی گیٹس',
+    'Fences': 'باڑ',
     'Aluminum': 'ایلومینیم',
     'Steel': 'سٹیل',
     'Glass': 'شیشہ',

@@ -315,6 +315,8 @@ export default {
   // Category Names (for translating actual category values)
   categoryNames: {
     'Construction': 'Construction',
+    'Exterior Gates': 'Exterior Gates',
+    'Fences': 'Fences',
     'Aluminum': 'Aluminum',
     'Steel': 'Steel',
     'Glass': 'Glass',
