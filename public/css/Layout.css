@@ -19,6 +19,11 @@
   transition: transform 0.3s ease;
 }
 
+/* Light mode: sidebar should be white without gradient */
+[data-theme="light"] .sidebar {
+  background: #ffffff;
+}
+
 .sidebar-header {
   padding: var(--spacing-xl) var(--spacing-lg);
   border-bottom: 1px solid var(--border-color);
