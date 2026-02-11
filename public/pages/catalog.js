@@ -7,8 +7,7 @@ import dataService from '../js/dataService.js';
 import { 
   isMainCategory, 
   isSubcategory, 
-  getSubcategories, 
-  getMainCategoryForSubcategory 
+  getSubcategories 
 } from '../js/categoryHierarchy.js';
 
 // Helper function to get seller ID consistently
