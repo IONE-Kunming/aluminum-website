@@ -226,13 +226,8 @@ async function renderMainCategoryTiles(t) {
     document.querySelectorAll('.category-tile[data-category]').forEach(tile => {
       tile.addEventListener('click', () => {
         const category = tile.getAttribute('data-category');
-        if (isMainCategory(category)) {
-          // Navigate to subcategory selection
-          router.navigate(`/buyer/catalog?category=${encodeURIComponent(category)}`);
-        } else {
-          // Navigate directly to sellers (unmapped category)
-          router.navigate(`/buyer/catalog?category=${encodeURIComponent(category)}`);
-        }
+        // Navigation logic in renderCatalog will determine if it's main or unmapped
+        router.navigate(`/buyer/catalog?category=${encodeURIComponent(category)}`);
       });
     });
 
@@ -259,6 +254,12 @@ async function renderMainCategoryTiles(t) {
   renderPageWithLayout(content, 'buyer');
   renderCategories(allCategories);
 
+  // Pre-compute translations for search optimization
+  const categoryTranslations = new Map();
+  allCategories.forEach(cat => {
+    categoryTranslations.set(cat, translateCategory(cat, t).toLowerCase());
+  });
+
   // Add search functionality
   const searchInput = document.getElementById('search-input');
   if (searchInput) {
@@ -267,7 +268,7 @@ async function renderMainCategoryTiles(t) {
       let filtered = allCategories;
 
       if (searchTerm) {
-        filtered = filtered.filter(c => translateCategory(c, t).toLowerCase().includes(searchTerm));
+        filtered = filtered.filter(c => categoryTranslations.get(c).includes(searchTerm));
       }
 
       renderCategories(filtered);
@@ -345,6 +346,12 @@ async function renderSubcategorySelection(mainCategory, t) {
   renderPageWithLayout(content, 'buyer');
   renderSubcategories(availableSubcategories);
 
+  // Pre-compute translations for search optimization
+  const subcategoryTranslations = new Map();
+  availableSubcategories.forEach(subcat => {
+    subcategoryTranslations.set(subcat, translateCategory(subcat, t).toLowerCase());
+  });
+
   // Add search functionality
   const searchInput = document.getElementById('search-input');
   if (searchInput) {
@@ -353,7 +360,7 @@ async function renderSubcategorySelection(mainCategory, t) {
       let filtered = availableSubcategories;
 
       if (searchTerm) {
-        filtered = filtered.filter(c => translateCategory(c, t).toLowerCase().includes(searchTerm));
+        filtered = filtered.filter(c => subcategoryTranslations.get(c).includes(searchTerm));
       }
 
       renderSubcategories(filtered);

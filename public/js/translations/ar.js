@@ -312,7 +312,7 @@ export default {
     'Balustrades': 'الدرابزين',
     'Barrier Systems': 'أنظمة الحواجز',
     'Fencing': 'السياج',
-    'Handrails': 'الدرابزين',
+    'Handrails': 'الحواجز اليدوية',
     'Gates': 'البوابات',
     'Railings': 'القضبان',
     'Screens': 'الشاشات',
