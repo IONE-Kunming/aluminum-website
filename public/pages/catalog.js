@@ -35,8 +35,10 @@ export async function renderCatalog() {
   const subcategory = urlParams.get('subcategory');
   
   // If sellerId is provided, show products for that seller
+  // Priority: subcategory param (for filtered view) > category param (for backward compatibility)
   if (sellerId) {
-    await renderSellerProducts(sellerId, subcategory || category, t);
+    const filterCategory = subcategory || category; // Prefer subcategory for filtered seller views
+    await renderSellerProducts(sellerId, filterCategory, t);
     return;
   }
   
@@ -148,12 +150,17 @@ async function renderSellerProducts(sellerId, filterCategory, t) {
     if (window.lucide) window.lucide.createIcons();
   };
   
+  // Determine subtitle based on filter
+  const subtitle = filterCategory 
+    ? `${t('products.category')}: ${escapeHtml(translateCategory(filterCategory, t))}`
+    : t('catalog.subtitle');
+  
   const content = `
     <div class="catalog-page">
       <div class="page-header">
         <div>
           <h1>${t('catalog.productsFrom')} ${escapeHtml(seller?.displayName || seller?.companyName || 'Seller')}</h1>
-          <p>${filterCategory ? `${t('products.category')}: ${escapeHtml(translateCategory(filterCategory, t))}` : t('catalog.subtitle')}</p>
+          <p>${subtitle}</p>
         </div>
         <button class="btn btn-secondary" onclick="window.history.back()">
           <i data-lucide="arrow-left"></i>
