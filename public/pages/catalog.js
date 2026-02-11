@@ -362,7 +362,7 @@ async function renderSellersForCategory(category, t) {
         </button>
       </div>
 
-      <div class="catalog-controls" style="margin-bottom: 24px; display: grid; grid-template-columns: 1fr auto auto; gap: 16px;">
+      <div class="catalog-controls three-column">
         <input type="text" id="search-input" placeholder="${t('common.search')} ${t('sellers.title').toLowerCase()}..." class="form-control">
         <select id="main-category-filter" class="form-control" style="max-width: 200px;">
           <option value="">${t('catalog.allMainCategories')}</option>
@@ -370,7 +370,6 @@ async function renderSellersForCategory(category, t) {
         </select>
         <select id="sub-category-filter" class="form-control" style="max-width: 200px;">
           <option value="">${t('catalog.allSubCategories')}</option>
-          ${categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('')}
         </select>
       </div>
 
@@ -383,10 +382,31 @@ async function renderSellersForCategory(category, t) {
   renderPageWithLayout(content, 'buyer');
   renderSellers(sellersInCategory);
 
+  // Populate subcategories based on products in current category
+  const subCategoryFilter = document.getElementById('sub-category-filter');
+  if (subCategoryFilter) {
+    // Get unique categories from products to show as subcategories
+    const subCategories = new Set();
+    categoryProducts.forEach(p => {
+      if (p.category) {
+        subCategories.add(p.category);
+      }
+    });
+    
+    // Add subcategory options
+    Array.from(subCategories).sort().forEach(subCat => {
+      if (subCat !== category) { // Don't show current category as subcategory
+        const option = document.createElement('option');
+        option.value = subCat;
+        option.textContent = subCat;
+        subCategoryFilter.appendChild(option);
+      }
+    });
+  }
+
   // Add search and filter functionality
   const searchInput = document.getElementById('search-input');
   const mainCategoryFilter = document.getElementById('main-category-filter');
-  const subCategoryFilter = document.getElementById('sub-category-filter');
 
   const applyFilters = () => {
     const searchTerm = searchInput?.value.toLowerCase() || '';

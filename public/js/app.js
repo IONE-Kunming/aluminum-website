@@ -205,7 +205,7 @@ async function initApp() {
     const profile = await authManager.waitForProfile(PROFILE_LOAD_TIMEOUT_MS);
     
     if (profile && profile.role) {
-      // User already has a role, redirect to their home page immediately
+      // User already has a role, redirect to their Home Page immediately
       // This prevents the profile selection page from ever showing
       if (profile.role === 'seller') {
         router.navigate('/seller/dashboard');
