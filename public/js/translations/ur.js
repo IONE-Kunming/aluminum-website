@@ -290,8 +290,8 @@ export default {
     clickToViewSellers: 'اس زمرے میں فروخت کنندگان دیکھنے کے لیے کلک کریں',
     sellersInCategory: 'فروخت کنندگان میں',
     noSellersInCategory: 'اس زمرے میں کوئی فروخت کنندگان نہیں ملے',
-    allMainCategories: 'تمام اہم زمرے',
-    allSubCategories: 'تمام ذیلی زمرے'
+    allMainCategories: 'اہم زمرے',
+    allSubCategories: 'ذیلی زمرے'
   },
   
   // فروخت کنندگان
