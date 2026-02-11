@@ -303,7 +303,9 @@ export default {
     categories: 'Categories',
     clickToViewSellers: 'Click to view sellers in this category',
     sellersInCategory: 'Sellers in',
-    noSellersInCategory: 'No sellers found in this category'
+    noSellersInCategory: 'No sellers found in this category',
+    allMainCategories: 'All Main Categories',
+    allSubCategories: 'All Subcategories'
   },
   
   // Sellers

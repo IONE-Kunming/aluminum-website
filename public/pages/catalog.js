@@ -5,6 +5,11 @@ import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
 
+// Helper function to get seller ID consistently
+function getSellerId(seller) {
+  return seller.uid || seller.id;
+}
+
 export async function renderCatalog() {
   const profile = authManager.getUserProfile();
   const t = languageManager.t.bind(languageManager);
@@ -276,7 +281,7 @@ async function renderSellersForCategory(category, t) {
       `;
     } else {
       sellersGrid.innerHTML = sellersToRender.map(seller => {
-        const sellerId = seller.uid || seller.id;
+        const sellerId = getSellerId(seller);
         const productCount = sellerProductMap.get(sellerId)?.length || 0;
         const sellerCategories = Array.from(sellerCategoryMap.get(sellerId) || []);
         const city = seller.address?.city || seller.city || 'N/A';
@@ -334,7 +339,7 @@ async function renderSellersForCategory(category, t) {
     document.querySelectorAll('.view-seller-info-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const sellerId = btn.dataset.sellerId;
-        const seller = sellersInCategory.find(s => s.uid === sellerId || s.id === sellerId);
+        const seller = sellersInCategory.find(s => getSellerId(s) === sellerId);
         if (seller) {
           showSellerInfoModal(seller, t);
         }
@@ -357,11 +362,15 @@ async function renderSellersForCategory(category, t) {
         </button>
       </div>
 
-      <div class="catalog-controls" style="margin-bottom: 24px; display: grid; grid-template-columns: 1fr auto; gap: 16px;">
+      <div class="catalog-controls" style="margin-bottom: 24px; display: grid; grid-template-columns: 1fr auto auto; gap: 16px;">
         <input type="text" id="search-input" placeholder="${t('common.search')} ${t('sellers.title').toLowerCase()}..." class="form-control">
-        <select id="category-filter" class="form-control" style="max-width: 250px;">
-          <option value="">${t('common.allCategories')}</option>
+        <select id="main-category-filter" class="form-control" style="max-width: 200px;">
+          <option value="">${t('catalog.allMainCategories')}</option>
           ${categories.map(cat => `<option value="${escapeHtml(cat)}" ${cat === category ? 'selected' : ''}>${escapeHtml(cat)}</option>`).join('')}
+        </select>
+        <select id="sub-category-filter" class="form-control" style="max-width: 200px;">
+          <option value="">${t('catalog.allSubCategories')}</option>
+          ${categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('')}
         </select>
       </div>
 
@@ -376,20 +385,31 @@ async function renderSellersForCategory(category, t) {
 
   // Add search and filter functionality
   const searchInput = document.getElementById('search-input');
-  const categoryFilter = document.getElementById('category-filter');
+  const mainCategoryFilter = document.getElementById('main-category-filter');
+  const subCategoryFilter = document.getElementById('sub-category-filter');
 
   const applyFilters = () => {
     const searchTerm = searchInput?.value.toLowerCase() || '';
-    const selectedCategory = categoryFilter?.value || '';
+    const selectedMainCategory = mainCategoryFilter?.value || '';
+    const selectedSubCategory = subCategoryFilter?.value || '';
 
-    // If a different category is selected, navigate to that category
-    if (selectedCategory && selectedCategory !== category) {
-      router.navigate(`/buyer/catalog?category=${encodeURIComponent(selectedCategory)}`);
+    // If a different main category is selected, navigate to that category
+    if (selectedMainCategory && selectedMainCategory !== category) {
+      router.navigate(`/buyer/catalog?category=${encodeURIComponent(selectedMainCategory)}`);
       return;
     }
 
-    // Otherwise, just filter the sellers by search term
+    // Filter sellers by subcategory and search term
     let filtered = sellersInCategory;
+
+    // Filter by subcategory if selected
+    if (selectedSubCategory) {
+      const subCategoryProducts = allProducts.filter(p => p.category === selectedSubCategory);
+      const subCategorySellerIds = new Set(subCategoryProducts.map(p => p.sellerId).filter(Boolean));
+      filtered = filtered.filter(seller => 
+        subCategorySellerIds.has(getSellerId(seller))
+      );
+    }
 
     // Filter by search term
     if (searchTerm) {
@@ -408,8 +428,12 @@ async function renderSellersForCategory(category, t) {
     searchInput.addEventListener('input', applyFilters);
   }
 
-  if (categoryFilter) {
-    categoryFilter.addEventListener('change', applyFilters);
+  if (mainCategoryFilter) {
+    mainCategoryFilter.addEventListener('change', applyFilters);
+  }
+
+  if (subCategoryFilter) {
+    subCategoryFilter.addEventListener('change', applyFilters);
   }
 }
 
@@ -457,7 +481,7 @@ async function renderSellerTiles(t) {
       `;
     } else {
       sellersGrid.innerHTML = sellersToRender.map(seller => {
-        const sellerId = seller.uid || seller.id;
+        const sellerId = getSellerId(seller);
         const productCount = sellerProductMap.get(sellerId)?.length || 0;
         const sellerCategories = Array.from(sellerCategoryMap.get(sellerId) || []);
         const city = seller.address?.city || seller.city || 'N/A';
@@ -515,7 +539,7 @@ async function renderSellerTiles(t) {
     document.querySelectorAll('.view-seller-info-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const sellerId = btn.dataset.sellerId;
-        const seller = sellersWithProducts.find(s => s.uid === sellerId || s.id === sellerId);
+        const seller = sellersWithProducts.find(s => getSellerId(s) === sellerId);
         if (seller) {
           showSellerInfoModal(seller, t);
         }
@@ -562,7 +586,7 @@ async function renderSellerTiles(t) {
     // Filter by category
     if (category) {
       filtered = filtered.filter(seller => {
-        const sellerId = seller.uid || seller.id;
+        const sellerId = getSellerId(seller);
         const categories = sellerCategoryMap.get(sellerId);
         return categories && categories.has(category);
       });

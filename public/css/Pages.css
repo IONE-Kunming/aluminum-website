@@ -61,6 +61,18 @@
   align-items: center;
 }
 
+.catalog-controls.three-column {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+  .catalog-controls.three-column {
+    grid-template-columns: 1fr;
+  }
+}
+
 .search-box {
   position: relative;
   flex: 1;
