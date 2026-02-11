@@ -47,8 +47,32 @@
   --card-bg: #ffffff;
   --border-color: #e2e8f0;
   --hover-bg: #f7fafc;
-  --text-primary: #1a202c;
-  --text-secondary: #4a5568;
+  --text-primary: #000000;  /* Changed to pure black */
+  --text-secondary: #000000;  /* Changed to pure black */
+}
+
+/* Light theme: ensure all text is black */
+[data-theme="light"] body,
+[data-theme="light"] p,
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6,
+[data-theme="light"] span,
+[data-theme="light"] div {
+  color: #000000;
+}
+
+/* Text alignment for LTR languages (English, Chinese) */
+[dir="ltr"] {
+  text-align: left;
+}
+
+/* Text alignment for RTL languages (Arabic, Urdu) */
+[dir="rtl"] {
+  text-align: right;
 }
 
 /* Theme Toggle Button */
@@ -171,9 +195,24 @@ a:hover {
   background-clip: text;
 }
 
+/* Light theme: remove gradient from page title */
+[data-theme="light"] .page-title {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+  color: #000000;
+}
+
 .page-subtitle {
   color: var(--text-secondary);
   font-size: 1.125rem; /* Increased from 1rem */
+}
+
+/* Light theme: black subtitle */
+[data-theme="light"] .page-subtitle {
+  color: #000000;
+}
 }
 
 /* Card Styles - Modern Card Layouts */

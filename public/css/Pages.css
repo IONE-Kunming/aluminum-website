@@ -43,9 +43,23 @@
   background-clip: text;
 }
 
+/* Light theme: remove gradient, use solid black text */
+[data-theme="light"] .page-header h1 {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+  color: #000000;
+}
+
 .page-header p {
   color: var(--text-secondary);
   margin: var(--spacing-sm) 0 0;
+}
+
+/* Light theme: black text for paragraphs */
+[data-theme="light"] .page-header p {
+  color: #000000;
 }
 
 /* ==========================================
