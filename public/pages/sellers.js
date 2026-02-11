@@ -2,34 +2,62 @@ import { renderPageWithLayout } from '../js/layout.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
 import authManager from '../js/auth.js';
+import router from '../js/router.js';
 import { escapeHtml } from '../js/utils.js';
 
 export async function renderSellers() {
   const t = languageManager.t.bind(languageManager);
   
-  // Fetch sellers from database
-  const sellers = await dataService.getSellers();
+  // Fetch all sellers and products
+  const allSellers = await dataService.getSellers();
+  const allProducts = await dataService.getProducts();
+  const categories = await dataService.getCategories();
   
   // Get current user to check if authenticated
   const currentUser = authManager.getCurrentUser();
   
-  const content = `
-    <div class="sellers-page">
-      <div class="page-header">
-        <h1>${t('sellers.title')}</h1>
-        <p>${t('sellers.subtitle')}</p>
-      </div>
+  // Group products by seller and category
+  const sellerProductMap = new Map();
+  const sellerCategoryMap = new Map();
+  
+  allProducts.forEach(product => {
+    if (!product.sellerId) return;
+    
+    if (!sellerProductMap.has(product.sellerId)) {
+      sellerProductMap.set(product.sellerId, []);
+    }
+    sellerProductMap.set(product.sellerId, [...sellerProductMap.get(product.sellerId), product]);
+    
+    if (product.category) {
+      if (!sellerCategoryMap.has(product.sellerId)) {
+        sellerCategoryMap.set(product.sellerId, new Set());
+      }
+      sellerCategoryMap.get(product.sellerId).add(product.category);
+    }
+  });
+  
+  const renderSellers = (sellersToRender) => {
+    const sellersGrid = document.querySelector('.sellers-grid-container');
+    if (!sellersGrid) return;
 
-      ${sellers.length === 0 ? `
+    if (sellersToRender.length === 0) {
+      sellersGrid.innerHTML = `
         <div class="empty-state">
           <i data-lucide="store" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>${t('sellers.loading')}</h2>
+          <h2>${t('sellers.noSellers')}</h2>
           <p>${t('sellers.directory')}</p>
         </div>
-      ` : `
-        <div class="sellers-content">
-          <div class="sellers-grid">
-            ${sellers.map(seller => `
+      `;
+    } else {
+      sellersGrid.innerHTML = `
+        <div class="sellers-grid">
+          ${sellersToRender.map(seller => {
+            const sellerId = seller.uid || seller.id;
+            const productCount = sellerProductMap.get(sellerId)?.length || 0;
+            const sellerCategories = Array.from(sellerCategoryMap.get(sellerId) || []);
+            const city = seller.address?.city || seller.city || 'N/A';
+            
+            return `
               <div class="seller-card card">
                 <div class="seller-header">
                   <div class="seller-avatar">
@@ -41,6 +69,10 @@ export async function renderSellers() {
                   </div>
                 </div>
                 <div class="seller-body">
+                  <div class="seller-detail">
+                    <i data-lucide="map-pin"></i>
+                    <span><strong>${t('catalog.city')}:</strong> ${escapeHtml(city)}</span>
+                  </div>
                   ${seller.email ? `
                     <div class="seller-detail">
                       <i data-lucide="mail"></i>
@@ -53,365 +85,134 @@ export async function renderSellers() {
                       <span>${escapeHtml(seller.phoneNumber)}</span>
                     </div>
                   ` : ''}
+                  <div class="seller-detail">
+                    <i data-lucide="package"></i>
+                    <span><strong>${t('products.title')}:</strong> ${productCount}</span>
+                  </div>
+                  ${sellerCategories.length > 0 ? `
+                    <div class="seller-detail">
+                      <i data-lucide="tag"></i>
+                      <span><strong>${t('products.category')}:</strong> ${sellerCategories.slice(0, 2).map(c => escapeHtml(c)).join(', ')}${sellerCategories.length > 2 ? '...' : ''}</span>
+                    </div>
+                  ` : ''}
                 </div>
                 ${currentUser ? `
-                  <div class="seller-actions">
-                    <button class="btn btn-primary btn-chat" data-seller-id="${seller.uid}" data-seller-name="${escapeHtml(seller.displayName || seller.email || 'Seller')}">
-                      <i data-lucide="message-circle"></i> Chat with Seller
+                  <div class="seller-actions" style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary flex-1 view-products-btn" data-seller-id="${sellerId}">
+                      <i data-lucide="package"></i>
+                      ${t('catalog.viewProducts')}
                     </button>
                   </div>
                 ` : ''}
               </div>
-            `).join('')}
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+    
+    // Add event listeners
+    document.querySelectorAll('.view-products-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sellerId = btn.dataset.sellerId;
+        router.navigate(`/buyer/catalog?seller=${sellerId}`);
+      });
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  const content = `
+    <div class="sellers-page">
+      <div class="page-header">
+        <h1>${t('sellers.title')}</h1>
+        <p>${t('sellers.subtitle')}</p>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="filter-section card" style="margin-bottom: 24px;">
+        <div class="filter-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="margin: 0;">${t('sellers.filterByCategory')}</h3>
+          <button class="btn btn-text btn-sm" id="resetFilters">
+            <i data-lucide="x"></i>
+            ${t('common.reset')}
+          </button>
+        </div>
+        <div class="filter-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div class="form-group">
+            <label>${t('products.category')}</label>
+            <select id="categoryFilter" class="form-control">
+              <option value="">${t('common.allCategories')}</option>
+              ${categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('')}
+            </select>
           </div>
-          <div class="chat-panel" id="chatPanel" style="display: none;">
-            <div class="chat-sidebar" id="chatSidebar" style="display: none;">
-              <div class="chat-sidebar-header">
-                <h4>Conversations</h4>
-              </div>
-              <div class="chat-sidebar-list" id="chatSidebarList">
-                <!-- Chat list will be populated here -->
-              </div>
-            </div>
-            <div class="chat-main">
-              <div class="chat-header">
-                <button class="btn-toggle-sidebar" id="toggleSidebarBtn" style="display: none;">
-                  <i data-lucide="users"></i>
-                </button>
-                <h3 id="chatSellerName">Chat</h3>
-                <button class="btn-close-chat" id="closeChatBtn">
-                  <i data-lucide="x"></i>
-                </button>
-              </div>
-              <div class="chat-messages" id="chatMessages">
-                <div class="chat-empty">
-                  <i data-lucide="message-circle" style="width: 48px; height: 48px; opacity: 0.3;"></i>
-                  <p>Start a conversation</p>
-                </div>
-              </div>
-              <div class="chat-input">
-                <input type="file" id="chatFileInput" accept="image/*,video/*,.pdf" style="display: none;" multiple />
-                <button class="btn-attach" id="attachFileBtn" title="Attach files">
-                  <i data-lucide="paperclip"></i>
-                </button>
-                <input type="text" id="chatMessageInput" placeholder="Type a message..." />
-                <button class="btn-send" id="sendMessageBtn">
-                  <i data-lucide="send"></i>
-                </button>
-              </div>
-              <div class="chat-attachments" id="chatAttachments" style="display: none;"></div>
-            </div>
+          <div class="form-group">
+            <label>${t('common.search')}</label>
+            <input type="text" id="searchInput" class="form-control" placeholder="${t('common.search')} ${t('sellers.title').toLowerCase()}...">
           </div>
         </div>
-      `}
+      </div>
+
+      <div class="sellers-grid-container">
+        <!-- Sellers will be rendered here -->
+      </div>
     </div>
   `;
 
   renderPageWithLayout(content, 'buyer');
   if (window.lucide) window.lucide.createIcons();
   
-  // Initialize chat functionality if user is authenticated
-  if (currentUser && sellers.length > 0) {
-    initializeChat();
-  }
-}
-
-// Initialize chat functionality
-function initializeChat() {
-  let currentChatSellerId = null;
-  let selectedFiles = [];
-  let unsubscribeMessages = null;
-  let allChats = [];
+  // Initial render
+  renderSellers(allSellers);
   
-  const chatPanel = document.getElementById('chatPanel');
-  const chatSidebar = document.getElementById('chatSidebar');
-  const chatSidebarList = document.getElementById('chatSidebarList');
-  const toggleSidebarBtn = document.getElementById('toggleSidebarBtn');
-  const chatMessages = document.getElementById('chatMessages');
-  const chatSellerName = document.getElementById('chatSellerName');
-  const chatMessageInput = document.getElementById('chatMessageInput');
-  const sendMessageBtn = document.getElementById('sendMessageBtn');
-  const closeChatBtn = document.getElementById('closeChatBtn');
-  const attachFileBtn = document.getElementById('attachFileBtn');
-  const chatFileInput = document.getElementById('chatFileInput');
-  const chatAttachments = document.getElementById('chatAttachments');
-  
-  // Load user's chat list
-  async function loadChatList() {
-    try {
-      allChats = await dataService.getUserChats();
-      
-      // Show sidebar only if user has more than 1 chat
-      if (allChats.length > 1) {
-        chatSidebar.style.display = 'block';
-        toggleSidebarBtn.style.display = 'block';
-        
-        // Populate chat list
-        chatSidebarList.innerHTML = allChats.map(chat => `
-          <div class="chat-list-item ${chat.otherUserId === currentChatSellerId ? 'active' : ''}" 
-               data-user-id="${chat.otherUserId}"
-               data-user-name="${escapeHtml(chat.otherUser.displayName)}">
-            <div class="chat-list-avatar">
-              ${chat.otherUser.displayName.charAt(0).toUpperCase()}
-            </div>
-            <div class="chat-list-info">
-              <div class="chat-list-name">${escapeHtml(chat.otherUser.displayName)}</div>
-              <div class="chat-list-last-message">${escapeHtml(chat.lastMessage || 'No messages')}</div>
-            </div>
-          </div>
-        `).join('');
-        
-        // Add click handlers to chat list items
-        document.querySelectorAll('.chat-list-item').forEach(item => {
-          item.addEventListener('click', async () => {
-            const userId = item.dataset.userId;
-            const userName = item.dataset.userName;
-            
-            currentChatSellerId = userId;
-            chatSellerName.textContent = `Chat with ${userName}`;
-            
-            // Update active state
-            document.querySelectorAll('.chat-list-item').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-            
-            // Load messages
-            await loadChatMessages(userId);
-          });
-        });
-        
-        if (window.lucide) window.lucide.createIcons();
-      } else {
-        chatSidebar.style.display = 'none';
-        toggleSidebarBtn.style.display = 'none';
-      }
-    } catch (error) {
-      console.error('Error loading chat list:', error);
-    }
-  }
-  
-  // Toggle sidebar visibility
-  if (toggleSidebarBtn) {
-    toggleSidebarBtn.addEventListener('click', () => {
-      const isVisible = chatSidebar.style.display !== 'none';
-      chatSidebar.style.display = isVisible ? 'none' : 'block';
-    });
-  }
-  
-  // Open chat with seller
-  document.querySelectorAll('.btn-chat').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const sellerId = btn.dataset.sellerId;
-      const sellerName = btn.dataset.sellerName;
-      
-      currentChatSellerId = sellerId;
-      chatSellerName.textContent = `Chat with ${sellerName}`;
-      chatPanel.style.display = 'flex';
-      
-      // Load chat list to check if sidebar should be shown
-      await loadChatList();
-      
-      // Load chat messages
-      await loadChatMessages(sellerId);
-    });
-  });
-  
-  // Close chat
-  closeChatBtn.addEventListener('click', () => {
-    chatPanel.style.display = 'none';
-    currentChatSellerId = null;
-    selectedFiles = [];
-    chatAttachments.style.display = 'none';
-    chatAttachments.innerHTML = '';
+  // Filter function
+  const applyFilters = () => {
+    const category = document.getElementById('categoryFilter')?.value || '';
+    const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
     
-    // Unsubscribe from real-time updates
-    if (unsubscribeMessages) {
-      unsubscribeMessages();
-      unsubscribeMessages = null;
-    }
-  });
-  
-  // Attach files
-  attachFileBtn.addEventListener('click', () => {
-    chatFileInput.click();
-  });
-  
-  chatFileInput.addEventListener('change', (e) => {
-    const files = Array.from(e.target.files);
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'application/pdf'];
+    let filtered = allSellers;
     
-    // Validate each file
-    const validFiles = [];
-    const errors = [];
-    
-    files.forEach(file => {
-      if (file.size > maxSize) {
-        errors.push(`${file.name} exceeds 10MB limit`);
-      } else if (!allowedTypes.includes(file.type)) {
-        errors.push(`${file.name} is not a supported file type`);
-      } else {
-        validFiles.push(file);
-      }
-    });
-    
-    // Show errors if any
-    if (errors.length > 0) {
-      window.toast?.error(`Some files were skipped:\n${errors.join('\n')}`);
-    }
-    
-    selectedFiles = [...selectedFiles, ...validFiles];
-    displayAttachments();
-  });
-  
-  // Send message
-  const sendMessage = async () => {
-    const message = chatMessageInput.value.trim();
-    
-    if (!message && selectedFiles.length === 0) return;
-    if (!currentChatSellerId) return;
-    
-    sendMessageBtn.disabled = true;
-    
-    try {
-      await dataService.sendChatMessage({
-        sellerId: currentChatSellerId,
-        message: message,
-        files: selectedFiles
+    // Filter by category
+    if (category) {
+      filtered = filtered.filter(seller => {
+        const sellerId = seller.uid || seller.id;
+        const categories = sellerCategoryMap.get(sellerId);
+        return categories && categories.has(category);
       });
-      
-      chatMessageInput.value = '';
-      selectedFiles = [];
-      chatAttachments.style.display = 'none';
-      chatAttachments.innerHTML = '';
-      chatFileInput.value = '';
-      
-    } catch (error) {
-      console.error('Error sending message:', error);
-      window.toast?.error('Failed to send message');
-    } finally {
-      sendMessageBtn.disabled = false;
     }
+    
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(seller => {
+        const name = (seller.displayName || '').toLowerCase();
+        const company = (seller.companyName || '').toLowerCase();
+        const email = (seller.email || '').toLowerCase();
+        return name.includes(searchTerm) || company.includes(searchTerm) || email.includes(searchTerm);
+      });
+    }
+    
+    renderSellers(filtered);
   };
   
-  sendMessageBtn.addEventListener('click', sendMessage);
-  chatMessageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      sendMessage();
-    }
-  });
+  // Add event listeners for filters
+  const categoryFilter = document.getElementById('categoryFilter');
+  const searchInput = document.getElementById('searchInput');
   
-  // Display selected attachments
-  function displayAttachments() {
-    if (selectedFiles.length === 0) {
-      chatAttachments.style.display = 'none';
-      return;
-    }
-    
-    chatAttachments.style.display = 'flex';
-    chatAttachments.innerHTML = selectedFiles.map((file, index) => `
-      <div class="attachment-preview">
-        <div class="attachment-info">
-          <i data-lucide="${getFileIcon(file.type)}"></i>
-          <span>${escapeHtml(file.name)}</span>
-        </div>
-        <button class="btn-remove-attachment" data-index="${index}">
-          <i data-lucide="x"></i>
-        </button>
-      </div>
-    `).join('');
-    
-    if (window.lucide) window.lucide.createIcons();
-    
-    // Remove attachment handlers
-    document.querySelectorAll('.btn-remove-attachment').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const index = parseInt(btn.dataset.index);
-        selectedFiles.splice(index, 1);
-        displayAttachments();
-      });
+  if (categoryFilter) {
+    categoryFilter.addEventListener('change', applyFilters);
+  }
+  
+  if (searchInput) {
+    searchInput.addEventListener('input', applyFilters);
+  }
+  
+  // Reset filters
+  const resetButton = document.getElementById('resetFilters');
+  if (resetButton) {
+    resetButton.addEventListener('click', () => {
+      if (categoryFilter) categoryFilter.value = '';
+      if (searchInput) searchInput.value = '';
+      renderSellers(allSellers);
     });
-  }
-  
-  // Get file icon based on type
-  function getFileIcon(type) {
-    if (type.startsWith('image/')) return 'image';
-    if (type.startsWith('video/')) return 'video';
-    if (type.includes('pdf')) return 'file-text';
-    return 'file';
-  }
-  
-  // Load chat messages
-  async function loadChatMessages(sellerId) {
-    try {
-      // Unsubscribe from previous chat if any
-      if (unsubscribeMessages) {
-        unsubscribeMessages();
-      }
-      
-      // Subscribe to real-time messages
-      unsubscribeMessages = await dataService.subscribeToChatMessages(sellerId, (messages) => {
-        displayMessages(messages);
-      });
-      
-    } catch (error) {
-      console.error('Error loading messages:', error);
-      chatMessages.innerHTML = `
-        <div class="chat-error">
-          <i data-lucide="alert-circle"></i>
-          <p>Failed to load messages</p>
-        </div>
-      `;
-      if (window.lucide) window.lucide.createIcons();
-    }
-  }
-  
-  // Display messages
-  function displayMessages(messages) {
-    console.log('displayMessages called with', messages.length, 'messages');
-    
-    if (messages.length === 0) {
-      chatMessages.innerHTML = `
-        <div class="chat-empty">
-          <i data-lucide="message-circle" style="width: 48px; height: 48px; opacity: 0.3;"></i>
-          <p>Start a conversation</p>
-        </div>
-      `;
-      if (window.lucide) window.lucide.createIcons();
-      return;
-    }
-    
-    const currentUser = authManager.getCurrentUser();
-    console.log('Current user:', currentUser?.uid);
-    
-    chatMessages.innerHTML = messages.map(msg => {
-      console.log('Rendering message:', msg.id, msg.message, msg.senderId);
-      const isOwn = msg.senderId === currentUser.uid;
-      const timestamp = msg.createdAt ? (msg.createdAt.toDate ? msg.createdAt.toDate() : new Date(msg.createdAt)) : new Date();
-      
-      return `
-        <div class="chat-message ${isOwn ? 'own' : 'other'}">
-          <div class="message-content">
-            ${msg.message ? `<p>${escapeHtml(msg.message)}</p>` : ''}
-            ${msg.attachments && msg.attachments.length > 0 ? `
-              <div class="message-attachments">
-                ${msg.attachments.map(att => `
-                  <a href="${att.url}" target="_blank" class="message-attachment">
-                    <i data-lucide="${getFileIcon(att.type)}"></i>
-                    <span>${escapeHtml(att.name)}</span>
-                  </a>
-                `).join('')}
-              </div>
-            ` : ''}
-          </div>
-          <div class="message-time">${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-        </div>
-      `;
-    }).join('');
-    
-    if (window.lucide) window.lucide.createIcons();
-    
-    // Scroll to bottom
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    console.log('Messages displayed, scrolled to bottom');
   }
 }
