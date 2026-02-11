@@ -289,8 +289,7 @@ export default {
     categories: 'الفئات',
     clickToViewSellers: 'انقر لعرض البائعين في هذه الفئة',
     sellersInCategory: 'البائعون في',
-    noSellersInCategory: 'لم يتم العثور على بائعين في هذه الفئة',
-    allSubcategories: 'جميع الفئات الفرعية'
+    noSellersInCategory: 'لم يتم العثور على بائعين في هذه الفئة'
   },
   
   // البائعون

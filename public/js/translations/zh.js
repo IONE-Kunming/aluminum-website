@@ -289,8 +289,7 @@ export default {
     categories: '类别',
     clickToViewSellers: '点击查看此类别中的卖家',
     sellersInCategory: '卖家在',
-    noSellersInCategory: '此类别中未找到卖家',
-    allSubcategories: '所有子类别'
+    noSellersInCategory: '此类别中未找到卖家'
   },
   
   // 卖家

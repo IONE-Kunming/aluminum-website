@@ -359,8 +359,8 @@ async function renderSellersForCategory(category, t) {
 
       <div class="catalog-controls" style="margin-bottom: 24px; display: grid; grid-template-columns: 1fr auto; gap: 16px;">
         <input type="text" id="search-input" placeholder="${t('common.search')} ${t('sellers.title').toLowerCase()}..." class="form-control">
-        <select id="subcategory-filter" class="form-control" style="max-width: 250px;">
-          <option value="">${t('catalog.allSubcategories')}</option>
+        <select id="category-filter" class="form-control" style="max-width: 250px;">
+          <option value="">${t('common.allCategories')}</option>
           ${categories.map(cat => `<option value="${escapeHtml(cat)}" ${cat === category ? 'selected' : ''}>${escapeHtml(cat)}</option>`).join('')}
         </select>
       </div>
@@ -376,42 +376,20 @@ async function renderSellersForCategory(category, t) {
 
   // Add search and filter functionality
   const searchInput = document.getElementById('search-input');
-  const subcategoryFilter = document.getElementById('subcategory-filter');
+  const categoryFilter = document.getElementById('category-filter');
 
   const applyFilters = () => {
     const searchTerm = searchInput?.value.toLowerCase() || '';
-    const subcategory = subcategoryFilter?.value || '';
+    const selectedCategory = categoryFilter?.value || '';
 
-    let filtered = sellersInCategory;
-
-    // Filter by subcategory (currently just different categories)
-    if (subcategory && subcategory !== category) {
-      // Re-filter with new category
-      const newCategoryProducts = allProducts.filter(p => p.category === subcategory);
-      const newSellerIds = new Set(newCategoryProducts.map(p => p.sellerId).filter(Boolean));
-      filtered = allSellers.filter(seller => 
-        newSellerIds.has(seller.uid) || newSellerIds.has(seller.id)
-      );
-      
-      // Update the maps for the new category
-      sellerProductMap.clear();
-      sellerCategoryMap.clear();
-      newCategoryProducts.forEach(product => {
-        if (!product.sellerId) return;
-        
-        if (!sellerProductMap.has(product.sellerId)) {
-          sellerProductMap.set(product.sellerId, []);
-        }
-        sellerProductMap.set(product.sellerId, [...sellerProductMap.get(product.sellerId), product]);
-        
-        if (product.category) {
-          if (!sellerCategoryMap.has(product.sellerId)) {
-            sellerCategoryMap.set(product.sellerId, new Set());
-          }
-          sellerCategoryMap.get(product.sellerId).add(product.category);
-        }
-      });
+    // If a different category is selected, navigate to that category
+    if (selectedCategory && selectedCategory !== category) {
+      router.navigate(`/buyer/catalog?category=${encodeURIComponent(selectedCategory)}`);
+      return;
     }
+
+    // Otherwise, just filter the sellers by search term
+    let filtered = sellersInCategory;
 
     // Filter by search term
     if (searchTerm) {
@@ -430,8 +408,8 @@ async function renderSellersForCategory(category, t) {
     searchInput.addEventListener('input', applyFilters);
   }
 
-  if (subcategoryFilter) {
-    subcategoryFilter.addEventListener('change', applyFilters);
+  if (categoryFilter) {
+    categoryFilter.addEventListener('change', applyFilters);
   }
 }
 
