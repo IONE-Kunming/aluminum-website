@@ -32,10 +32,11 @@ export async function renderCatalog() {
   const sellerId = urlParams.get('seller');
   const category = urlParams.get('category');
   const mainCategory = urlParams.get('mainCategory');
+  const subcategory = urlParams.get('subcategory');
   
   // If sellerId is provided, show products for that seller
   if (sellerId) {
-    await renderSellerProducts(sellerId, t);
+    await renderSellerProducts(sellerId, subcategory || category, t);
     return;
   }
   
@@ -65,10 +66,15 @@ export async function renderCatalog() {
 }
 
 // Render products for a specific seller
-async function renderSellerProducts(sellerId, t) {
+async function renderSellerProducts(sellerId, filterCategory, t) {
   const products = await dataService.getProducts({ sellerId });
   const sellers = await dataService.getSellers();
   const seller = sellers.find(s => s.id === sellerId || s.uid === sellerId);
+  
+  // Filter products by category if provided
+  const filteredProducts = filterCategory 
+    ? products.filter(p => p.category === filterCategory)
+    : products;
   
   const renderProducts = (productsToRender) => {
     const productsGrid = document.querySelector('.products-grid');
@@ -147,7 +153,7 @@ async function renderSellerProducts(sellerId, t) {
       <div class="page-header">
         <div>
           <h1>${t('catalog.productsFrom')} ${escapeHtml(seller?.displayName || seller?.companyName || 'Seller')}</h1>
-          <p>${t('catalog.subtitle')}</p>
+          <p>${filterCategory ? `${t('products.category')}: ${escapeHtml(translateCategory(filterCategory, t))}` : t('catalog.subtitle')}</p>
         </div>
         <button class="btn btn-secondary" onclick="window.history.back()">
           <i data-lucide="arrow-left"></i>
@@ -166,14 +172,14 @@ async function renderSellerProducts(sellerId, t) {
   `;
 
   renderPageWithLayout(content, 'buyer');
-  renderProducts(products);
+  renderProducts(filteredProducts);
 
   // Add search functionality
   const searchInput = document.getElementById('search-input');
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       const searchTerm = searchInput.value.toLowerCase();
-      let filtered = products;
+      let filtered = filteredProducts;
 
       if (searchTerm) {
         filtered = filtered.filter(p => {
@@ -468,7 +474,7 @@ async function renderSellersForCategory(category, t) {
     document.querySelectorAll('.view-products-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const sellerId = btn.dataset.sellerId;
-        router.navigate(`/buyer/catalog?seller=${sellerId}`);
+        router.navigate(`/buyer/catalog?seller=${sellerId}&subcategory=${encodeURIComponent(category)}`);
       });
     });
     
