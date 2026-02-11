@@ -37,7 +37,14 @@ export default {
     next: 'التالي',
     previous: 'السابق',
     close: 'إغلاق',
-    or: 'أو'
+    or: 'أو',
+    reset: 'إعادة تعيين',
+    apply: 'تطبيق',
+    allCategories: 'جميع الفئات',
+    selectDate: 'اختر التاريخ',
+    from: 'من',
+    to: 'إلى',
+    clear: 'مسح'
   },
   
   // اللغات
@@ -268,9 +275,22 @@ export default {
     loading: 'جارٍ تحميل المنتجات...',
     noProducts: 'لا توجد منتجات متاحة',
     viewDetails: 'عرض التفاصيل',
+    viewProducts: 'عرض المنتجات',
     description: 'الوصف',
     details: 'التفاصيل',
-    orderDetails: 'تفاصيل الطلب'
+    orderDetails: 'تفاصيل الطلب',
+    sellerDirectory: 'دليل البائعين',
+    selectSeller: 'اختر بائعًا لعرض منتجاته',
+    city: 'المدينة',
+    noSellers: 'لا يوجد بائعون متاحون',
+    productsFrom: 'منتجات من',
+    selectCategory: 'اختر فئة لتصفح المنتجات',
+    noCategories: 'لا توجد فئات متاحة',
+    categories: 'الفئات',
+    clickToViewSellers: 'انقر لعرض البائعين في هذه الفئة',
+    sellersInCategory: 'البائعون في',
+    noSellersInCategory: 'لم يتم العثور على بائعين في هذه الفئة',
+    allSubcategories: 'جميع الفئات الفرعية'
   },
   
   // البائعون

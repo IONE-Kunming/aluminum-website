@@ -37,7 +37,14 @@ export default {
     next: '下一步',
     previous: '上一步',
     close: '关闭',
-    or: '或'
+    or: '或',
+    reset: '重置',
+    apply: '应用',
+    allCategories: '所有类别',
+    selectDate: '选择日期',
+    from: '从',
+    to: '到',
+    clear: '清除'
   },
   
   // 语言
@@ -268,9 +275,22 @@ export default {
     loading: '加载产品中...',
     noProducts: '暂无产品',
     viewDetails: '查看详情',
+    viewProducts: '查看产品',
     description: '描述',
     details: '详细信息',
-    orderDetails: '订单详情'
+    orderDetails: '订单详情',
+    sellerDirectory: '卖家目录',
+    selectSeller: '选择卖家查看其产品',
+    city: '城市',
+    noSellers: '暂无卖家',
+    productsFrom: '产品来自',
+    selectCategory: '选择类别浏览产品',
+    noCategories: '暂无类别',
+    categories: '类别',
+    clickToViewSellers: '点击查看此类别中的卖家',
+    sellersInCategory: '卖家在',
+    noSellersInCategory: '此类别中未找到卖家',
+    allSubcategories: '所有子类别'
   },
   
   // 卖家
