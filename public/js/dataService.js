@@ -444,6 +444,45 @@ class DataService {
     }
   }
 
+  // Get categories organized by hierarchy
+  async getCategoriesHierarchy(sellerId = null) {
+    await this.init();
+
+    try {
+      const categories = await this.getCategories(sellerId);
+      
+      // Import hierarchy functions dynamically
+      const { mapCategoriesToHierarchy, getSubcategories } = await import('./categoryHierarchy.js');
+      
+      const mapped = mapCategoriesToHierarchy(categories);
+      
+      // For each main category, get which subcategories have products
+      const hierarchy = {};
+      for (const mainCategory of mapped.mainCategories) {
+        const subcats = getSubcategories(mainCategory);
+        // Filter to only subcategories that exist in products
+        const availableSubcats = subcats.filter(sub => categories.includes(sub));
+        hierarchy[mainCategory] = {
+          subcategories: availableSubcats,
+          hasProducts: availableSubcats.length > 0
+        };
+      }
+      
+      return {
+        mainCategories: mapped.mainCategories,
+        unmappedCategories: mapped.unmappedCategories,
+        hierarchy: hierarchy
+      };
+    } catch (error) {
+      console.error('Error fetching categories hierarchy:', error);
+      return {
+        mainCategories: [],
+        unmappedCategories: [],
+        hierarchy: {}
+      };
+    }
+  }
+
   // Delete products by category
   async deleteProductsByCategory(category, sellerId) {
     await this.init();
