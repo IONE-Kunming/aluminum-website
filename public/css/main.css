@@ -427,15 +427,36 @@ tr:hover {
 }
 
 /* Empty State */
-.empty-state {
+.empty-state,
+.cart-empty {
   text-align: center;
   padding: var(--spacing-xl);
   color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
 }
 
-.empty-state svg {
+.empty-state svg,
+.cart-empty svg {
   margin: 0 auto var(--spacing-md);
   opacity: 0.5;
+}
+
+.cart-empty h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.cart-empty p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.cart-empty .btn {
+  margin-top: var(--spacing-sm);
 }
 
 /* Icon Animations */

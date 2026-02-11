@@ -307,7 +307,16 @@ export default {
     'Hardware': 'ہارڈویئر',
     'Electrical': 'برقی',
     'Plumbing': 'پلمبنگ',
-    'Paint': 'پینٹ'
+    'Paint': 'پینٹ',
+    // عام تعمیراتی ذیلی زمرے
+    'Balustrades': 'بیلسٹریڈز',
+    'Barrier Systems': 'رکاوٹ کے نظام',
+    'Fencing': 'باڑ',
+    'Handrails': 'ہینڈریلز',
+    'Gates': 'گیٹس',
+    'Railings': 'ریلنگز',
+    'Screens': 'سکرینز',
+    'Partitions': 'تقسیم'
   },
   
   // فروخت کنندگان

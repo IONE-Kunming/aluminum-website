@@ -307,7 +307,16 @@ export default {
     'Hardware': '五金',
     'Electrical': '电气',
     'Plumbing': '管道',
-    'Paint': '油漆'
+    'Paint': '油漆',
+    // 常见建筑子类别
+    'Balustrades': '栏杆',
+    'Barrier Systems': '屏障系统',
+    'Fencing': '围栏',
+    'Handrails': '扶手',
+    'Gates': '大门',
+    'Railings': '栏杆',
+    'Screens': '屏风',
+    'Partitions': '隔断'
   },
   
   // 卖家

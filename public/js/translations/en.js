@@ -321,7 +321,16 @@ export default {
     'Hardware': 'Hardware',
     'Electrical': 'Electrical',
     'Plumbing': 'Plumbing',
-    'Paint': 'Paint'
+    'Paint': 'Paint',
+    // Common construction subcategories
+    'Balustrades': 'Balustrades',
+    'Barrier Systems': 'Barrier Systems',
+    'Fencing': 'Fencing',
+    'Handrails': 'Handrails',
+    'Gates': 'Gates',
+    'Railings': 'Railings',
+    'Screens': 'Screens',
+    'Partitions': 'Partitions'
   },
   
   // Sellers

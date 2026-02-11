@@ -14,7 +14,10 @@ function getSellerId(seller) {
 function translateCategory(category, t) {
   if (!category) return '';
   // Try to get translation from categoryNames, fallback to original if not found
-  return t(`categoryNames.${category}`) || category;
+  const translationKey = `categoryNames.${category}`;
+  const translated = t(translationKey);
+  // If translation not found, t() returns the key itself, so check if it matches the key
+  return translated === translationKey ? category : translated;
 }
 
 export async function renderCatalog() {

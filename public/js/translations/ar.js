@@ -307,7 +307,16 @@ export default {
     'Hardware': 'العتاد',
     'Electrical': 'الكهرباء',
     'Plumbing': 'السباكة',
-    'Paint': 'الطلاء'
+    'Paint': 'الطلاء',
+    // فئات البناء الفرعية الشائعة
+    'Balustrades': 'الدرابزين',
+    'Barrier Systems': 'أنظمة الحواجز',
+    'Fencing': 'السياج',
+    'Handrails': 'الدرابزين',
+    'Gates': 'البوابات',
+    'Railings': 'القضبان',
+    'Screens': 'الشاشات',
+    'Partitions': 'الحواجز'
   },
   
   // البائعون
