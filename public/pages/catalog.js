@@ -5,6 +5,13 @@ import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
 
+// Define construction subcategories that should be grouped under "Construction"
+const CONSTRUCTION_SUBCATEGORIES = [
+  'Balustrades', 'Barrier Systems', 'Fencing', 'Handrails', 
+  'Gates', 'Railings', 'Screens', 'Partitions', 'Aluminum', 
+  'Steel', 'Glass', 'Concrete', 'Tools', 'Equipment', 'Hardware'
+];
+
 // Helper function to get seller ID consistently
 function getSellerId(seller) {
   return seller.uid || seller.id;
@@ -171,6 +178,16 @@ async function renderSellerProducts(sellerId, t) {
 async function renderCategoryTiles(t) {
   const categories = await dataService.getCategories();
   
+  // Check if all categories are construction subcategories
+  const allAreConstructionSubcategories = categories.every(cat => 
+    CONSTRUCTION_SUBCATEGORIES.includes(cat)
+  );
+  
+  // If all categories are construction subcategories, show "Construction" as main category
+  const displayCategories = allAreConstructionSubcategories && categories.length > 0
+    ? ['Construction']
+    : categories.filter(cat => !CONSTRUCTION_SUBCATEGORIES.includes(cat) || cat === 'Construction');
+  
   const renderCategories = (categoriesToRender) => {
     const categoriesGrid = document.querySelector('.categories-grid');
     if (!categoriesGrid) return;
@@ -198,7 +215,12 @@ async function renderCategoryTiles(t) {
     document.querySelectorAll('.category-tile[data-category]').forEach(tile => {
       tile.addEventListener('click', () => {
         const category = tile.getAttribute('data-category');
-        router.navigate(`/buyer/catalog?category=${encodeURIComponent(category)}`);
+        // If clicking on Construction and all categories are subcategories, show subcategory selection
+        if (category === 'Construction' && allAreConstructionSubcategories) {
+          renderConstructionSubcategories(categories, t);
+        } else {
+          router.navigate(`/buyer/catalog?category=${encodeURIComponent(category)}`);
+        }
       });
     });
 
@@ -223,20 +245,89 @@ async function renderCategoryTiles(t) {
   `;
 
   renderPageWithLayout(content, 'buyer');
-  renderCategories(categories);
+  renderCategories(displayCategories);
 
   // Add search functionality
   const searchInput = document.getElementById('search-input');
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       const searchTerm = searchInput.value.toLowerCase();
-      let filtered = categories;
+      let filtered = displayCategories;
 
       if (searchTerm) {
         filtered = filtered.filter(c => c.toLowerCase().includes(searchTerm));
       }
 
       renderCategories(filtered);
+    });
+  }
+}
+
+// Render construction subcategories
+async function renderConstructionSubcategories(subcategories, t) {
+  const renderSubcategories = (subcategoriesToRender) => {
+    const categoriesGrid = document.querySelector('.categories-grid');
+    if (!categoriesGrid) return;
+
+    categoriesGrid.innerHTML = subcategoriesToRender.map(subcategory => `
+      <div class="category-tile card" data-subcategory="${escapeHtml(subcategory)}" style="cursor: pointer;">
+        <div class="category-icon" style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          <i data-lucide="layers" style="width: 40px; height: 40px; color: white;"></i>
+        </div>
+        <h3 style="text-align: center; margin-bottom: 8px; font-size: 18px;">${escapeHtml(translateCategory(subcategory, t))}</h3>
+        <p style="text-align: center; color: var(--text-secondary); font-size: 14px;">${t('catalog.clickToViewSellers')}</p>
+      </div>
+    `).join('');
+
+    // Add event listeners
+    document.querySelectorAll('.category-tile[data-subcategory]').forEach(tile => {
+      tile.addEventListener('click', () => {
+        const subcategory = tile.getAttribute('data-subcategory');
+        router.navigate(`/buyer/catalog?category=${encodeURIComponent(subcategory)}`);
+      });
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  const content = `
+    <div class="catalog-page">
+      <div class="page-header">
+        <div>
+          <h1>${t('catalog.title')}</h1>
+          <p>${t('catalog.selectSubcategory') || 'Select a subcategory'}</p>
+        </div>
+        <button class="btn btn-secondary" onclick="window.history.back()">
+          <i data-lucide="arrow-left"></i>
+          ${t('common.back')}
+        </button>
+      </div>
+
+      <div class="catalog-controls" style="margin-bottom: 24px;">
+        <input type="text" id="search-input" placeholder="${t('common.search')} ${t('catalog.categories').toLowerCase()}..." class="form-control">
+      </div>
+
+      <div class="categories-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 24px;">
+        <!-- Subcategories will be rendered here -->
+      </div>
+    </div>
+  `;
+
+  renderPageWithLayout(content, 'buyer');
+  renderSubcategories(subcategories);
+
+  // Add search functionality
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const searchTerm = searchInput.value.toLowerCase();
+      let filtered = subcategories;
+
+      if (searchTerm) {
+        filtered = filtered.filter(c => translateCategory(c, t).toLowerCase().includes(searchTerm));
+      }
+
+      renderSubcategories(filtered);
     });
   }
 }
