@@ -773,3 +773,64 @@ body.modal-open {
   overflow: hidden;
   height: 100%;
 }
+
+/* ==========================================
+   RTL (Right-to-Left) SUPPORT
+   For Arabic and Urdu languages
+   ========================================== */
+
+/* Flip all flex containers with icons */
+[dir="rtl"] .btn,
+[dir="rtl"] button,
+[dir="rtl"] .page-title,
+[dir="rtl"] .stat-card,
+[dir="rtl"] .info-item,
+[dir="rtl"] .product-header,
+[dir="rtl"] .seller-detail,
+[dir="rtl"] .alert,
+[dir="rtl"] .empty-state,
+[dir="rtl"] .cart-empty {
+  flex-direction: row-reverse;
+}
+
+/* Toast notifications */
+[dir="rtl"] .toast-success {
+  border-left: none;
+  border-right: 4px solid var(--success);
+}
+
+[dir="rtl"] .toast-error {
+  border-left: none;
+  border-right: 4px solid var(--error);
+}
+
+[dir="rtl"] .toast-warning {
+  border-left: none;
+  border-right: 4px solid var(--warning);
+}
+
+[dir="rtl"] .toast-info {
+  border-left: none;
+  border-right: 4px solid var(--electric-blue);
+}
+
+/* Cards and containers */
+[dir="rtl"] .card {
+  text-align: right;
+}
+
+/* Forms and inputs */
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+}
+
+/* Icons in buttons and nav items - put icons on right side */
+[dir="rtl"] .btn {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .nav-item {
+  flex-direction: row-reverse;
+}
