@@ -24,6 +24,7 @@ import { renderProfileSelection } from '../pages/profile-selection.js';
 const lazyPages = {
   buyerDashboard: () => import('../pages/buyer-dashboard.js').then(m => m.renderBuyerDashboard),
   sellerDashboard: () => import('../pages/seller-dashboard.js').then(m => m.renderSellerDashboard),
+  categorySelection: () => import('../pages/category-selection.js').then(m => m.renderCategorySelection),
   catalog: () => import('../pages/catalog.js').then(m => m.renderCatalog),
   productDetail: () => import('../pages/product-detail.js').then(m => m.renderProductDetail),
   cart: () => import('../pages/cart.js').then(m => m.renderCart),
@@ -37,8 +38,6 @@ const lazyPages = {
   sellerInvoices: () => import('../pages/seller-invoices.js').then(m => m.renderSellerInvoices),
   branches: () => import('../pages/branches.js').then(m => m.renderBranches),
   profile: () => import('../pages/profile.js').then(m => m.renderProfile),
-  buyerChats: () => import('../pages/buyer-chats.js').then(m => m.renderBuyerChats),
-  sellerChats: () => import('../pages/seller-chats.js').then(m => m.renderSellerChats),
   support: () => import('../pages/support.js').then(m => m.renderSupport),
   notifications: () => import('../pages/notifications.js').then(m => m.renderNotifications),
   adminDashboard: () => import('../pages/admin-dashboard.js').then(m => m.renderAdminDashboard),
@@ -223,6 +222,7 @@ async function initApp() {
   
   // Register buyer routes (lazy loaded)
   router.register('/buyer/dashboard', protectedRoute(lazyRoute(lazyPages.buyerDashboard), 'buyer'));
+  router.register('/buyer/category-selection', protectedRoute(lazyRoute(lazyPages.categorySelection), 'buyer'));
   router.register('/buyer/catalog', protectedRoute(lazyRoute(lazyPages.catalog), 'buyer'));
   router.register('/buyer/product', protectedRoute(lazyRoute(lazyPages.productDetail), 'buyer'));
   router.register('/buyer/cart', protectedRoute(lazyRoute(lazyPages.cart), 'buyer'));
@@ -231,7 +231,6 @@ async function initApp() {
   router.register('/buyer/invoices', protectedRoute(lazyRoute(lazyPages.invoices), 'buyer'));
   router.register('/buyer/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'buyer'));
   router.register('/buyer/sellers', protectedRoute(lazyRoute(lazyPages.sellers), 'buyer'));
-  router.register('/buyer/chats', protectedRoute(lazyRoute(lazyPages.buyerChats), 'buyer'));
   router.register('/buyer/support', protectedRoute(lazyRoute(lazyPages.support), 'buyer'));
   router.register('/buyer/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'buyer'));
   router.register('/buyer/profile', protectedRoute(lazyRoute(lazyPages.profile), 'buyer'));
@@ -243,7 +242,6 @@ async function initApp() {
   router.register('/seller/invoices', protectedRoute(lazyRoute(lazyPages.sellerInvoices), 'seller'));
   router.register('/seller/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'seller'));
   router.register('/seller/branches', protectedRoute(lazyRoute(lazyPages.branches), 'seller'));
-  router.register('/seller/chats', protectedRoute(lazyRoute(lazyPages.sellerChats), 'seller'));
   router.register('/seller/support', protectedRoute(lazyRoute(lazyPages.support), 'seller'));
   router.register('/seller/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'seller'));
   router.register('/seller/profile', protectedRoute(lazyRoute(lazyPages.profile), 'seller'));
