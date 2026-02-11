@@ -297,7 +297,14 @@ export default {
     selectSeller: 'Select a seller to view their products',
     city: 'City',
     noSellers: 'No sellers available',
-    productsFrom: 'Products from'
+    productsFrom: 'Products from',
+    selectCategory: 'Select a category to browse products',
+    noCategories: 'No categories available',
+    categories: 'Categories',
+    clickToViewSellers: 'Click to view sellers in this category',
+    sellersInCategory: 'Sellers in',
+    noSellersInCategory: 'No sellers found in this category',
+    allSubcategories: 'All Subcategories'
   },
   
   // Sellers
