@@ -131,7 +131,7 @@ function protectedRoute(handler, requireRole = null) {
         if (profile.role === 'seller') {
           router.navigate('/seller/dashboard');
         } else if (profile.role === 'buyer') {
-          router.navigate('/buyer/dashboard');
+          router.navigate('/buyer/catalog');
         } else if (profile.role === 'admin') {
           router.navigate('/admin/dashboard');
         } else {
@@ -205,12 +205,12 @@ async function initApp() {
     const profile = await authManager.waitForProfile(PROFILE_LOAD_TIMEOUT_MS);
     
     if (profile && profile.role) {
-      // User already has a role, redirect to their dashboard immediately
+      // User already has a role, redirect to their Home Page immediately
       // This prevents the profile selection page from ever showing
       if (profile.role === 'seller') {
         router.navigate('/seller/dashboard');
       } else if (profile.role === 'buyer') {
-        router.navigate('/buyer/dashboard');
+        router.navigate('/buyer/catalog');
       } else if (profile.role === 'admin') {
         router.navigate('/admin/dashboard');
       }

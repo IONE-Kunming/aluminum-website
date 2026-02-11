@@ -5,11 +5,24 @@ import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
 
+// Helper function to get seller ID consistently
+function getSellerId(seller) {
+  return seller.uid || seller.id;
+}
+
+// Helper function to translate category names
+function translateCategory(category, t) {
+  if (!category) return '';
+  // Try to get translation from categoryNames, fallback to original if not found
+  return t(`categoryNames.${category}`) || category;
+}
+
 export async function renderCatalog() {
   const profile = authManager.getUserProfile();
   const t = languageManager.t.bind(languageManager);
   const urlParams = new URLSearchParams(window.location.search);
   const sellerId = urlParams.get('seller');
+  const category = urlParams.get('category');
   
   // If sellerId is provided, show products for that seller
   if (sellerId) {
@@ -17,8 +30,14 @@ export async function renderCatalog() {
     return;
   }
   
-  // Otherwise, show seller tiles
-  await renderSellerTiles(t);
+  // If category is provided, show sellers for that category
+  if (category) {
+    await renderSellersForCategory(category, t);
+    return;
+  }
+  
+  // Otherwise, show category tiles
+  await renderCategoryTiles(t);
 }
 
 // Render products for a specific seller
@@ -145,17 +164,102 @@ async function renderSellerProducts(sellerId, t) {
   }
 }
 
-// Render seller tiles
-async function renderSellerTiles(t) {
+// Render category tiles - first view of product catalogue
+async function renderCategoryTiles(t) {
+  const categories = await dataService.getCategories();
+  
+  const renderCategories = (categoriesToRender) => {
+    const categoriesGrid = document.querySelector('.categories-grid');
+    if (!categoriesGrid) return;
+
+    if (categoriesToRender.length === 0) {
+      categoriesGrid.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="folder-open" style="width: 64px; height: 64px; opacity: 0.3; margin-bottom: 16px;"></i>
+          <p>${t('catalog.noCategories')}</p>
+        </div>
+      `;
+    } else {
+      categoriesGrid.innerHTML = categoriesToRender.map(category => `
+        <div class="category-tile card" data-category="${escapeHtml(category)}" style="cursor: pointer;">
+          <div class="category-icon" style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+            <i data-lucide="box" style="width: 40px; height: 40px; color: white;"></i>
+          </div>
+          <h3 style="text-align: center; margin-bottom: 8px; font-size: 18px;">${escapeHtml(translateCategory(category, t))}</h3>
+          <p style="text-align: center; color: var(--text-secondary); font-size: 14px;">${t('catalog.clickToViewSellers')}</p>
+        </div>
+      `).join('');
+    }
+
+    // Add event listeners
+    document.querySelectorAll('.category-tile[data-category]').forEach(tile => {
+      tile.addEventListener('click', () => {
+        const category = tile.getAttribute('data-category');
+        router.navigate(`/buyer/catalog?category=${encodeURIComponent(category)}`);
+      });
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  const content = `
+    <div class="catalog-page">
+      <div class="page-header">
+        <h1>${t('catalog.title')}</h1>
+        <p>${t('catalog.selectCategory')}</p>
+      </div>
+
+      <div class="catalog-controls" style="margin-bottom: 24px;">
+        <input type="text" id="search-input" placeholder="${t('common.search')} ${t('catalog.categories').toLowerCase()}..." class="form-control">
+      </div>
+
+      <div class="categories-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 24px;">
+        <!-- Categories will be rendered here -->
+      </div>
+    </div>
+  `;
+
+  renderPageWithLayout(content, 'buyer');
+  renderCategories(categories);
+
+  // Add search functionality
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const searchTerm = searchInput.value.toLowerCase();
+      let filtered = categories;
+
+      if (searchTerm) {
+        filtered = filtered.filter(c => c.toLowerCase().includes(searchTerm));
+      }
+
+      renderCategories(filtered);
+    });
+  }
+}
+
+// Render sellers for a specific category
+async function renderSellersForCategory(category, t) {
   const allProducts = await dataService.getProducts();
   const allSellers = await dataService.getSellers();
   const categories = await dataService.getCategories();
   
-  // Group products by seller and category
+  // Filter products by category
+  const categoryProducts = allProducts.filter(p => p.category === category);
+  
+  // Get unique seller IDs from filtered products
+  const sellerIds = new Set(categoryProducts.map(p => p.sellerId).filter(Boolean));
+  
+  // Filter sellers who have products in this category
+  const sellersInCategory = allSellers.filter(seller => 
+    sellerIds.has(seller.uid) || sellerIds.has(seller.id)
+  );
+  
+  // Group products by seller and category for display
   const sellerProductMap = new Map();
   const sellerCategoryMap = new Map();
   
-  allProducts.forEach(product => {
+  categoryProducts.forEach(product => {
     if (!product.sellerId) return;
     
     if (!sellerProductMap.has(product.sellerId)) {
@@ -171,11 +275,6 @@ async function renderSellerTiles(t) {
     }
   });
   
-  // Filter sellers who have products
-  const sellersWithProducts = allSellers.filter(seller => 
-    sellerProductMap.has(seller.uid) || sellerProductMap.has(seller.id)
-  );
-  
   const renderSellers = (sellersToRender) => {
     const sellersGrid = document.querySelector('.sellers-grid');
     if (!sellersGrid) return;
@@ -184,12 +283,12 @@ async function renderSellerTiles(t) {
       sellersGrid.innerHTML = `
         <div class="empty-state">
           <i data-lucide="store" style="width: 64px; height: 64px; opacity: 0.3; margin-bottom: 16px;"></i>
-          <p>${t('catalog.noSellers')}</p>
+          <p>${t('catalog.noSellersInCategory')}</p>
         </div>
       `;
     } else {
       sellersGrid.innerHTML = sellersToRender.map(seller => {
-        const sellerId = seller.uid || seller.id;
+        const sellerId = getSellerId(seller);
         const productCount = sellerProductMap.get(sellerId)?.length || 0;
         const sellerCategories = Array.from(sellerCategoryMap.get(sellerId) || []);
         const city = seller.address?.city || seller.city || 'N/A';
@@ -247,7 +346,227 @@ async function renderSellerTiles(t) {
     document.querySelectorAll('.view-seller-info-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const sellerId = btn.dataset.sellerId;
-        const seller = sellersWithProducts.find(s => s.uid === sellerId || s.id === sellerId);
+        const seller = sellersInCategory.find(s => getSellerId(s) === sellerId);
+        if (seller) {
+          showSellerInfoModal(seller, t);
+        }
+      });
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  const content = `
+    <div class="catalog-page">
+      <div class="page-header">
+        <div>
+          <h1>${t('catalog.sellersInCategory')}: ${escapeHtml(translateCategory(category, t))}</h1>
+          <p>${t('catalog.sellerDirectory')}</p>
+        </div>
+        <button class="btn btn-secondary" onclick="window.history.back()">
+          <i data-lucide="arrow-left"></i>
+          ${t('common.back')}
+        </button>
+      </div>
+
+      <div class="catalog-controls three-column">
+        <input type="text" id="search-input" placeholder="${t('common.search')} ${t('sellers.title').toLowerCase()}..." class="form-control">
+        <select id="main-category-filter" class="form-control" style="max-width: 200px;">
+          <option value="">${t('catalog.allMainCategories')}</option>
+          ${categories.map(cat => `<option value="${escapeHtml(cat)}" ${cat === category ? 'selected' : ''}>${escapeHtml(translateCategory(cat, t))}</option>`).join('')}
+        </select>
+        <select id="sub-category-filter" class="form-control" style="max-width: 200px;">
+          <option value="">${t('catalog.allSubCategories')}</option>
+        </select>
+      </div>
+
+      <div class="sellers-grid">
+        <!-- Sellers will be rendered here -->
+      </div>
+    </div>
+  `;
+
+  renderPageWithLayout(content, 'buyer');
+  renderSellers(sellersInCategory);
+
+  // Populate subcategories based on products in current category
+  const subCategoryFilter = document.getElementById('sub-category-filter');
+  if (subCategoryFilter) {
+    // Get unique categories from products to show as subcategories
+    const subCategories = new Set();
+    categoryProducts.forEach(p => {
+      if (p.category) {
+        subCategories.add(p.category);
+      }
+    });
+    
+    // Add subcategory options
+    Array.from(subCategories).sort().forEach(subCat => {
+      if (subCat !== category) { // Don't show current category as subcategory
+        const option = document.createElement('option');
+        option.value = subCat;
+        option.textContent = translateCategory(subCat, t);
+        subCategoryFilter.appendChild(option);
+      }
+    });
+  }
+
+  // Add search and filter functionality
+  const searchInput = document.getElementById('search-input');
+  const mainCategoryFilter = document.getElementById('main-category-filter');
+
+  const applyFilters = () => {
+    const searchTerm = searchInput?.value.toLowerCase() || '';
+    const selectedMainCategory = mainCategoryFilter?.value || '';
+    const selectedSubCategory = subCategoryFilter?.value || '';
+
+    // If a different main category is selected, navigate to that category
+    if (selectedMainCategory && selectedMainCategory !== category) {
+      router.navigate(`/buyer/catalog?category=${encodeURIComponent(selectedMainCategory)}`);
+      return;
+    }
+
+    // Filter sellers by subcategory and search term
+    let filtered = sellersInCategory;
+
+    // Filter by subcategory if selected
+    if (selectedSubCategory) {
+      const subCategoryProducts = allProducts.filter(p => p.category === selectedSubCategory);
+      const subCategorySellerIds = new Set(subCategoryProducts.map(p => p.sellerId).filter(Boolean));
+      filtered = filtered.filter(seller => 
+        subCategorySellerIds.has(getSellerId(seller))
+      );
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(seller => {
+        const name = (seller.displayName || '').toLowerCase();
+        const company = (seller.companyName || '').toLowerCase();
+        const email = (seller.email || '').toLowerCase();
+        return name.includes(searchTerm) || company.includes(searchTerm) || email.includes(searchTerm);
+      });
+    }
+
+    renderSellers(filtered);
+  };
+
+  if (searchInput) {
+    searchInput.addEventListener('input', applyFilters);
+  }
+
+  if (mainCategoryFilter) {
+    mainCategoryFilter.addEventListener('change', applyFilters);
+  }
+
+  if (subCategoryFilter) {
+    subCategoryFilter.addEventListener('change', applyFilters);
+  }
+}
+
+// Render seller tiles
+async function renderSellerTiles(t) {
+  const allProducts = await dataService.getProducts();
+  const allSellers = await dataService.getSellers();
+  const categories = await dataService.getCategories();
+  
+  // Group products by seller and category
+  const sellerProductMap = new Map();
+  const sellerCategoryMap = new Map();
+  
+  allProducts.forEach(product => {
+    if (!product.sellerId) return;
+    
+    if (!sellerProductMap.has(product.sellerId)) {
+      sellerProductMap.set(product.sellerId, []);
+    }
+    sellerProductMap.set(product.sellerId, [...sellerProductMap.get(product.sellerId), product]);
+    
+    if (product.category) {
+      if (!sellerCategoryMap.has(product.sellerId)) {
+        sellerCategoryMap.set(product.sellerId, new Set());
+      }
+      sellerCategoryMap.get(product.sellerId).add(product.category);
+    }
+  });
+  
+  // Filter sellers who have products
+  const sellersWithProducts = allSellers.filter(seller => 
+    sellerProductMap.has(seller.uid) || sellerProductMap.has(seller.id)
+  );
+  
+  const renderSellers = (sellersToRender) => {
+    const sellersGrid = document.querySelector('.sellers-grid');
+    if (!sellersGrid) return;
+
+    if (sellersToRender.length === 0) {
+      sellersGrid.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="store" style="width: 64px; height: 64px; opacity: 0.3; margin-bottom: 16px;"></i>
+          <p>${t('catalog.noSellers')}</p>
+        </div>
+      `;
+    } else {
+      sellersGrid.innerHTML = sellersToRender.map(seller => {
+        const sellerId = getSellerId(seller);
+        const productCount = sellerProductMap.get(sellerId)?.length || 0;
+        const sellerCategories = Array.from(sellerCategoryMap.get(sellerId) || []);
+        const city = seller.address?.city || seller.city || 'N/A';
+        
+        return `
+          <div class="seller-tile card">
+            <div class="seller-tile-header">
+              <div class="seller-avatar">
+                <i data-lucide="store"></i>
+              </div>
+              <div class="seller-tile-info">
+                <h3>${escapeHtml(seller.displayName || seller.email || 'Seller')}</h3>
+                ${seller.companyName ? `<p class="seller-company">${escapeHtml(seller.companyName)}</p>` : ''}
+              </div>
+            </div>
+            <div class="seller-tile-body">
+              <div class="seller-detail">
+                <i data-lucide="map-pin"></i>
+                <span><strong>${t('catalog.city')}:</strong> ${escapeHtml(city)}</span>
+              </div>
+              <div class="seller-detail">
+                <i data-lucide="package"></i>
+                <span><strong>${t('products.title')}:</strong> ${productCount}</span>
+              </div>
+              ${sellerCategories.length > 0 ? `
+                <div class="seller-detail">
+                  <i data-lucide="tag"></i>
+                  <span><strong>${t('products.category')}:</strong> ${sellerCategories.slice(0, 2).map(c => escapeHtml(c)).join(', ')}${sellerCategories.length > 2 ? '...' : ''}</span>
+                </div>
+              ` : ''}
+            </div>
+            <div class="seller-tile-actions">
+              <button class="btn btn-text btn-sm view-seller-info-btn" data-seller-id="${sellerId}">
+                <i data-lucide="info"></i>
+                ${t('sellers.viewInfo')}
+              </button>
+              <button class="btn btn-primary btn-sm view-products-btn" data-seller-id="${sellerId}">
+                <i data-lucide="package"></i>
+                ${t('catalog.viewProducts')}
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Add event listeners
+    document.querySelectorAll('.view-products-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sellerId = btn.dataset.sellerId;
+        router.navigate(`/buyer/catalog?seller=${sellerId}`);
+      });
+    });
+    
+    document.querySelectorAll('.view-seller-info-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sellerId = btn.dataset.sellerId;
+        const seller = sellersWithProducts.find(s => getSellerId(s) === sellerId);
         if (seller) {
           showSellerInfoModal(seller, t);
         }
@@ -268,7 +587,7 @@ async function renderSellerTiles(t) {
         <input type="text" id="search-input" placeholder="${t('common.search')} ${t('sellers.title').toLowerCase()}..." class="form-control">
         <select id="category-filter" class="form-control" style="max-width: 250px;">
           <option value="">${t('common.allCategories')}</option>
-          ${categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('')}
+          ${categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(translateCategory(cat, t))}</option>`).join('')}
         </select>
       </div>
 
@@ -294,7 +613,7 @@ async function renderSellerTiles(t) {
     // Filter by category
     if (category) {
       filtered = filtered.filter(seller => {
-        const sellerId = seller.uid || seller.id;
+        const sellerId = getSellerId(seller);
         const categories = sellerCategoryMap.get(sellerId);
         return categories && categories.has(category);
       });

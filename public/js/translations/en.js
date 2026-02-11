@@ -297,7 +297,31 @@ export default {
     selectSeller: 'Select a seller to view their products',
     city: 'City',
     noSellers: 'No sellers available',
-    productsFrom: 'Products from'
+    productsFrom: 'Products from',
+    selectCategory: 'Select a category to browse products',
+    noCategories: 'No categories available',
+    categories: 'Categories',
+    clickToViewSellers: 'Click to view sellers in this category',
+    sellersInCategory: 'Sellers in',
+    noSellersInCategory: 'No sellers found in this category',
+    allMainCategories: 'Main Categories',
+    allSubCategories: 'Sub Categories'
+  },
+  
+  // Category Names (for translating actual category values)
+  categoryNames: {
+    'Construction': 'Construction',
+    'Aluminum': 'Aluminum',
+    'Steel': 'Steel',
+    'Glass': 'Glass',
+    'Wood': 'Wood',
+    'Concrete': 'Concrete',
+    'Tools': 'Tools',
+    'Equipment': 'Equipment',
+    'Hardware': 'Hardware',
+    'Electrical': 'Electrical',
+    'Plumbing': 'Plumbing',
+    'Paint': 'Paint'
   },
   
   // Sellers

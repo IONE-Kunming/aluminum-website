@@ -37,7 +37,14 @@ export default {
     next: '下一步',
     previous: '上一步',
     close: '关闭',
-    or: '或'
+    or: '或',
+    reset: '重置',
+    apply: '应用',
+    allCategories: '所有类别',
+    selectDate: '选择日期',
+    from: '从',
+    to: '到',
+    clear: '清除'
   },
   
   // 语言
@@ -268,9 +275,39 @@ export default {
     loading: '加载产品中...',
     noProducts: '暂无产品',
     viewDetails: '查看详情',
+    viewProducts: '查看产品',
     description: '描述',
     details: '详细信息',
-    orderDetails: '订单详情'
+    orderDetails: '订单详情',
+    sellerDirectory: '卖家目录',
+    selectSeller: '选择卖家查看其产品',
+    city: '城市',
+    noSellers: '暂无卖家',
+    productsFrom: '产品来自',
+    selectCategory: '选择类别浏览产品',
+    noCategories: '暂无类别',
+    categories: '类别',
+    clickToViewSellers: '点击查看此类别中的卖家',
+    sellersInCategory: '卖家在',
+    noSellersInCategory: '此类别中未找到卖家',
+    allMainCategories: '主类别',
+    allSubCategories: '子类别'
+  },
+  
+  // 类别名称（用于翻译实际类别值）
+  categoryNames: {
+    'Construction': '建筑',
+    'Aluminum': '铝',
+    'Steel': '钢',
+    'Glass': '玻璃',
+    'Wood': '木材',
+    'Concrete': '混凝土',
+    'Tools': '工具',
+    'Equipment': '设备',
+    'Hardware': '五金',
+    'Electrical': '电气',
+    'Plumbing': '管道',
+    'Paint': '油漆'
   },
   
   // 卖家

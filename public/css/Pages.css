@@ -61,6 +61,18 @@
   align-items: center;
 }
 
+.catalog-controls.three-column {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+  .catalog-controls.three-column {
+    grid-template-columns: 1fr;
+  }
+}
+
 .search-box {
   position: relative;
   flex: 1;
@@ -1544,6 +1556,48 @@
 
 [dir="rtl"] .summary-row {
   flex-direction: row-reverse;
+}
+
+/* RTL Support for Tiles */
+[dir="rtl"] .seller-tile-header {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+[dir="rtl"] .seller-tile-info h3,
+[dir="rtl"] .seller-tile-info .seller-company {
+  text-align: right;
+}
+
+[dir="rtl"] .seller-detail {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+[dir="rtl"] .seller-tile-actions {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .category-tile {
+  text-align: center;
+}
+
+[dir="rtl"] .page-header {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+[dir="rtl"] .page-header h1 {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .sellers-grid,
+[dir="rtl"] .categories-grid {
+  direction: rtl;
+}
+
+[dir="rtl"] .catalog-page .page-header > div {
+  text-align: right;
 }
 
 

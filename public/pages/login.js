@@ -15,7 +15,7 @@ function navigateByRole(profile) {
   if (profile.role === 'seller') {
     router.navigate('/seller/dashboard');
   } else if (profile.role === 'buyer') {
-    router.navigate('/buyer/dashboard');
+    router.navigate('/buyer/catalog');
   } else if (profile.role === 'admin') {
     router.navigate('/admin/dashboard');
   } else {

@@ -37,7 +37,14 @@ export default {
     next: 'اگلا',
     previous: 'پچھلا',
     close: 'بند کریں',
-    or: 'یا'
+    or: 'یا',
+    reset: 'دوبارہ ترتیب دیں',
+    apply: 'لاگو کریں',
+    allCategories: 'تمام زمرے',
+    selectDate: 'تاریخ منتخب کریں',
+    from: 'سے',
+    to: 'تک',
+    clear: 'صاف کریں'
   },
   
   // زبانیں
@@ -268,9 +275,39 @@ export default {
     loading: 'مصنوعات لوڈ ہو رہی ہیں...',
     noProducts: 'کوئی مصنوعات دستیاب نہیں',
     viewDetails: 'تفصیلات دیکھیں',
+    viewProducts: 'مصنوعات دیکھیں',
     description: 'تفصیل',
     details: 'تفصیلات',
-    orderDetails: 'آرڈر کی تفصیلات'
+    orderDetails: 'آرڈر کی تفصیلات',
+    sellerDirectory: 'فروخت کنندگان کی ڈائرکٹری',
+    selectSeller: 'ان کی مصنوعات دیکھنے کے لیے فروخت کنندہ منتخب کریں',
+    city: 'شہر',
+    noSellers: 'کوئی فروخت کنندگان دستیاب نہیں',
+    productsFrom: 'مصنوعات سے',
+    selectCategory: 'مصنوعات براؤز کرنے کے لیے زمرہ منتخب کریں',
+    noCategories: 'کوئی زمرے دستیاب نہیں',
+    categories: 'زمرے',
+    clickToViewSellers: 'اس زمرے میں فروخت کنندگان دیکھنے کے لیے کلک کریں',
+    sellersInCategory: 'فروخت کنندگان میں',
+    noSellersInCategory: 'اس زمرے میں کوئی فروخت کنندگان نہیں ملے',
+    allMainCategories: 'اہم زمرے',
+    allSubCategories: 'ذیلی زمرے'
+  },
+  
+  // زمرہ کے نام (اصل زمرہ کی قدروں کا ترجمہ کرنے کے لیے)
+  categoryNames: {
+    'Construction': 'تعمیرات',
+    'Aluminum': 'ایلومینیم',
+    'Steel': 'سٹیل',
+    'Glass': 'شیشہ',
+    'Wood': 'لکڑی',
+    'Concrete': 'کنکریٹ',
+    'Tools': 'اوزار',
+    'Equipment': 'آلات',
+    'Hardware': 'ہارڈویئر',
+    'Electrical': 'برقی',
+    'Plumbing': 'پلمبنگ',
+    'Paint': 'پینٹ'
   },
   
   // فروخت کنندگان

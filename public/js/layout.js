@@ -17,8 +17,8 @@ export function renderLayout(content, userRole = null) {
   const logoPath = `${baseUrl}logo.svg`.replace('//', '/'); // Avoid double slashes
   
   const buyerMenuItems = [
-    { path: '/buyer/dashboard', icon: 'layout-dashboard', label: t('nav.dashboard') },
     { path: '/buyer/catalog', icon: 'package', label: t('nav.catalog') },
+    { path: '/buyer/dashboard', icon: 'layout-dashboard', label: t('nav.dashboard') },
     { path: '/buyer/cart', icon: 'shopping-cart', label: t('nav.cart') },
     { path: '/buyer/orders', icon: 'file-text', label: t('nav.orders') },
     { path: '/buyer/invoices', icon: 'file-text', label: t('nav.invoices') },
