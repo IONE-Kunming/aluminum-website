@@ -13,7 +13,8 @@
 .sellers-page,
 .profile-page,
 .support-page,
-.notifications-page {
+.notifications-page,
+.category-selection-page {
   padding: var(--spacing-lg);
   max-width: 1400px;
   margin: 0 auto;
@@ -3504,4 +3505,50 @@
   .message {
     max-width: 85%;
   }
+}
+
+/* ==========================================
+   CATEGORY SELECTION PAGE
+   ========================================== */
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+}
+
+.category-tile {
+  padding: var(--spacing-xl);
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.category-tile:hover {
+  transform: translateY(-4px);
+  border-color: var(--primary-color);
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.2);
+}
+
+.category-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto var(--spacing-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--electric-blue));
+  color: white;
+}
+
+.category-icon i {
+  width: 32px;
+  height: 32px;
+}
+
+.category-tile h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  color: var(--text-primary);
 }

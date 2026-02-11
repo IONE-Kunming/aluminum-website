@@ -1605,6 +1605,40 @@ class DataService {
       throw error;
     }
   }
+
+  // Update user profile
+  async updateUserProfile(updates) {
+    await this.init();
+    
+    try {
+      if (!this.db) {
+        throw new Error('Database not initialized');
+      }
+      
+      const user = authManager.getCurrentUser();
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+      
+      await this.db.collection('users').doc(user.uid).update({
+        ...updates,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      console.log('User profile updated:', user.uid);
+      
+      // Update the cached profile in authManager
+      const currentProfile = authManager.getUserProfile();
+      if (currentProfile) {
+        authManager.userProfile = { ...currentProfile, ...updates };
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
 }
 
 export default new DataService();

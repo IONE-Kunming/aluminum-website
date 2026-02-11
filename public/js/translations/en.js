@@ -37,7 +37,14 @@ export default {
     next: 'Next',
     previous: 'Previous',
     close: 'Close',
-    or: 'OR'
+    or: 'OR',
+    reset: 'Reset',
+    apply: 'Apply',
+    allCategories: 'All Categories',
+    selectDate: 'Select Date',
+    from: 'From',
+    to: 'To',
+    clear: 'Clear'
   },
   
   // Languages
@@ -58,6 +65,7 @@ export default {
     bulkImport: 'Bulk Import',
     modelNumber: 'Model Number',
     category: 'Category',
+    subcategory: 'Subcategory',
     pricePerMeter: 'Price per Meter',
     price: 'Price',
     imagePath: 'Image Path',
@@ -65,7 +73,7 @@ export default {
     stock: 'Stock',
     minOrder: 'Min Order',
     uploadExcel: 'Upload Excel File',
-    importInstructions: 'Upload an Excel file with columns: Model Number, Category, Price per Meter, Image Path',
+    importInstructions: 'Upload an Excel file with columns: Model Number, Category, Subcategory, Price per Meter, Image Path',
     selectFile: 'Select File',
     importProducts: 'Import Products',
     importSuccess: 'Products imported successfully',
@@ -133,7 +141,12 @@ export default {
     seller: 'Seller',
     trackAndManage: 'Track and manage your orders',
     noOrders: 'No orders yet',
-    ordersWillAppear: 'Your orders will appear here once you make your first purchase'
+    ordersWillAppear: 'Your orders will appear here once you make your first purchase',
+    buyerName: 'Buyer Name',
+    buyerCompany: 'Buyer Company',
+    email: 'Email',
+    filterOrders: 'Filter Orders',
+    dateRange: 'Date Range'
   },
   
   // Chats
@@ -174,6 +187,7 @@ export default {
     overdue: 'Overdue',
     download: 'Download',
     viewInvoice: 'View Invoice',
+    viewDetails: 'View Details',
     noInvoices: 'No invoices yet',
     invoicesWillAppear: 'Your invoices will appear here after order completion',
     orderNumber: 'Order Number',
@@ -184,7 +198,14 @@ export default {
     tax: 'Tax',
     total: 'Total',
     buyer: 'Buyer',
-    seller: 'Seller'
+    seller: 'Seller',
+    buyerName: 'Buyer Name',
+    buyerCompany: 'Buyer Company',
+    email: 'Email',
+    filterInvoices: 'Filter Invoices',
+    dateRange: 'Date Range',
+    depositPaid: 'Deposit Paid',
+    remainingBalance: 'Remaining Balance'
   },
   
   // Cart
@@ -268,9 +289,15 @@ export default {
     loading: 'Loading products...',
     noProducts: 'No products available',
     viewDetails: 'View Details',
+    viewProducts: 'View Products',
     description: 'Description',
     details: 'Details',
-    orderDetails: 'Order Details'
+    orderDetails: 'Order Details',
+    sellerDirectory: 'Seller Directory',
+    selectSeller: 'Select a seller to view their products',
+    city: 'City',
+    noSellers: 'No sellers available',
+    productsFrom: 'Products from'
   },
   
   // Sellers
@@ -279,7 +306,12 @@ export default {
     subtitle: 'Browse and connect with construction product suppliers',
     loading: 'Loading sellers...',
     noSellers: 'No sellers available',
-    directory: 'Seller directory will appear here'
+    directory: 'Seller directory will appear here',
+    filterByCategory: 'Filter by Category',
+    viewInfo: 'View Info',
+    company: 'Company',
+    city: 'City',
+    contactSeller: 'Contact Seller'
   },
   
   // Branches
@@ -289,6 +321,21 @@ export default {
     noBranches: 'No branches yet',
     addFirstBranch: 'Add your first branch location',
     addBranch: 'Add Branch'
+  },
+  
+  // Support
+  support: {
+    title: 'Support',
+    subtitle: 'Get help or request new features',
+    contactUs: 'Contact Us',
+    requestNewCategory: 'Request New Category',
+    categoryName: 'Category Name',
+    reason: 'Reason for Request',
+    message: 'Message',
+    sendRequest: 'Send Request',
+    requestSent: 'Your request has been sent successfully',
+    requestFailed: 'Failed to send request. Please try again.',
+    contactEmail: 'contactus@ione.live'
   },
   
   // Auth
@@ -453,6 +500,45 @@ export default {
       status: 'Status',
       copyright: '© 2024 I ONE Construction. All rights reserved.'
     }
+  },
+  
+  // Categories
+  categories: {
+    title: 'Select Your Category',
+    subtitle: 'Choose the category you want to explore',
+    selectCategory: 'Select Category',
+    noProductsInCategory: 'No products available in this category yet',
+    apparelAccessories: 'Apparel & Accessories',
+    automobilesMotorcycles: 'Automobiles & Motorcycles',
+    businessServices: 'Business Services',
+    chemicals: 'Chemicals',
+    computerProductsElectronics: 'Computer Products & Office Electronics',
+    constructionRealEstate: 'Construction & Real Estate',
+    consumerElectronics: 'Consumer Electronics',
+    electricalEquipmentSupplies: 'Electrical Equipment & Supplies',
+    electronicsComponentsSupplies: 'Electronics Components & Supplies',
+    energy: 'Energy',
+    environment: 'Environment',
+    foodBeverage: 'Food & Beverage',
+    furniture: 'Furniture',
+    giftsSportsToys: 'Gifts, Sports & Toys',
+    hardware: 'Hardware',
+    healthBeauty: 'Health & Beauty',
+    homeGarden: 'Home & Garden',
+    homeAppliances: 'Home Appliances',
+    industryLaserEquipment: 'Industry Laser Equipment',
+    lightsLighting: 'Lights & Lighting',
+    luggageBagsCases: 'Luggage, Bags & Cases',
+    machinery: 'Machinery',
+    measurementAnalysisInstruments: 'Measurement & Analysis Instruments',
+    metallurgyMineralEnergy: 'Metallurgy, Mineral & Energy',
+    packagingPrinting: 'Packaging & Printing',
+    securityProtection: 'Security & Protection',
+    shoesAccessories: 'Shoes & Accessories',
+    textilesLeatherProducts: 'Textiles & Leather Products',
+    transportation: 'Transportation',
+    contactSupport: 'If you need a new category, please contact support',
+    contactSupportEmail: 'Contact: contactus@ione.live'
   },
   
   // Language names

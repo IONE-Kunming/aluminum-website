@@ -24,6 +24,7 @@ import { renderProfileSelection } from '../pages/profile-selection.js';
 const lazyPages = {
   buyerDashboard: () => import('../pages/buyer-dashboard.js').then(m => m.renderBuyerDashboard),
   sellerDashboard: () => import('../pages/seller-dashboard.js').then(m => m.renderSellerDashboard),
+  categorySelection: () => import('../pages/category-selection.js').then(m => m.renderCategorySelection),
   catalog: () => import('../pages/catalog.js').then(m => m.renderCatalog),
   productDetail: () => import('../pages/product-detail.js').then(m => m.renderProductDetail),
   cart: () => import('../pages/cart.js').then(m => m.renderCart),
@@ -223,6 +224,7 @@ async function initApp() {
   
   // Register buyer routes (lazy loaded)
   router.register('/buyer/dashboard', protectedRoute(lazyRoute(lazyPages.buyerDashboard), 'buyer'));
+  router.register('/buyer/category-selection', protectedRoute(lazyRoute(lazyPages.categorySelection), 'buyer'));
   router.register('/buyer/catalog', protectedRoute(lazyRoute(lazyPages.catalog), 'buyer'));
   router.register('/buyer/product', protectedRoute(lazyRoute(lazyPages.productDetail), 'buyer'));
   router.register('/buyer/cart', protectedRoute(lazyRoute(lazyPages.cart), 'buyer'));
