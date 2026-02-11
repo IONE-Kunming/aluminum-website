@@ -43,9 +43,23 @@
   background-clip: text;
 }
 
+/* Light theme: remove gradient, use solid black text */
+[data-theme="light"] .page-header h1 {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+  color: #000000;
+}
+
 .page-header p {
   color: var(--text-secondary);
   margin: var(--spacing-sm) 0 0;
+}
+
+/* Light theme: black text for paragraphs */
+[data-theme="light"] .page-header p {
+  color: #000000;
 }
 
 /* ==========================================
@@ -3759,4 +3773,46 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--spacing-sm);
+}
+
+/* Additional RTL support for catalog and product pages */
+[dir="rtl"] .category-tile,
+[dir="rtl"] .product-card,
+[dir="rtl"] .seller-tile {
+  text-align: right;
+}
+
+[dir="rtl"] .product-header,
+[dir="rtl"] .seller-tile-header,
+[dir="rtl"] .seller-tile-info {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+[dir="rtl"] .seller-tile-actions {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .product-footer,
+[dir="rtl"] .view-details-text {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .catalog-controls {
+  flex-direction: row-reverse;
+}
+
+/* Category and subcategory tiles in RTL */
+[dir="rtl"] .category-tile h3,
+[dir="rtl"] .category-tile p {
+  text-align: right;
+}
+
+/* Cart items in RTL */
+[dir="rtl"] .cart-item {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .cart-item-info {
+  text-align: right;
 }

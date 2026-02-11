@@ -47,8 +47,32 @@
   --card-bg: #ffffff;
   --border-color: #e2e8f0;
   --hover-bg: #f7fafc;
-  --text-primary: #1a202c;
-  --text-secondary: #4a5568;
+  --text-primary: #000000;  /* Changed to pure black */
+  --text-secondary: #000000;  /* Changed to pure black */
+}
+
+/* Light theme: ensure all text is black */
+[data-theme="light"] body,
+[data-theme="light"] p,
+[data-theme="light"] h1,
+[data-theme="light"] h2,
+[data-theme="light"] h3,
+[data-theme="light"] h4,
+[data-theme="light"] h5,
+[data-theme="light"] h6,
+[data-theme="light"] span,
+[data-theme="light"] div {
+  color: #000000;
+}
+
+/* Text alignment for LTR languages (English, Chinese) */
+[dir="ltr"] {
+  text-align: left;
+}
+
+/* Text alignment for RTL languages (Arabic, Urdu) */
+[dir="rtl"] {
+  text-align: right;
 }
 
 /* Theme Toggle Button */
@@ -171,9 +195,24 @@ a:hover {
   background-clip: text;
 }
 
+/* Light theme: remove gradient from page title */
+[data-theme="light"] .page-title {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+  color: #000000;
+}
+
 .page-subtitle {
   color: var(--text-secondary);
   font-size: 1.125rem; /* Increased from 1rem */
+}
+
+/* Light theme: black subtitle */
+[data-theme="light"] .page-subtitle {
+  color: #000000;
+}
 }
 
 /* Card Styles - Modern Card Layouts */
@@ -427,15 +466,36 @@ tr:hover {
 }
 
 /* Empty State */
-.empty-state {
+.empty-state,
+.cart-empty {
   text-align: center;
   padding: var(--spacing-xl);
   color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-md);
 }
 
-.empty-state svg {
+.empty-state svg,
+.cart-empty svg {
   margin: 0 auto var(--spacing-md);
   opacity: 0.5;
+}
+
+.cart-empty h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.cart-empty p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.cart-empty .btn {
+  margin-top: var(--spacing-sm);
 }
 
 /* Icon Animations */
@@ -712,4 +772,65 @@ html {
 body.modal-open {
   overflow: hidden;
   height: 100%;
+}
+
+/* ==========================================
+   RTL (Right-to-Left) SUPPORT
+   For Arabic and Urdu languages
+   ========================================== */
+
+/* Flip all flex containers with icons */
+[dir="rtl"] .btn,
+[dir="rtl"] button,
+[dir="rtl"] .page-title,
+[dir="rtl"] .stat-card,
+[dir="rtl"] .info-item,
+[dir="rtl"] .product-header,
+[dir="rtl"] .seller-detail,
+[dir="rtl"] .alert,
+[dir="rtl"] .empty-state,
+[dir="rtl"] .cart-empty {
+  flex-direction: row-reverse;
+}
+
+/* Toast notifications */
+[dir="rtl"] .toast-success {
+  border-left: none;
+  border-right: 4px solid var(--success);
+}
+
+[dir="rtl"] .toast-error {
+  border-left: none;
+  border-right: 4px solid var(--error);
+}
+
+[dir="rtl"] .toast-warning {
+  border-left: none;
+  border-right: 4px solid var(--warning);
+}
+
+[dir="rtl"] .toast-info {
+  border-left: none;
+  border-right: 4px solid var(--electric-blue);
+}
+
+/* Cards and containers */
+[dir="rtl"] .card {
+  text-align: right;
+}
+
+/* Forms and inputs */
+[dir="rtl"] input,
+[dir="rtl"] textarea,
+[dir="rtl"] select {
+  text-align: right;
+}
+
+/* Icons in buttons and nav items - put icons on right side */
+[dir="rtl"] .btn {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .nav-item {
+  flex-direction: row-reverse;
 }

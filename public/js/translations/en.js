@@ -299,6 +299,10 @@ export default {
     noSellers: 'No sellers available',
     productsFrom: 'Products from',
     selectCategory: 'Select a category to browse products',
+    selectSubcategory: 'Select a subcategory to browse products',
+    viewSubcategories: 'View subcategories',
+    subcategories: 'Subcategories',
+    noSubcategories: 'No subcategories available',
     noCategories: 'No categories available',
     categories: 'Categories',
     clickToViewSellers: 'Click to view sellers in this category',
@@ -321,7 +325,16 @@ export default {
     'Hardware': 'Hardware',
     'Electrical': 'Electrical',
     'Plumbing': 'Plumbing',
-    'Paint': 'Paint'
+    'Paint': 'Paint',
+    // Common construction subcategories
+    'Balustrades': 'Balustrades',
+    'Barrier Systems': 'Barrier Systems',
+    'Fencing': 'Fencing',
+    'Handrails': 'Handrails',
+    'Gates': 'Gates',
+    'Railings': 'Railings',
+    'Screens': 'Screens',
+    'Partitions': 'Partitions'
   },
   
   // Sellers
