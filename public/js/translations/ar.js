@@ -297,6 +297,8 @@ export default {
   // أسماء الفئات (لترجمة قيم الفئات الفعلية)
   categoryNames: {
     'Construction': 'البناء',
+    'Exterior Gates': 'البوابات الخارجية',
+    'Fences': 'الأسوار',
     'Aluminum': 'الألومنيوم',
     'Steel': 'الفولاذ',
     'Glass': 'الزجاج',

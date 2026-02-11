@@ -297,6 +297,8 @@ export default {
   // 类别名称（用于翻译实际类别值）
   categoryNames: {
     'Construction': '建筑',
+    'Exterior Gates': '外部大门',
+    'Fences': '围栏',
     'Aluminum': '铝',
     'Steel': '钢',
     'Glass': '玻璃',
