@@ -294,6 +294,22 @@ export default {
     allSubCategories: 'ذیلی زمرے'
   },
   
+  // زمرہ کے نام (اصل زمرہ کی قدروں کا ترجمہ کرنے کے لیے)
+  categoryNames: {
+    'Construction': 'تعمیرات',
+    'Aluminum': 'ایلومینیم',
+    'Steel': 'سٹیل',
+    'Glass': 'شیشہ',
+    'Wood': 'لکڑی',
+    'Concrete': 'کنکریٹ',
+    'Tools': 'اوزار',
+    'Equipment': 'آلات',
+    'Hardware': 'ہارڈویئر',
+    'Electrical': 'برقی',
+    'Plumbing': 'پلمبنگ',
+    'Paint': 'پینٹ'
+  },
+  
   // فروخت کنندگان
   sellers: {
     title: 'فروخت کنندگان کی ڈائرکٹری',

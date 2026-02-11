@@ -294,6 +294,22 @@ export default {
     allSubCategories: 'الفئات الفرعية'
   },
   
+  // أسماء الفئات (لترجمة قيم الفئات الفعلية)
+  categoryNames: {
+    'Construction': 'البناء',
+    'Aluminum': 'الألومنيوم',
+    'Steel': 'الفولاذ',
+    'Glass': 'الزجاج',
+    'Wood': 'الخشب',
+    'Concrete': 'الخرسانة',
+    'Tools': 'الأدوات',
+    'Equipment': 'المعدات',
+    'Hardware': 'العتاد',
+    'Electrical': 'الكهرباء',
+    'Plumbing': 'السباكة',
+    'Paint': 'الطلاء'
+  },
+  
   // البائعون
   sellers: {
     title: 'دليل البائعين',

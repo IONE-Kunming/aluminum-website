@@ -294,6 +294,22 @@ export default {
     allSubCategories: '子类别'
   },
   
+  // 类别名称（用于翻译实际类别值）
+  categoryNames: {
+    'Construction': '建筑',
+    'Aluminum': '铝',
+    'Steel': '钢',
+    'Glass': '玻璃',
+    'Wood': '木材',
+    'Concrete': '混凝土',
+    'Tools': '工具',
+    'Equipment': '设备',
+    'Hardware': '五金',
+    'Electrical': '电气',
+    'Plumbing': '管道',
+    'Paint': '油漆'
+  },
+  
   // 卖家
   sellers: {
     title: '卖家目录',

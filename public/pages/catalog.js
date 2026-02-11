@@ -10,6 +10,13 @@ function getSellerId(seller) {
   return seller.uid || seller.id;
 }
 
+// Helper function to translate category names
+function translateCategory(category, t) {
+  if (!category) return '';
+  // Try to get translation from categoryNames, fallback to original if not found
+  return t(`categoryNames.${category}`) || category;
+}
+
 export async function renderCatalog() {
   const profile = authManager.getUserProfile();
   const t = languageManager.t.bind(languageManager);
@@ -178,7 +185,7 @@ async function renderCategoryTiles(t) {
           <div class="category-icon" style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
             <i data-lucide="box" style="width: 40px; height: 40px; color: white;"></i>
           </div>
-          <h3 style="text-align: center; margin-bottom: 8px; font-size: 18px;">${escapeHtml(category)}</h3>
+          <h3 style="text-align: center; margin-bottom: 8px; font-size: 18px;">${escapeHtml(translateCategory(category, t))}</h3>
           <p style="text-align: center; color: var(--text-secondary); font-size: 14px;">${t('catalog.clickToViewSellers')}</p>
         </div>
       `).join('');
@@ -353,7 +360,7 @@ async function renderSellersForCategory(category, t) {
     <div class="catalog-page">
       <div class="page-header">
         <div>
-          <h1>${t('catalog.sellersInCategory')}: ${escapeHtml(category)}</h1>
+          <h1>${t('catalog.sellersInCategory')}: ${escapeHtml(translateCategory(category, t))}</h1>
           <p>${t('catalog.sellerDirectory')}</p>
         </div>
         <button class="btn btn-secondary" onclick="window.history.back()">
@@ -366,7 +373,7 @@ async function renderSellersForCategory(category, t) {
         <input type="text" id="search-input" placeholder="${t('common.search')} ${t('sellers.title').toLowerCase()}..." class="form-control">
         <select id="main-category-filter" class="form-control" style="max-width: 200px;">
           <option value="">${t('catalog.allMainCategories')}</option>
-          ${categories.map(cat => `<option value="${escapeHtml(cat)}" ${cat === category ? 'selected' : ''}>${escapeHtml(cat)}</option>`).join('')}
+          ${categories.map(cat => `<option value="${escapeHtml(cat)}" ${cat === category ? 'selected' : ''}>${escapeHtml(translateCategory(cat, t))}</option>`).join('')}
         </select>
         <select id="sub-category-filter" class="form-control" style="max-width: 200px;">
           <option value="">${t('catalog.allSubCategories')}</option>
@@ -398,7 +405,7 @@ async function renderSellersForCategory(category, t) {
       if (subCat !== category) { // Don't show current category as subcategory
         const option = document.createElement('option');
         option.value = subCat;
-        option.textContent = subCat;
+        option.textContent = translateCategory(subCat, t);
         subCategoryFilter.appendChild(option);
       }
     });
@@ -580,7 +587,7 @@ async function renderSellerTiles(t) {
         <input type="text" id="search-input" placeholder="${t('common.search')} ${t('sellers.title').toLowerCase()}..." class="form-control">
         <select id="category-filter" class="form-control" style="max-width: 250px;">
           <option value="">${t('common.allCategories')}</option>
-          ${categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join('')}
+          ${categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(translateCategory(cat, t))}</option>`).join('')}
         </select>
       </div>
 

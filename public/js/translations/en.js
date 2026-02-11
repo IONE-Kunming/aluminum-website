@@ -308,6 +308,22 @@ export default {
     allSubCategories: 'Sub Categories'
   },
   
+  // Category Names (for translating actual category values)
+  categoryNames: {
+    'Construction': 'Construction',
+    'Aluminum': 'Aluminum',
+    'Steel': 'Steel',
+    'Glass': 'Glass',
+    'Wood': 'Wood',
+    'Concrete': 'Concrete',
+    'Tools': 'Tools',
+    'Equipment': 'Equipment',
+    'Hardware': 'Hardware',
+    'Electrical': 'Electrical',
+    'Plumbing': 'Plumbing',
+    'Paint': 'Paint'
+  },
+  
   // Sellers
   sellers: {
     title: 'Sellers Directory',
