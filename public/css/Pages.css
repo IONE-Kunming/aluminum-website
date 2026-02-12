@@ -1188,6 +1188,13 @@
   margin: auto;
 }
 
+/* Light mode: proper background and border */
+[data-theme="light"] .modal-content {
+  background: #ffffff;
+  border-color: #e5e7eb;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -1202,6 +1209,15 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Light mode: solid black text for modal header */
+[data-theme="light"] .modal-header h2 {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
+  color: #000000;
 }
 
 .modal-close {
@@ -1241,11 +1257,24 @@
   text-align: center;
   cursor: pointer;
   transition: all 0.3s ease;
+  background: transparent;
+}
+
+/* Light mode: proper background and border */
+[data-theme="light"] .file-upload-area {
+  background: #f9fafb;
+  border-color: #d1d5db;
 }
 
 .file-upload-area:hover {
   border-color: var(--electric-blue);
   background: rgba(0, 128, 255, 0.05);
+}
+
+/* Light mode: lighter hover background */
+[data-theme="light"] .file-upload-area:hover {
+  background: rgba(0, 128, 255, 0.08);
+  border-color: var(--electric-blue);
 }
 
 .file-upload-area i {
@@ -1265,6 +1294,12 @@
   border-left: 3px solid var(--electric-blue);
   margin-bottom: var(--spacing-lg);
   line-height: 1.6;
+}
+
+/* Light mode: light gray background for import instructions */
+[data-theme="light"] .import-instructions {
+  background: #f3f4f6;
+  color: #1f2937;
 }
 
 .progress-bar {

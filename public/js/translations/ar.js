@@ -117,7 +117,9 @@ export default {
     totalPlatformRevenue: 'إجمالي إيرادات المنصة',
     activeSellers: 'البائعون النشطون',
     platformOverview: 'نظرة عامة على المنصة',
-    adminControlsMessage: 'سيتم عرض عناصر التحكم والتحليلات الخاصة بالمسؤول هنا'
+    adminControlsMessage: 'سيتم عرض عناصر التحكم والتحليلات الخاصة بالمسؤول هنا',
+    allTimeOrders: 'الطلبات الدائمة',
+    totalRevenue: 'إجمالي الإيرادات'
   },
   
   // الطلبات
