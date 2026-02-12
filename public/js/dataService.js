@@ -460,8 +460,8 @@ class DataService {
         
         // Sort in memory
         products.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : new Date();
-          const dateB = b.createdAt ? new Date(b.createdAt) : new Date();
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
           return dateB - dateA;
         });
         
