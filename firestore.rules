@@ -108,62 +108,18 @@ service cloud.firestore {
     
     // Notifications collection
     match /notifications/{notificationId} {
-      // Helper to verify chat exists between sender and receiver
-      function chatExists(senderId, receiverId) {
-        let chatId = senderId < receiverId ? senderId + '_' + receiverId : receiverId + '_' + senderId;
-        return exists(/databases/$(database)/documents/chats/$(chatId));
-      }
-      
       // Users can read their own notifications
       allow read: if isAuthenticated() && 
                      resource.data.userId == request.auth.uid;
       // Users can only create notifications for themselves
       allow create: if isAuthenticated() && 
                        request.resource.data.userId == request.auth.uid;
-      // Chat participants can create notifications (sender creates notification for receiver)
-      // Must verify that a chat exists between them to prevent spam
-      allow create: if isAuthenticated() && 
-                       request.resource.data.type == 'chat' &&
-                       request.resource.data.senderId == request.auth.uid &&
-                       chatExists(request.auth.uid, request.resource.data.userId);
       // Users can update their own notifications (mark as read)
       allow update: if isAuthenticated() && 
                        resource.data.userId == request.auth.uid;
       // Users can delete their own notifications
       allow delete: if isAuthenticated() && 
                        resource.data.userId == request.auth.uid;
-      // Admins can do anything
-      allow read, write: if isAdmin();
-    }
-    
-    // Chat conversations collection
-    match /chats/{chatId} {
-      // Participants can read their own chats
-      allow read: if isAuthenticated() && 
-                     request.auth.uid in resource.data.participants;
-      // Users can create chats
-      allow create: if isAuthenticated() && 
-                       request.auth.uid in request.resource.data.participants;
-      // Participants can update chat (last message, etc.)
-      allow update: if isAuthenticated() && 
-                       request.auth.uid in resource.data.participants;
-      // Admins can do anything
-      allow read, write: if isAdmin();
-    }
-    
-    // Chat messages collection
-    match /messages/{messageId} {
-      // Participants can read messages in their chats
-      allow read: if isAuthenticated() && 
-                     (request.auth.uid == resource.data.senderId || 
-                      request.auth.uid == resource.data.receiverId);
-      // Users can send messages
-      allow create: if isAuthenticated() && 
-                       request.resource.data.senderId == request.auth.uid;
-      // Users can update their own messages (mark as read)
-      allow update: if isAuthenticated() && 
-                       (request.auth.uid == resource.data.senderId || 
-                        request.auth.uid == resource.data.receiverId);
       // Admins can do anything
       allow read, write: if isAdmin();
     }

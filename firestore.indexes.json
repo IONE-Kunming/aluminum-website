@@ -43,20 +43,6 @@
       ]
     },
     {
-      "collectionGroup": "messages",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "chatId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
       "collectionGroup": "notifications",
       "queryScope": "COLLECTION",
       "fields": [
@@ -94,20 +80,6 @@
         },
         {
           "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "chats",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "participants",
-          "arrayConfig": "CONTAINS"
-        },
-        {
-          "fieldPath": "lastMessageTime",
           "order": "DESCENDING"
         }
       ]
