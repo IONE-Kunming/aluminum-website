@@ -45,13 +45,22 @@ jobs:
       env:
         GOOGLE_APPLICATION_CREDENTIALS: service-account.json
       run: |
-        # Deploy only firestore indexes and hosting
-        # Skip firestore:rules deployment because it requires firebaserules.googleapis.com API permissions
-        # which the service account does not have (403 error)
-        # Skip storage deployment to avoid bucket permission errors
-        # Firestore rules are kept in firestore.rules for documentation/future use
-        # Storage rules are kept in firebase.json for future use when bucket is properly configured
+        # =====================================================================
+        # FIREBASE DEPLOYMENT CONFIGURATION
+        # =====================================================================
+        # Current Issue: Service account lacks Firebase Rules API permissions
+        # Error: "The caller does not have permission" (403) 
+        #
+        # OPTION 1: Deploy WITHOUT rules (Current - Works immediately)
         firebase deploy --only firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive
+        #
+        # OPTION 2: Deploy WITH rules (Requires permission setup)
+        # Uncomment the line below and comment out the line above after granting permissions
+        # firebase deploy --only firestore:rules,firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive --force
+        #
+        # To enable Option 2, see: FIREBASE_SERVICE_ACCOUNT_PERMISSIONS.md
+        # Grant "Firebase Rules Admin" role to service account in Google Cloud Console
+        # =====================================================================
     
     - name: Verify CSV file deployment
       run: |
