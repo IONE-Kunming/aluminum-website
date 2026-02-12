@@ -1038,7 +1038,6 @@ function initializeBulkImport() {
 // Initialize bulk selection functionality
 function initializeBulkSelection() {
   const selectAllCheckbox = document.getElementById('select-all-checkbox');
-  const productCheckboxes = document.querySelectorAll('.product-checkbox');
   const bulkActionsContainer = document.getElementById('bulk-actions-container');
   const selectedCountEl = document.getElementById('selected-count');
   const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
@@ -1047,8 +1046,12 @@ function initializeBulkSelection() {
   // Track selected products
   let selectedProducts = new Set();
   
+  // Get fresh product checkboxes (helper function)
+  const getProductCheckboxes = () => document.querySelectorAll('.product-checkbox');
+  
   // Update UI based on selection
   function updateSelectionUI() {
+    const productCheckboxes = getProductCheckboxes();
     const count = selectedProducts.size;
     selectedCountEl.textContent = `${count} selected`;
     
@@ -1068,6 +1071,7 @@ function initializeBulkSelection() {
   // Select all functionality
   if (selectAllCheckbox) {
     selectAllCheckbox.addEventListener('change', (e) => {
+      const productCheckboxes = getProductCheckboxes();
       const isChecked = e.target.checked;
       productCheckboxes.forEach(checkbox => {
         checkbox.checked = isChecked;
@@ -1083,6 +1087,7 @@ function initializeBulkSelection() {
   }
   
   // Individual checkbox functionality
+  const productCheckboxes = getProductCheckboxes();
   productCheckboxes.forEach(checkbox => {
     checkbox.addEventListener('change', (e) => {
       const productId = e.target.getAttribute('data-id');
@@ -1168,6 +1173,7 @@ function initializeBulkSelection() {
   // Cancel selection
   if (cancelSelectionBtn) {
     cancelSelectionBtn.addEventListener('click', () => {
+      const productCheckboxes = getProductCheckboxes();
       selectedProducts.clear();
       productCheckboxes.forEach(checkbox => {
         checkbox.checked = false;
