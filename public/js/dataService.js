@@ -25,8 +25,8 @@ class DataService {
     if (window.firebase && window.firebase.firestore) {
       this.db = window.firebase.firestore();
       
-      // Check if cache needs to be cleared (version bump for products limit fix)
-      const CACHE_VERSION = '1.2.0'; // Increment this to force cache clear
+      // Check if cache needs to be cleared (version bump for products cache fix)
+      const CACHE_VERSION = '1.3.0'; // Increment this to force cache clear
       const currentVersion = localStorage.getItem('firestoreCacheVersion');
       
       if (currentVersion !== CACHE_VERSION) {
@@ -352,7 +352,8 @@ class DataService {
 
   // Helper method to determine if cache should be used
   shouldUseCache(filters) {
-    return !filters.category && !filters.sellerId && !filters.limit;
+    // Only use cache when there are no filters at all
+    return Object.keys(filters).length === 0;
   }
 
   // Get products from catalog with caching and pagination
@@ -411,7 +412,42 @@ class DataService {
       return products;
     } catch (error) {
       console.error('Error fetching products:', error);
-      return [];
+      
+      // Fallback: try to fetch without orderBy if index is missing
+      try {
+        console.log('Attempting fallback query without composite index...');
+        let fallbackQuery = this.db.collection('products');
+        
+        // Apply same filters but without orderBy
+        if (filters.category) {
+          fallbackQuery = fallbackQuery.where('category', '==', filters.category);
+        }
+        if (filters.sellerId) {
+          fallbackQuery = fallbackQuery.where('sellerId', '==', filters.sellerId);
+        }
+        
+        const limit = filters.limit || 50;
+        fallbackQuery = fallbackQuery.limit(limit);
+        
+        const snapshot = await fallbackQuery.get();
+        const products = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        // Sort in memory
+        products.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date();
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date();
+          return dateB - dateA;
+        });
+        
+        console.log(`Fallback query succeeded, returning ${products.length} products`);
+        return products;
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError);
+        return [];
+      }
     }
   }
 
