@@ -203,7 +203,7 @@ export async function renderProducts() {
                 Upload Product Images and Videos (Multiple files supported)
               </label>
               <input type="file" id="images-input" accept="image/*,video/*" multiple class="form-control" />
-              <p class="help-text">Upload all images and videos referenced in your Excel file. Supported formats: Images (JPG, PNG, GIF, WebP) and Videos (MP4, WebM, MOV)</p>
+              <p class="help-text">Upload all images and videos referenced in your Excel file. Supported: All common image and video formats</p>
             </div>
             
             <div id="import-progress" style="display: none; margin-top: 16px;">
