@@ -58,6 +58,23 @@
             "value": "max-age=31536000"
           }
         ]
+      },
+      {
+        "source": "**/*.csv",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "text/csv"
+          },
+          {
+            "key": "Content-Disposition",
+            "value": "attachment"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ]
   }
