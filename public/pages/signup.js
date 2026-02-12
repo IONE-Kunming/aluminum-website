@@ -258,8 +258,8 @@ export function renderSignupPage() {
         if (profileResult.success) {
           window.toast.success('Account created successfully!');
           
-          // Wait for the profile to be fully synced with auth state
-          await authManager.waitForProfile(3000);
+          // Wait for the profile to be fully synced with auth state (8 seconds to match PROFILE_LOAD_TIMEOUT_MS)
+          await authManager.waitForProfile(8000);
           
           // Navigate based on role after profile is loaded
           if (role === 'seller') {
