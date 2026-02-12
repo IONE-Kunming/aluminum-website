@@ -1,6 +1,31 @@
 Model Number,Category,Subcategory,Price per Meter,Image Path
 AL-6061-T6-001,Construction,Exterior Gates,25.50,product1.jpg
 AL-6061-T6-002,Construction,Fences,30.75,product2.jpg
-AL-7075-T6-001,Construction,Balustrades,42.00,product3.jpg
-AL-5052-H32-001,Construction,Gates,28.25,product4.jpg
-AL-3003-H14-001,Construction,Railings,22.50,product5.jpg
+WATCH-001,Apparel & Accessories,Watches & Eyewear,150.00,product3.jpg
+AUTO-ENG-001,Automobiles & Motorcycles,Engine Components,450.00,product4.jpg
+BIZ-CONSULT-001,Business Services,Consulting & Advisory,100.00,product5.jpg
+CHEM-IND-001,Chemicals,Industrial Chemicals,45.00,product6.jpg
+LAPTOP-PRO-001,Computer Products & Office Electronics,Laptops,1200.00,product7.jpg
+PHONE-SMART-001,Consumer Electronics,Smartphones,800.00,product8.jpg
+ELECT-WIRE-001,Electrical Equipment & Supplies,Wiring & Cables,12.00,product9.jpg
+ELEC-IC-001,Electronics Components & Supplies,Integrated Circuits,25.00,product10.jpg
+SOLAR-PANEL-001,Energy,Solar Energy,350.00,product11.jpg
+WATER-TREAT-001,Environment,Water Treatment,200.00,product12.jpg
+FOOD-FRESH-001,Food & Beverage,Fresh Food,5.00,product13.jpg
+FURN-SOFA-001,Furniture,Living Room Furniture,600.00,product14.jpg
+TOY-EDU-001,Gifts, Sports & Toys,Educational Toys,30.00,product15.jpg
+TOOL-DRILL-001,Hardware,Power Tools,120.00,product16.jpg
+SKIN-CREAM-001,Health & Beauty,Skincare,25.00,product17.jpg
+GARDEN-CHAIR-001,Home & Garden,Garden Furniture,85.00,product18.jpg
+FRIDGE-001,Home Appliances,Refrigerators & Freezers,900.00,product19.jpg
+LASER-CUT-001,Industry Laser Equipment,Laser Cutting Machines,15000.00,product20.jpg
+LED-BULB-001,Lights & Lighting,LED Lights,8.00,product21.jpg
+SUITCASE-001,Luggage, Bags & Cases,Suitcases,120.00,product22.jpg
+EXCAVATOR-001,Machinery,Construction Machinery,50000.00,product23.jpg
+METER-FLOW-001,Measurement & Analysis Instruments,Flow Meters,300.00,product24.jpg
+METAL-PROC-001,Metallurgy, Mineral & Energy,Metal Processing,500.00,product25.jpg
+PKG-BOX-001,Packaging & Printing,Boxes & Containers,2.00,product26.jpg
+CAMERA-SEC-001,Security & Protection,Security Cameras,150.00,product27.jpg
+SHOE-ATH-001,Shoes & Accessories,Athletic Shoes,80.00,product28.jpg
+TEXT-FABRIC-001,Textiles & Leather Products,Fabrics,15.00,product29.jpg
+TRANS-SHIP-001,Transportation,Shipping & Cargo,1000.00,product30.jpg
