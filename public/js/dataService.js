@@ -312,37 +312,60 @@ class DataService {
 
       // If no sales data, fall back to recent products
       if (topProducts.length === 0) {
-        const productsSnapshot = await this.db
-          .collection('products')
-          .where('sellerId', '==', userId)
-          .orderBy('createdAt', 'desc')
-          .limit(limit)
-          .get();
+        try {
+          const productsSnapshot = await this.db
+            .collection('products')
+            .where('sellerId', '==', userId)
+            .limit(limit)
+            .get();
 
-        return productsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          sales: 0
-        }));
+          const products = productsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            sales: 0
+          }));
+          
+          // Sort in memory to avoid index requirement
+          products.sort((a, b) => {
+            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+            return dateB - dateA;
+          });
+          
+          return products;
+        } catch (err) {
+          console.error('Error fetching products for fallback:', err);
+          return [];
+        }
       }
 
       return topProducts;
     } catch (error) {
       console.error('Error fetching top products:', error);
-      // Fallback to old method if new method fails
+      // Fallback: fetch products without orderBy to avoid index requirement
       try {
+        console.log('Attempting fallback query for top products...');
         const snapshot = await this.db
           .collection('products')
           .where('sellerId', '==', userId)
-          .orderBy('createdAt', 'desc')
           .limit(limit)
           .get();
 
-        return snapshot.docs.map(doc => ({
+        const products = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
           sales: 0
         }));
+        
+        // Sort in memory to avoid Firestore index requirements
+        products.sort((a, b) => {
+          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+          return dateB - dateA;
+        });
+        
+        console.log(`Fallback query succeeded, returning ${products.length} top products`);
+        return products;
       } catch (fallbackError) {
         console.error('Error in fallback products fetch:', fallbackError);
         return [];
