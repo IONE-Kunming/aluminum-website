@@ -28,6 +28,28 @@ class DataService {
     if (window.firebase && window.firebase.firestore) {
       this.db = window.firebase.firestore();
       
+      // Check if cache needs to be cleared (version bump for deleted chats)
+      const CACHE_VERSION = '1.1.0'; // Increment this to force cache clear
+      const currentVersion = localStorage.getItem('firestoreCacheVersion');
+      
+      if (currentVersion !== CACHE_VERSION) {
+        console.log('Cache version mismatch, clearing Firestore persistence...');
+        try {
+          // Clear IndexedDB databases used by Firestore
+          const databases = await indexedDB.databases();
+          for (const db of databases) {
+            if (db.name && db.name.includes('firestore')) {
+              console.log(`Deleting IndexedDB: ${db.name}`);
+              await indexedDB.deleteDatabase(db.name);
+            }
+          }
+          localStorage.setItem('firestoreCacheVersion', CACHE_VERSION);
+          console.log('Firestore cache cleared successfully');
+        } catch (err) {
+          console.warn('Could not clear cache:', err);
+        }
+      }
+      
       // Enable offline persistence for faster loading
       try {
         await this.db.enablePersistence({ synchronizeTabs: true });
