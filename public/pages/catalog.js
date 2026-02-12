@@ -71,7 +71,7 @@ export async function renderCatalog() {
 
 // Render products for a specific seller
 async function renderSellerProducts(sellerId, filterCategory, t) {
-  const products = await dataService.getProducts({ sellerId });
+  const products = await dataService.getProducts({ sellerId, limit: 1000000 });
   const sellers = await dataService.getSellers();
   const seller = sellers.find(s => s.id === sellerId || s.uid === sellerId);
   
