@@ -327,8 +327,8 @@ class DataService {
           
           // Sort in memory to avoid index requirement
           products.sort((a, b) => {
-            const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-            const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+            const dateA = this.toDate(a.createdAt);
+            const dateB = this.toDate(b.createdAt);
             return dateB - dateA;
           });
           
@@ -359,8 +359,8 @@ class DataService {
         
         // Sort in memory to avoid Firestore index requirements
         products.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+          const dateA = this.toDate(a.createdAt);
+          const dateB = this.toDate(b.createdAt);
           return dateB - dateA;
         });
         
@@ -375,8 +375,20 @@ class DataService {
 
   // Helper method to determine if cache should be used
   shouldUseCache(filters) {
-    // Only use cache when there are no filters at all
-    return Object.keys(filters).length === 0;
+    // Only use cache when there are no actual filter criteria (category, sellerId)
+    // The limit parameter doesn't affect which products are returned, just how many
+    return !filters.category && !filters.sellerId;
+  }
+
+  // Helper method to safely convert Firestore Timestamp to Date
+  toDate(timestamp) {
+    if (!timestamp) return new Date(0);
+    // Handle Firestore Timestamp objects
+    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate();
+    }
+    // Handle already-converted dates or timestamp strings/numbers
+    return new Date(timestamp);
   }
 
   // Get products from catalog with caching and pagination
@@ -418,8 +430,8 @@ class DataService {
       
       // Sort in memory to avoid Firestore index requirements
       products.sort((a, b) => {
-        const dateA = a.createdAt ? new Date(a.createdAt) : new Date();
-        const dateB = b.createdAt ? new Date(b.createdAt) : new Date();
+        const dateA = this.toDate(a.createdAt);
+        const dateB = this.toDate(b.createdAt);
         return dateB - dateA; // descending order
       });
       
@@ -460,8 +472,8 @@ class DataService {
         
         // Sort in memory
         products.sort((a, b) => {
-          const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-          const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+          const dateA = this.toDate(a.createdAt);
+          const dateB = this.toDate(b.createdAt);
           return dateB - dateA;
         });
         
@@ -846,9 +858,8 @@ class DataService {
         
         // Sort by createdAt, putting orders without timestamps at the end
         orders.sort((a, b) => {
-          // Handle Firestore Timestamp objects properly
-          const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
-          const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+          const dateA = this.toDate(a.createdAt);
+          const dateB = this.toDate(b.createdAt);
           return dateB - dateA;
         });
         
@@ -1226,8 +1237,8 @@ class DataService {
         
         // Sort by createdAt
         invoices.sort((a, b) => {
-          const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
-          const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+          const dateA = this.toDate(a.createdAt);
+          const dateB = this.toDate(b.createdAt);
           return dateB - dateA;
         });
         
