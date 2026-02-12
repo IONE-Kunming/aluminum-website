@@ -74,14 +74,14 @@ firebase deploy --only firestore:indexes,hosting --project gen-lang-client-09883
 
 ### To Enable: Solution 2 (With Rules)
 
-After granting permissions, edit line 55-59 in the workflow file:
+After granting permissions, edit the FIREBASE DEPLOYMENT CONFIGURATION section in the workflow file:
 
-**Comment out line 55:**
+**Comment out the Option 1 command:**
 ```bash
 # firebase deploy --only firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive
 ```
 
-**Uncomment line 59:**
+**Uncomment the Option 2 command:**
 ```bash
 firebase deploy --only firestore:rules,firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive --force
 ```

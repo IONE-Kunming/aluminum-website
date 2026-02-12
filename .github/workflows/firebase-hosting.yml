@@ -55,7 +55,8 @@ jobs:
         firebase deploy --only firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive
         #
         # OPTION 2: Deploy WITH rules (Requires permission setup)
-        # Uncomment the line below and comment out the line above after granting permissions
+        # Uncomment the line below and comment out Option 1 above after granting permissions
+        # The --force flag skips local rule validation checks but still requires API access
         # firebase deploy --only firestore:rules,firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive --force
         #
         # To enable Option 2, see: FIREBASE_SERVICE_ACCOUNT_PERMISSIONS.md
