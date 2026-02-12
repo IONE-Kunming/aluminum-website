@@ -48,7 +48,7 @@ export async function renderCategorySelection() {
   }
   
   // Get available categories (only those with products)
-  const allProducts = await dataService.getProducts();
+  const allProducts = await dataService.getProducts({ limit: 1000000 });
   const availableCategories = new Set();
   
   allProducts.forEach(product => {
