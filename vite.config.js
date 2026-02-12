@@ -1,8 +1,32 @@
 import { defineConfig } from 'vite'
+import { copyFileSync, mkdirSync } from 'fs'
+import { resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [],
+  plugins: [
+    // Custom plugin to copy CSV file to dist folder
+    {
+      name: 'copy-csv',
+      closeBundle() {
+        try {
+          mkdirSync('dist', { recursive: true })
+          copyFileSync(
+            resolve(__dirname, 'public/sample-products-import.csv'),
+            resolve(__dirname, 'dist/sample-products-import.csv')
+          )
+          console.log('✓ Copied sample-products-import.csv to dist/')
+        } catch (err) {
+          console.error('Failed to copy CSV file:', err)
+        }
+      }
+    }
+  ],
   // Use environment variable for base path, defaults to '/' for custom domain deployments
   // Set VITE_BASE_PATH=/aluminum-website/ for GitHub Pages deployments
   base: process.env.VITE_BASE_PATH || '/',
