@@ -253,6 +253,82 @@
   color: var(--error);
 }
 
+/* New status values for order tracking */
+.status-under-review {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--warning);
+}
+
+.status-confirmed {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
+}
+
+.status-in-production {
+  background: rgba(0, 128, 255, 0.2);
+  color: var(--electric-blue);
+}
+
+.status-out-of-production {
+  background: rgba(139, 92, 246, 0.2);
+  color: #8b5cf6;
+}
+
+.status-delivered-to-the-shipping-company {
+  background: rgba(6, 182, 212, 0.2);
+  color: #06b6d4;
+}
+
+.status-reached-port {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.status-collected {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--success);
+}
+
+/* Status Select Dropdown */
+.status-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.status-select:hover {
+  border-color: var(--electric-blue);
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: var(--electric-blue);
+  box-shadow: 0 0 0 3px rgba(0, 128, 255, 0.1);
+}
+
+.status-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Light mode styles for status select */
+[data-theme="light"] .status-select {
+  background: #ffffff;
+  border-color: #d1d5db;
+  color: #1f2937;
+}
+
+[data-theme="light"] .status-select:hover {
+  border-color: var(--electric-blue);
+}
+
 /* Action Buttons */
 .action-buttons {
   display: flex;
