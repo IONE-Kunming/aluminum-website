@@ -9,13 +9,17 @@ const __dirname = dirname(__filename)
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Explicitly include public assets
+  publicDir: 'public',
   plugins: [
-    // Custom plugin to copy CSV file to dist folder
+    // Custom plugin to ensure CSV file is copied to dist folder
+    // This is needed because Vite's automatic public folder copying might skip CSV files in some configurations
     {
       name: 'copy-csv',
       closeBundle() {
         try {
           mkdirSync('dist', { recursive: true })
+          // Copy CSV file to root of dist folder
           copyFileSync(
             resolve(__dirname, 'public/sample-products-import.csv'),
             resolve(__dirname, 'dist/sample-products-import.csv')
