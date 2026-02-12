@@ -270,8 +270,8 @@ async function loadProducts() {
       return;
     }
 
-    // Fetch products for current seller (using high limit for all products display)
-    const products = await dataService.getProducts({ sellerId: user.uid, limit: 50000 });
+    // Fetch products for current seller (limit: 2000 products per seller)
+    const products = await dataService.getProducts({ sellerId: user.uid, limit: 2000 });
     
     if (loadingEl) loadingEl.style.display = 'none';
     
