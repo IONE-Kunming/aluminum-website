@@ -109,10 +109,10 @@ firebase deploy --only firestore:rules --project gen-lang-client-0988357303
 4. Look at the "Role" column to see current permissions
 
 Common roles you might see:
-- `Editor` - Has broad permissions, may include some Firebase access but not recommended (too permissive)
-- `Firebase Admin` - Has all Firebase permissions including rules (recommended for full Firebase access)
-- `Firebase Hosting Admin` - Can deploy hosting but limited rule access
-- `Firebase Rules Admin` - Can manage Firebase Rules specifically (recommended for principle of least privilege)
+- `Editor` - Has broad Google Cloud permissions. While it may technically work, it's overly permissive and not recommended for production. Use specific Firebase roles instead.
+- `Firebase Admin` - Has all Firebase permissions including rules. Recommended if service account needs access to multiple Firebase services.
+- `Firebase Hosting Admin` - Can deploy hosting. Does NOT include Firebase Rules API access.
+- `Firebase Rules Admin` - Can manage Firebase Rules specifically. **Recommended** for this use case (principle of least privilege).
 
 ## Recommended Approach
 

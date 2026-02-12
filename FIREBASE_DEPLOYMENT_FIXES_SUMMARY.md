@@ -67,7 +67,7 @@ See the detailed guide: **FIREBASE_SERVICE_ACCOUNT_PERMISSIONS.md**
 
 ### Currently Active: Solution 1 (No Rules)
 
-The workflow file (`.github/workflows/firebase-hosting.yml`) line 55:
+The workflow file (`.github/workflows/firebase-hosting.yml`) in the FIREBASE DEPLOYMENT CONFIGURATION section:
 ```bash
 firebase deploy --only firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive
 ```

@@ -56,7 +56,10 @@ jobs:
         #
         # OPTION 2: Deploy WITH rules (Requires permission setup)
         # Uncomment the line below and comment out Option 1 above after granting permissions
-        # The --force flag skips local rule validation checks but still requires API access
+        # The --force flag does two things:
+        #   1. Skips local rule syntax validation (faster deployment)
+        #   2. Still requires Firebase Rules API access to deploy (cannot bypass 403 errors)
+        # Note: Use --force only when you're confident rules are correct to skip validation overhead
         # firebase deploy --only firestore:rules,firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive --force
         #
         # To enable Option 2, see: FIREBASE_SERVICE_ACCOUNT_PERMISSIONS.md
