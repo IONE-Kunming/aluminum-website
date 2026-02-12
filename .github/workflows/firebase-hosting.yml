@@ -45,11 +45,26 @@ jobs:
       env:
         GOOGLE_APPLICATION_CREDENTIALS: service-account.json
       run: |
-        # Deploy only firestore rules, indexes, and hosting
-        # Skip storage deployment to avoid bucket permission errors
-        # Storage rules are kept in firebase.json for future use when bucket is properly configured
-        # Use --force flag to skip rule validation which requires firebaserules.googleapis.com API permissions
-        firebase deploy --only firestore:rules,firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive --force
+        # =====================================================================
+        # FIREBASE DEPLOYMENT CONFIGURATION
+        # =====================================================================
+        # Current Issue: Service account lacks Firebase Rules API permissions
+        # Error: "The caller does not have permission" (403) 
+        #
+        # OPTION 1: Deploy WITHOUT rules (Current - Works immediately)
+        firebase deploy --only firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive
+        #
+        # OPTION 2: Deploy WITH rules (Requires permission setup)
+        # Uncomment the line below and comment out Option 1 above after granting permissions
+        # The --force flag does two things:
+        #   1. Skips local rule syntax validation (faster deployment)
+        #   2. Still requires Firebase Rules API access to deploy (cannot bypass 403 errors)
+        # Note: Use --force only when you're confident rules are correct to skip validation overhead
+        # firebase deploy --only firestore:rules,firestore:indexes,hosting --project gen-lang-client-0988357303 --non-interactive --force
+        #
+        # To enable Option 2, see: FIREBASE_SERVICE_ACCOUNT_PERMISSIONS.md
+        # Grant "Firebase Rules Admin" role to service account in Google Cloud Console
+        # =====================================================================
     
     - name: Verify CSV file deployment
       run: |
