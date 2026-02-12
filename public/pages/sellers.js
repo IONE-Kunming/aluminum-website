@@ -10,7 +10,7 @@ export async function renderSellers() {
   
   // Fetch all sellers and products
   const allSellers = await dataService.getSellers();
-  const allProducts = await dataService.getProducts();
+  const allProducts = await dataService.getProducts({ limit: 1000000 });
   const categories = await dataService.getCategories();
   
   // Get current user to check if authenticated

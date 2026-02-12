@@ -293,7 +293,7 @@ async function renderMainCategoryTiles(t) {
 // Render subcategory selection for a main category
 async function renderSubcategorySelection(mainCategory, t) {
   const subcategories = getSubcategories(mainCategory);
-  const allProducts = await dataService.getProducts();
+  const allProducts = await dataService.getProducts({ limit: 1000000 });
   
   // Filter to only subcategories that have products
   const availableSubcategories = subcategories.filter(subcat => 
@@ -384,7 +384,7 @@ async function renderSubcategorySelection(mainCategory, t) {
 
 // Render sellers for a specific category
 async function renderSellersForCategory(category, t) {
-  const allProducts = await dataService.getProducts();
+  const allProducts = await dataService.getProducts({ limit: 1000000 });
   const allSellers = await dataService.getSellers();
   
   // Determine if current category is a main category or subcategory
@@ -602,7 +602,7 @@ async function renderSellersForCategory(category, t) {
 
 // Render seller tiles
 async function renderSellerTiles(t) {
-  const allProducts = await dataService.getProducts();
+  const allProducts = await dataService.getProducts({ limit: 1000000 });
   const allSellers = await dataService.getSellers();
   const categories = await dataService.getCategories();
   

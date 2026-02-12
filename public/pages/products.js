@@ -5,8 +5,15 @@ import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
 import { 
   getSubcategories, 
-  isMainCategory
+  getMainCategories,
+  getMainCategoryForSubcategory,
+  isMainCategory,
+  isSubcategory
 } from '../js/categoryHierarchy.js';
+
+// Constants for dropdown placeholders
+const PLACEHOLDER_MAIN_CATEGORY = 'Select main category';
+const PLACEHOLDER_SUBCATEGORY = 'Select subcategory';
 
 export async function renderProducts() {
   const t = languageManager.t.bind(languageManager);
@@ -146,8 +153,17 @@ export async function renderProducts() {
               </div>
               
               <div class="form-group">
-                <label for="edit-category">${t('products.category')} *</label>
-                <input type="text" id="edit-category" class="form-control" required />
+                <label for="edit-main-category">${t('products.mainCategory')} *</label>
+                <select id="edit-main-category" class="form-control" required>
+                  <option value="">${PLACEHOLDER_MAIN_CATEGORY}</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-subcategory">${t('products.subcategory')} *</label>
+                <select id="edit-subcategory" class="form-control" required>
+                  <option value="">${PLACEHOLDER_SUBCATEGORY}</option>
+                </select>
               </div>
               
               <div class="form-group">
@@ -427,11 +443,60 @@ async function editProduct(productId) {
       return;
     }
     
+    // Populate main category dropdown
+    const mainCategorySelect = document.getElementById('edit-main-category');
+    const subcategorySelect = document.getElementById('edit-subcategory');
+    
+    // Clear existing options
+    mainCategorySelect.innerHTML = `<option value="">${PLACEHOLDER_MAIN_CATEGORY}</option>`;
+    subcategorySelect.innerHTML = `<option value="">${PLACEHOLDER_SUBCATEGORY}</option>`;
+    
+    // Add main categories
+    const mainCategories = getMainCategories();
+    mainCategories.forEach(cat => {
+      const option = document.createElement('option');
+      option.value = cat;
+      option.textContent = cat;
+      mainCategorySelect.appendChild(option);
+    });
+    
+    // Determine the current category structure
+    let currentMainCategory = '';
+    let currentSubcategory = '';
+    
+    if (product.category) {
+      if (isMainCategory(product.category)) {
+        currentMainCategory = product.category;
+      } else if (isSubcategory(product.category)) {
+        currentSubcategory = product.category;
+        currentMainCategory = getMainCategoryForSubcategory(product.category);
+      } else {
+        // If category doesn't match hierarchy, default to first main category
+        currentMainCategory = mainCategories.length > 0 ? mainCategories[0] : '';
+        currentSubcategory = product.category;
+      }
+    }
+    
+    // Set main category and populate subcategories
+    if (currentMainCategory) {
+      mainCategorySelect.value = currentMainCategory;
+      const subcategories = getSubcategories(currentMainCategory);
+      subcategories.forEach(subcat => {
+        const option = document.createElement('option');
+        option.value = subcat;
+        option.textContent = subcat;
+        subcategorySelect.appendChild(option);
+      });
+      
+      if (currentSubcategory) {
+        subcategorySelect.value = currentSubcategory;
+      }
+    }
+    
     // Open edit modal and populate with product data
     const modal = document.getElementById('edit-product-modal');
     document.getElementById('edit-product-id').value = productId;
     document.getElementById('edit-model-number').value = product.modelNumber || '';
-    document.getElementById('edit-category').value = product.category || '';
     document.getElementById('edit-price').value = product.pricePerMeter || product.price || '';
     
     // Set stock dropdown value based on product stock
@@ -588,6 +653,8 @@ function initializeEditProduct() {
   const cancelBtn = document.getElementById('cancel-edit-btn');
   const form = document.getElementById('edit-product-form');
   const submitBtn = document.getElementById('submit-edit-btn');
+  const mainCategorySelect = document.getElementById('edit-main-category');
+  const subcategorySelect = document.getElementById('edit-subcategory');
   
   const closeModal = () => {
     modal.style.display = 'none';
@@ -603,6 +670,24 @@ function initializeEditProduct() {
     cancelBtn.addEventListener('click', closeModal);
   }
   
+  // Handle main category change - update subcategories
+  if (mainCategorySelect) {
+    mainCategorySelect.addEventListener('change', (e) => {
+      const selectedMainCategory = e.target.value;
+      subcategorySelect.innerHTML = `<option value="">${PLACEHOLDER_SUBCATEGORY}</option>`;
+      
+      if (selectedMainCategory) {
+        const subcategories = getSubcategories(selectedMainCategory);
+        subcategories.forEach(subcat => {
+          const option = document.createElement('option');
+          option.value = subcat;
+          option.textContent = subcat;
+          subcategorySelect.appendChild(option);
+        });
+      }
+    });
+  }
+  
   // Handle form submission
   if (form) {
     form.addEventListener('submit', async (e) => {
@@ -610,13 +695,13 @@ function initializeEditProduct() {
       
       const productId = document.getElementById('edit-product-id').value;
       const modelNumber = document.getElementById('edit-model-number').value.trim();
-      const category = document.getElementById('edit-category').value.trim();
+      const subcategory = document.getElementById('edit-subcategory').value.trim();
       const pricePerMeter = parseFloat(document.getElementById('edit-price').value);
       const stock = document.getElementById('edit-stock').value; // Get string value: 'available' or 'unavailable'
       const description = document.getElementById('edit-description').value.trim();
       const imageFile = document.getElementById('edit-image').files[0];
       
-      if (!modelNumber || !category || !pricePerMeter || pricePerMeter <= 0) {
+      if (!modelNumber || !subcategory || !pricePerMeter || pricePerMeter <= 0) {
         if (window.toast) {
           window.toast.error('Please fill in all required fields with valid values');
         }
@@ -645,7 +730,7 @@ function initializeEditProduct() {
         // Update product in database
         const productData = {
           modelNumber,
-          category,
+          category: subcategory,
           pricePerMeter,
           stock,
           description,
