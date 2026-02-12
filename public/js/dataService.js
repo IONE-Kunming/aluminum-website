@@ -729,6 +729,52 @@ class DataService {
     }
   }
 
+  // Update order status
+  async updateOrderStatus(orderId, newStatus) {
+    await this.init();
+    
+    try {
+      if (!this.db || !orderId) {
+        throw new Error('Invalid order ID');
+      }
+      
+      await this.db.collection('orders').doc(orderId).update({
+        status: newStatus,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      throw error;
+    }
+  }
+
+  // Get a single order by ID
+  async getOrderById(orderId) {
+    await this.init();
+    
+    try {
+      if (!this.db || !orderId) {
+        return null;
+      }
+      
+      const doc = await this.db.collection('orders').doc(orderId).get();
+      
+      if (doc.exists) {
+        return {
+          id: doc.id,
+          ...doc.data()
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching order:', error);
+      return null;
+    }
+  }
+
   // Get a single product by ID
   async getProductById(productId) {
     await this.init();

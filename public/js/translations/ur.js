@@ -117,7 +117,9 @@ export default {
     totalPlatformRevenue: 'کل پلیٹ فارم آمدنی',
     activeSellers: 'فعال فروخت کنندگان',
     platformOverview: 'پلیٹ فارم کا جائزہ',
-    adminControlsMessage: 'ایڈمن کنٹرولز اور تجزیات یہاں دکھائے جائیں گے'
+    adminControlsMessage: 'ایڈمن کنٹرولز اور تجزیات یہاں دکھائے جائیں گے',
+    allTimeOrders: 'تمام وقت کے آرڈرز',
+    totalRevenue: 'کل آمدنی'
   },
   
   // آرڈرز

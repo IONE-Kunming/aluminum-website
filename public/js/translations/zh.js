@@ -117,7 +117,9 @@ export default {
     totalPlatformRevenue: '平台总收入',
     activeSellers: '活跃卖家',
     platformOverview: '平台概览',
-    adminControlsMessage: '管理员控制和分析将显示在这里'
+    adminControlsMessage: '管理员控制和分析将显示在这里',
+    allTimeOrders: '所有时间订单',
+    totalRevenue: '总收入'
   },
   
   // 订单

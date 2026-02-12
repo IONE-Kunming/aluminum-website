@@ -122,7 +122,9 @@ export default {
     totalPlatformRevenue: 'Total platform revenue',
     activeSellers: 'Active sellers',
     platformOverview: 'Platform Overview',
-    adminControlsMessage: 'Admin controls and analytics will be displayed here'
+    adminControlsMessage: 'Admin controls and analytics will be displayed here',
+    allTimeOrders: 'All-time orders',
+    totalRevenue: 'Total revenue'
   },
   
   // Orders
