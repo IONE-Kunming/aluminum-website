@@ -1,0 +1,99 @@
+name: Deploy with Category Migration
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_migration:
+        description: 'Run database migration before deployment'
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  # Job 1: Run migration if requested
+  migrate:
+    name: Migrate Database
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.run_migration == 'true' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install firebase-admin
+        run: npm install firebase-admin
+      
+      - name: Create service account file
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > serviceAccountKey.json
+      
+      - name: Run migration script
+        run: |
+          echo "🚀 Starting category migration..."
+          node scripts/migrate-categories.js
+        env:
+          NODE_ENV: production
+      
+      - name: Clean up service account file
+        if: always()
+        run: |
+          rm -f serviceAccountKey.json
+      
+      - name: Migration complete
+        run: |
+          echo "✅ Database migration completed successfully!"
+  
+  # Job 2: Build and deploy application
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    needs: [migrate]
+    if: ${{ always() && (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Create service account file for deployment
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > service-account.json
+      
+      - name: Deploy to Firebase
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: service-account.json
+        run: |
+          npm install -g firebase-tools
+          firebase deploy --only hosting --project gen-lang-client-0988357303
+      
+      - name: Clean up
+        if: always()
+        run: |
+          rm -f service-account.json
+      
+      - name: Deployment complete
+        run: |
+          echo "✅ Application deployed successfully!"
+          echo "🌐 Application URL: https://gen-lang-client-0988357303.web.app"
+          echo ""
+          echo "📋 Post-deployment checklist:"
+          echo "1. Test category navigation"
+          echo "2. Test product bulk import"
+          echo "3. Verify all 30 categories are accessible"
+          echo "4. Test seller and buyer flows"
