@@ -29,6 +29,25 @@
   margin-bottom: var(--spacing-xl);
   flex-wrap: wrap;
   gap: var(--spacing-md);
+  position: sticky;
+  top: 0;
+  background: var(--dark-bg);
+  z-index: 100;
+  padding: var(--spacing-md) 0;
+  margin-top: calc(var(--spacing-md) * -1);
+  margin-left: calc(var(--spacing-xl) * -1);
+  margin-right: calc(var(--spacing-xl) * -1);
+  padding-left: var(--spacing-xl);
+  padding-right: var(--spacing-xl);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Light theme: white background for sticky header */
+[data-theme="light"] .page-header {
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom-color: #e5e7eb;
 }
 
 .page-header h1 {
@@ -1046,6 +1065,11 @@
   .page-header {
     flex-direction: column;
     align-items: flex-start;
+    padding: var(--spacing-md);
+    margin-left: calc(var(--spacing-md) * -1);
+    margin-right: calc(var(--spacing-md) * -1);
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
   }
   
   .page-header h1 {
