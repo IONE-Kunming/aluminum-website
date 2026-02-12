@@ -67,6 +67,7 @@ export default {
     bulkImport: '批量导入',
     modelNumber: '型号',
     category: '类别',
+    mainCategory: '主类别',
     subcategory: '子类别',
     pricePerMeter: '每米价格',
     price: '价格',

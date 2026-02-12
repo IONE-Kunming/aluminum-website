@@ -67,6 +67,7 @@ export default {
     bulkImport: 'بلک امپورٹ',
     modelNumber: 'ماڈل نمبر',
     category: 'قسم',
+    mainCategory: 'اہم قسم',
     subcategory: 'ذیلی قسم',
     pricePerMeter: 'فی میٹر قیمت',
     price: 'قیمت',

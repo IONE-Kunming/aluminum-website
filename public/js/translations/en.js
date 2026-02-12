@@ -67,6 +67,7 @@ export default {
     bulkImport: 'Bulk Import',
     modelNumber: 'Model Number',
     category: 'Category',
+    mainCategory: 'Main Category',
     subcategory: 'Subcategory',
     pricePerMeter: 'Price per Meter',
     price: 'Price',

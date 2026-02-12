@@ -67,6 +67,7 @@ export default {
     bulkImport: 'استيراد جماعي',
     modelNumber: 'رقم الموديل',
     category: 'الفئة',
+    mainCategory: 'الفئة الرئيسية',
     subcategory: 'الفئة الفرعية',
     pricePerMeter: 'السعر للمتر',
     price: 'السعر',
