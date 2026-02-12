@@ -25,8 +25,8 @@ class DataService {
     if (window.firebase && window.firebase.firestore) {
       this.db = window.firebase.firestore();
       
-      // Check if cache needs to be cleared (version bump for products limit fix)
-      const CACHE_VERSION = '1.2.0'; // Increment this to force cache clear
+      // Check if cache needs to be cleared (version bump for products cache fix)
+      const CACHE_VERSION = '1.3.0'; // Increment this to force cache clear
       const currentVersion = localStorage.getItem('firestoreCacheVersion');
       
       if (currentVersion !== CACHE_VERSION) {
@@ -312,37 +312,60 @@ class DataService {
 
       // If no sales data, fall back to recent products
       if (topProducts.length === 0) {
-        const productsSnapshot = await this.db
-          .collection('products')
-          .where('sellerId', '==', userId)
-          .orderBy('createdAt', 'desc')
-          .limit(limit)
-          .get();
+        try {
+          const productsSnapshot = await this.db
+            .collection('products')
+            .where('sellerId', '==', userId)
+            .limit(limit)
+            .get();
 
-        return productsSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          sales: 0
-        }));
+          const products = productsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            sales: 0
+          }));
+          
+          // Sort in memory to avoid index requirement
+          products.sort((a, b) => {
+            const dateA = this.toDate(a.createdAt);
+            const dateB = this.toDate(b.createdAt);
+            return dateB - dateA;
+          });
+          
+          return products;
+        } catch (err) {
+          console.error('Error fetching products for fallback:', err);
+          return [];
+        }
       }
 
       return topProducts;
     } catch (error) {
       console.error('Error fetching top products:', error);
-      // Fallback to old method if new method fails
+      // Fallback: fetch products without orderBy to avoid index requirement
       try {
+        console.log('Attempting fallback query for top products...');
         const snapshot = await this.db
           .collection('products')
           .where('sellerId', '==', userId)
-          .orderBy('createdAt', 'desc')
           .limit(limit)
           .get();
 
-        return snapshot.docs.map(doc => ({
+        const products = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
           sales: 0
         }));
+        
+        // Sort in memory to avoid Firestore index requirements
+        products.sort((a, b) => {
+          const dateA = this.toDate(a.createdAt);
+          const dateB = this.toDate(b.createdAt);
+          return dateB - dateA;
+        });
+        
+        console.log(`Fallback query succeeded, returning ${products.length} top products`);
+        return products;
       } catch (fallbackError) {
         console.error('Error in fallback products fetch:', fallbackError);
         return [];
@@ -352,7 +375,20 @@ class DataService {
 
   // Helper method to determine if cache should be used
   shouldUseCache(filters) {
-    return !filters.category && !filters.sellerId && !filters.limit;
+    // Only use cache when there are no actual filter criteria (category, sellerId)
+    // The limit parameter doesn't affect which products are returned, just how many
+    return !filters.category && !filters.sellerId;
+  }
+
+  // Helper method to safely convert Firestore Timestamp to Date
+  toDate(timestamp) {
+    if (!timestamp) return new Date(0);
+    // Handle Firestore Timestamp objects
+    if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+      return timestamp.toDate();
+    }
+    // Handle already-converted dates or timestamp strings/numbers
+    return new Date(timestamp);
   }
 
   // Get products from catalog with caching and pagination
@@ -394,8 +430,8 @@ class DataService {
       
       // Sort in memory to avoid Firestore index requirements
       products.sort((a, b) => {
-        const dateA = a.createdAt ? new Date(a.createdAt) : new Date();
-        const dateB = b.createdAt ? new Date(b.createdAt) : new Date();
+        const dateA = this.toDate(a.createdAt);
+        const dateB = this.toDate(b.createdAt);
         return dateB - dateA; // descending order
       });
       
@@ -411,7 +447,42 @@ class DataService {
       return products;
     } catch (error) {
       console.error('Error fetching products:', error);
-      return [];
+      
+      // Fallback: try to fetch without orderBy if index is missing
+      try {
+        console.log('Attempting fallback query without composite index...');
+        let fallbackQuery = this.db.collection('products');
+        
+        // Apply same filters but without orderBy
+        if (filters.category) {
+          fallbackQuery = fallbackQuery.where('category', '==', filters.category);
+        }
+        if (filters.sellerId) {
+          fallbackQuery = fallbackQuery.where('sellerId', '==', filters.sellerId);
+        }
+        
+        const limit = filters.limit || 50;
+        fallbackQuery = fallbackQuery.limit(limit);
+        
+        const snapshot = await fallbackQuery.get();
+        const products = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        // Sort in memory
+        products.sort((a, b) => {
+          const dateA = this.toDate(a.createdAt);
+          const dateB = this.toDate(b.createdAt);
+          return dateB - dateA;
+        });
+        
+        console.log(`Fallback query succeeded, returning ${products.length} products`);
+        return products;
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError);
+        return [];
+      }
     }
   }
 
@@ -787,9 +858,8 @@ class DataService {
         
         // Sort by createdAt, putting orders without timestamps at the end
         orders.sort((a, b) => {
-          // Handle Firestore Timestamp objects properly
-          const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
-          const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+          const dateA = this.toDate(a.createdAt);
+          const dateB = this.toDate(b.createdAt);
           return dateB - dateA;
         });
         
@@ -1167,8 +1237,8 @@ class DataService {
         
         // Sort by createdAt
         invoices.sort((a, b) => {
-          const dateA = a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0);
-          const dateB = b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0);
+          const dateA = this.toDate(a.createdAt);
+          const dateB = this.toDate(b.createdAt);
           return dateB - dateA;
         });
         
