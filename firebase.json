@@ -68,11 +68,11 @@
           },
           {
             "key": "Content-Disposition",
-            "value": "attachment"
+            "value": "attachment; filename=\"sample-products-import.csv\""
           },
           {
             "key": "Cache-Control",
-            "value": "no-cache"
+            "value": "public, max-age=3600"
           }
         ]
       }
