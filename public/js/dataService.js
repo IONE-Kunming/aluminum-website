@@ -33,11 +33,27 @@ class DataService {
         console.log('Cache version mismatch, clearing Firestore persistence...');
         try {
           // Clear IndexedDB databases used by Firestore
-          const databases = await indexedDB.databases();
-          for (const db of databases) {
-            if (db.name && db.name.includes('firestore')) {
-              console.log(`Deleting IndexedDB: ${db.name}`);
-              await indexedDB.deleteDatabase(db.name);
+          // Check if indexedDB.databases() is available (not supported in Safari)
+          if (indexedDB.databases) {
+            const databases = await indexedDB.databases();
+            for (const db of databases) {
+              if (db.name && db.name.includes('firestore')) {
+                console.log(`Deleting IndexedDB: ${db.name}`);
+                await indexedDB.deleteDatabase(db.name);
+              }
+            }
+          } else {
+            // Fallback for browsers without indexedDB.databases() (Safari)
+            // Delete known Firestore database names
+            const knownDatabases = [
+              'firebaseLocalStorageDb',
+              'firebaseLocalStorage',
+              'firebase-heartbeat-database',
+              'firebase-installations-database'
+            ];
+            for (const dbName of knownDatabases) {
+              console.log(`Attempting to delete IndexedDB: ${dbName}`);
+              await indexedDB.deleteDatabase(dbName);
             }
           }
           localStorage.setItem('firestoreCacheVersion', CACHE_VERSION);
