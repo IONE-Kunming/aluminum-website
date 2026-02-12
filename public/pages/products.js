@@ -3,6 +3,13 @@ import authManager from '../js/auth.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
+import { 
+  getMainCategories, 
+  getSubcategories, 
+  isMainCategory, 
+  isSubcategory,
+  getMainCategoryForSubcategory
+} from '../js/categoryHierarchy.js';
 
 export async function renderProducts() {
   const t = languageManager.t.bind(languageManager);
@@ -776,10 +783,38 @@ function initializeBulkImport() {
       const rowNum = index + 2; // +2 because Excel starts at 1 and has header row
       const modelNumber = row['Model Number'] || row['model_number'] || row['ModelNumber'];
       const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
+      const category = row['Category'] || row['category'];
+      const subcategory = row['Subcategory'] || row['subcategory'] || row['SubCategory'];
       
       // Check for required fields
       if (!modelNumber) {
         validationErrors.push(`Row ${rowNum}: Model Number is required`);
+      }
+      
+      // Check for category and subcategory - both are required
+      if (!category || category.trim() === '') {
+        validationErrors.push(`Row ${rowNum}: Category is required`);
+      }
+      
+      if (!subcategory || subcategory.trim() === '') {
+        validationErrors.push(`Row ${rowNum}: Subcategory is required`);
+      }
+      
+      // Validate category hierarchy
+      if (category && subcategory) {
+        const trimmedCategory = category.trim();
+        const trimmedSubcategory = subcategory.trim();
+        
+        // Check if category is a valid main category
+        if (!isMainCategory(trimmedCategory)) {
+          validationErrors.push(`Row ${rowNum}: Invalid category "${trimmedCategory}". Must be one of: ${getMainCategories().join(', ')}`);
+        } else {
+          // Check if subcategory is valid for this main category
+          const validSubcategories = getSubcategories(trimmedCategory);
+          if (!validSubcategories.includes(trimmedSubcategory)) {
+            validationErrors.push(`Row ${rowNum}: Invalid subcategory "${trimmedSubcategory}" for category "${trimmedCategory}". Valid subcategories: ${validSubcategories.join(', ')}`);
+          }
+        }
       }
       
       // Check for duplicate model numbers in file
@@ -866,7 +901,8 @@ function initializeBulkImport() {
           try {
             // Map Excel columns to product fields
             const modelNumber = row['Model Number'] || row['model_number'] || row['ModelNumber'];
-            const category = row['Category'] || row['category'];
+            const mainCategory = row['Category'] || row['category'];
+            const subcategory = row['Subcategory'] || row['subcategory'] || row['SubCategory'];
             const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
             const imagePath = row['Image Path'] || row['image_path'] || row['ImagePath'];
             
@@ -890,7 +926,9 @@ function initializeBulkImport() {
               sellerId: profile.uid,
               sellerName: profile.displayName,
               modelNumber: modelNumber,
-              category: category,
+              mainCategory: mainCategory,
+              category: subcategory, // Store subcategory in 'category' field for backward compatibility
+              subcategory: subcategory, // Also store in dedicated subcategory field
               pricePerMeter: price,
               imageUrl: imageUrl,
               createdAt: new Date().toISOString(),
