@@ -18,8 +18,8 @@ export async function renderOrders() {
         </div>
         <div class="empty-state">
           <i data-lucide="alert-circle" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>Not Authenticated</h2>
-          <p>Please log in to view your orders</p>
+          <h2>${t('auth.notAuthenticated')}</h2>
+          <p>${t('auth.pleaseLoginToViewOrders')}</p>
         </div>
       </div>
     `;

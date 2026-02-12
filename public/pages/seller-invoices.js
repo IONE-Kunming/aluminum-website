@@ -19,8 +19,8 @@ export async function renderSellerInvoices() {
         </div>
         <div class="empty-state">
           <i data-lucide="alert-circle" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>Not Authenticated</h2>
-          <p>Please log in to view invoices</p>
+          <h2>${t('auth.notAuthenticated')}</h2>
+          <p>${t('auth.pleaseLoginToViewInvoices')}</p>
         </div>
       </div>
     `;

@@ -152,7 +152,8 @@ export default {
     buyerCompany: 'شركة المشتري',
     email: 'البريد الإلكتروني',
     filterOrders: 'تصفية الطلبات',
-    dateRange: 'نطاق التاريخ'
+    dateRange: 'نطاق التاريخ',
+    manageCustomerOrders: 'إدارة طلبات العملاء'
   },
   
   // المحادثات
@@ -386,7 +387,10 @@ export default {
     companyName: 'اسم الشركة',
     phoneNumber: 'رقم الهاتف',
     passwordMinLength: 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
-    continueWithGoogle: 'المتابعة مع Google'
+    continueWithGoogle: 'المتابعة مع Google',
+    notAuthenticated: 'غير مصادق',
+    pleaseLoginToViewOrders: 'يرجى تسجيل الدخول لعرض طلباتك',
+    pleaseLoginToViewInvoices: 'يرجى تسجيل الدخول لعرض فواتيرك'
   },
   
   // الملف الشخصي

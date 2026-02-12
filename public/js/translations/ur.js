@@ -152,7 +152,8 @@ export default {
     buyerCompany: 'خریدار کی کمپنی',
     email: 'ای میل',
     filterOrders: 'آرڈرز فلٹر کریں',
-    dateRange: 'تاریخ کی حد'
+    dateRange: 'تاریخ کی حد',
+    manageCustomerOrders: 'گاہک کے آرڈرز کا انتظام کریں'
   },
   
   // گفتگو
@@ -386,7 +387,10 @@ export default {
     companyName: 'کمپنی کا نام',
     phoneNumber: 'فون نمبر',
     passwordMinLength: 'پاس ورڈ کم از کم 6 حروف کا ہونا چاہیے',
-    continueWithGoogle: 'گوگل کے ساتھ جاری رکھیں'
+    continueWithGoogle: 'گوگل کے ساتھ جاری رکھیں',
+    notAuthenticated: 'تصدیق شدہ نہیں',
+    pleaseLoginToViewOrders: 'اپنے آرڈرز دیکھنے کے لیے براہ کرم لاگ ان کریں',
+    pleaseLoginToViewInvoices: 'اپنی رسیدیں دیکھنے کے لیے براہ کرم لاگ ان کریں'
   },
   
   // پروفائل

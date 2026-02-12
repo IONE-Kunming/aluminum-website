@@ -152,7 +152,8 @@ export default {
     buyerCompany: '买家公司',
     email: '电子邮件',
     filterOrders: '筛选订单',
-    dateRange: '日期范围'
+    dateRange: '日期范围',
+    manageCustomerOrders: '管理客户订单'
   },
   
   // 聊天
@@ -386,7 +387,10 @@ export default {
     companyName: '公司名称',
     phoneNumber: '电话号码',
     passwordMinLength: '密码必须至少6个字符',
-    continueWithGoogle: '使用Google继续'
+    continueWithGoogle: '使用Google继续',
+    notAuthenticated: '未认证',
+    pleaseLoginToViewOrders: '请登录以查看您的订单',
+    pleaseLoginToViewInvoices: '请登录以查看您的发票'
   },
   
   // 个人资料

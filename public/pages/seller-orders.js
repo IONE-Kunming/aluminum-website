@@ -2,21 +2,24 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml, formatDate } from '../js/utils.js';
+import languageManager from '../js/language.js';
 
 export async function renderSellerOrders() {
+  const t = languageManager.t.bind(languageManager);
+  
   // Get current user (seller)
   const user = authManager.getCurrentUser();
   if (!user) {
     const content = `
       <div class="orders-page">
         <div class="page-header">
-          <h1>Orders</h1>
-          <p>Manage customer orders</p>
+          <h1>${t('orders.title')}</h1>
+          <p>${t('orders.manageCustomerOrders')}</p>
         </div>
         <div class="empty-state">
           <i data-lucide="alert-circle" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>Not Authenticated</h2>
-          <p>Please log in to view orders</p>
+          <h2>${t('auth.notAuthenticated')}</h2>
+          <p>${t('auth.pleaseLoginToViewOrders')}</p>
         </div>
       </div>
     `;
@@ -31,8 +34,8 @@ export async function renderSellerOrders() {
   const content = `
     <div class="orders-page">
       <div class="page-header">
-        <h1>Orders</h1>
-        <p>Manage customer orders</p>
+        <h1>${t('orders.title')}</h1>
+        <p>${t('orders.manageCustomerOrders')}</p>
       </div>
 
       ${orders.length === 0 ? `
