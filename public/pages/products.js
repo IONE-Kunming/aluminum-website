@@ -4,11 +4,8 @@ import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
 import { 
-  getMainCategories, 
   getSubcategories, 
-  isMainCategory, 
-  isSubcategory,
-  getMainCategoryForSubcategory
+  isMainCategory
 } from '../js/categoryHierarchy.js';
 
 export async function renderProducts() {
