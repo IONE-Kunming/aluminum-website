@@ -7,7 +7,9 @@ import dataService from '../js/dataService.js';
 import { 
   isMainCategory, 
   isSubcategory, 
-  getSubcategories 
+  getSubcategories,
+  getMainCategories,
+  getMainCategoryForSubcategory
 } from '../js/categoryHierarchy.js';
 
 // Helper function to get seller ID consistently
@@ -384,7 +386,19 @@ async function renderSubcategorySelection(mainCategory, t) {
 async function renderSellersForCategory(category, t) {
   const allProducts = await dataService.getProducts();
   const allSellers = await dataService.getSellers();
-  const categories = await dataService.getCategories();
+  
+  // Determine if current category is a main category or subcategory
+  const isMainCat = isMainCategory(category);
+  const isSubCat = isSubcategory(category);
+  
+  // Get the main category (if current is subcategory, find its parent; otherwise use current)
+  const mainCategory = isSubCat ? getMainCategoryForSubcategory(category) : (isMainCat ? category : 'Construction');
+  
+  // Get all main categories for the dropdown
+  const mainCategories = getMainCategories();
+  
+  // Get subcategories for the main category
+  const subcategoriesForMain = mainCategory ? getSubcategories(mainCategory) : [];
   
   // Filter products by category
   const categoryProducts = allProducts.filter(p => p.category === category);
@@ -515,10 +529,14 @@ async function renderSellersForCategory(category, t) {
         <input type="text" id="search-input" placeholder="${t('common.search')} ${t('sellers.title').toLowerCase()}..." class="form-control">
         <select id="main-category-filter" class="form-control" style="max-width: 200px;">
           <option value="">${t('catalog.allMainCategories')}</option>
-          ${categories.map(cat => `<option value="${escapeHtml(cat)}" ${cat === category ? 'selected' : ''}>${escapeHtml(translateCategory(cat, t))}</option>`).join('')}
+          ${mainCategories.map(cat => `<option value="${escapeHtml(cat)}" ${cat === mainCategory ? 'selected' : ''}>${escapeHtml(translateCategory(cat, t))}</option>`).join('')}
         </select>
         <select id="sub-category-filter" class="form-control" style="max-width: 200px;">
           <option value="">${t('catalog.allSubCategories')}</option>
+          ${subcategoriesForMain.filter(subCat => {
+            // Only show subcategories that have products
+            return allProducts.some(p => p.category === subCat);
+          }).map(subCat => `<option value="${escapeHtml(subCat)}" ${subCat === category ? 'selected' : ''}>${escapeHtml(translateCategory(subCat, t))}</option>`).join('')}
         </select>
       </div>
 
@@ -531,31 +549,10 @@ async function renderSellersForCategory(category, t) {
   renderPageWithLayout(content, 'buyer');
   renderSellers(sellersInCategory);
 
-  // Populate subcategories based on products in current category
-  const subCategoryFilter = document.getElementById('sub-category-filter');
-  if (subCategoryFilter) {
-    // Get unique categories from products to show as subcategories
-    const subCategories = new Set();
-    categoryProducts.forEach(p => {
-      if (p.category) {
-        subCategories.add(p.category);
-      }
-    });
-    
-    // Add subcategory options
-    Array.from(subCategories).sort().forEach(subCat => {
-      if (subCat !== category) { // Don't show current category as subcategory
-        const option = document.createElement('option');
-        option.value = subCat;
-        option.textContent = translateCategory(subCat, t);
-        subCategoryFilter.appendChild(option);
-      }
-    });
-  }
-
   // Add search and filter functionality
   const searchInput = document.getElementById('search-input');
   const mainCategoryFilter = document.getElementById('main-category-filter');
+  const subCategoryFilter = document.getElementById('sub-category-filter');
 
   const applyFilters = () => {
     const searchTerm = searchInput?.value.toLowerCase() || '';
@@ -563,22 +560,19 @@ async function renderSellersForCategory(category, t) {
     const selectedSubCategory = subCategoryFilter?.value || '';
 
     // If a different main category is selected, navigate to that category
-    if (selectedMainCategory && selectedMainCategory !== category) {
+    if (selectedMainCategory && selectedMainCategory !== mainCategory) {
       router.navigate(`/buyer/catalog?category=${encodeURIComponent(selectedMainCategory)}`);
       return;
     }
 
-    // Filter sellers by subcategory and search term
-    let filtered = sellersInCategory;
-
-    // Filter by subcategory if selected
-    if (selectedSubCategory) {
-      const subCategoryProducts = allProducts.filter(p => p.category === selectedSubCategory);
-      const subCategorySellerIds = new Set(subCategoryProducts.map(p => p.sellerId).filter(Boolean));
-      filtered = filtered.filter(seller => 
-        subCategorySellerIds.has(getSellerId(seller))
-      );
+    // If a different subcategory is selected, navigate to that subcategory
+    if (selectedSubCategory && selectedSubCategory !== category) {
+      router.navigate(`/buyer/catalog?category=${encodeURIComponent(selectedSubCategory)}`);
+      return;
     }
+
+    // Filter sellers by search term
+    let filtered = sellersInCategory;
 
     // Filter by search term
     if (searchTerm) {

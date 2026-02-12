@@ -1,0 +1,45 @@
+name: Migrate Product Categories
+
+on:
+  workflow_dispatch: # Allows manual triggering from GitHub Actions UI
+
+jobs:
+  migrate:
+    name: Run Category Migration
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install firebase-admin
+        run: npm install firebase-admin
+      
+      - name: Create service account file
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > serviceAccountKey.json
+      
+      - name: Run migration script
+        run: |
+          node scripts/migrate-categories.js
+        env:
+          NODE_ENV: production
+      
+      - name: Clean up service account file
+        if: always()
+        run: |
+          rm -f serviceAccountKey.json
+      
+      - name: Post migration summary
+        if: success()
+        run: |
+          echo "✅ Migration completed successfully!"
+          echo "Next steps:"
+          echo "1. Verify products in Firebase Console"
+          echo "2. Test category navigation in the application"
+          echo "3. Deploy the updated application code"

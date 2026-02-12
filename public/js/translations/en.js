@@ -44,7 +44,9 @@ export default {
     selectDate: 'Select Date',
     from: 'From',
     to: 'To',
-    clear: 'Clear'
+    clear: 'Clear',
+    name: 'Name',
+    email: 'Email'
   },
   
   // Languages
@@ -71,6 +73,8 @@ export default {
     imagePath: 'Image Path',
     description: 'Description',
     stock: 'Stock',
+    available: 'Available',
+    unavailable: 'Out of Stock',
     minOrder: 'Min Order',
     uploadExcel: 'Upload Excel File',
     importInstructions: 'Upload an Excel file with columns: Model Number, Category, Subcategory, Price per Meter, Image Path',
@@ -364,17 +368,25 @@ export default {
   
   // Support
   support: {
-    title: 'Support',
-    subtitle: 'Get help or request new features',
+    title: 'Support Center',
+    subtitle: 'Get help with your account and orders',
     contactUs: 'Contact Us',
+    contactDescription: 'Have a question or need assistance? Fill out the form below and we\'ll get back to you as soon as possible.',
+    subject: 'Subject',
+    subjectPlaceholder: 'Brief description of your inquiry',
+    message: 'Message',
+    messagePlaceholder: 'Please provide details about your inquiry...',
+    sendMessage: 'Send Message',
+    messageSent: 'Opening your email client. Please send the email to complete your request.',
+    directContact: 'You can also reach us directly at',
     requestNewCategory: 'Request New Category',
     categoryName: 'Category Name',
     reason: 'Reason for Request',
-    message: 'Message',
     sendRequest: 'Send Request',
     requestSent: 'Your request has been sent successfully',
     requestFailed: 'Failed to send request. Please try again.',
-    contactEmail: 'contactus@ione.live'
+    contactEmail: 'contactus@ione.live',
+    contactSupportEmail: 'Contact: contactus@ione.live'
   },
   
   // Auth

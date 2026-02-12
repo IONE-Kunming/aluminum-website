@@ -134,18 +134,6 @@ export async function renderInvoices() {
             <input type="text" id="filterInvoiceNumber" class="form-control" placeholder="${t('common.search')}...">
           </div>
           <div class="form-group">
-            <label>${t('invoices.buyerName')}</label>
-            <input type="text" id="filterBuyerName" class="form-control" placeholder="${t('common.search')}...">
-          </div>
-          <div class="form-group">
-            <label>${t('invoices.buyerCompany')}</label>
-            <input type="text" id="filterBuyerCompany" class="form-control" placeholder="${t('common.search')}...">
-          </div>
-          <div class="form-group">
-            <label>${t('invoices.email')}</label>
-            <input type="text" id="filterEmail" class="form-control" placeholder="${t('common.search')}...">
-          </div>
-          <div class="form-group">
             <label>${t('common.from')}</label>
             <input type="date" id="filterDateFrom" class="form-control">
           </div>
@@ -171,9 +159,6 @@ export async function renderInvoices() {
   // Filter function
   const applyFilters = () => {
     const invoiceNumber = document.getElementById('filterInvoiceNumber')?.value.toLowerCase() || '';
-    const buyerName = document.getElementById('filterBuyerName')?.value.toLowerCase() || '';
-    const buyerCompany = document.getElementById('filterBuyerCompany')?.value.toLowerCase() || '';
-    const email = document.getElementById('filterEmail')?.value.toLowerCase() || '';
     const dateFrom = document.getElementById('filterDateFrom')?.value || '';
     const dateTo = document.getElementById('filterDateTo')?.value || '';
     
@@ -183,27 +168,6 @@ export async function renderInvoices() {
     if (invoiceNumber) {
       filtered = filtered.filter(inv => 
         (inv.invoiceNumber || '').toLowerCase().includes(invoiceNumber)
-      );
-    }
-    
-    // Filter by buyer name
-    if (buyerName) {
-      filtered = filtered.filter(inv => 
-        (inv.buyerName || '').toLowerCase().includes(buyerName)
-      );
-    }
-    
-    // Filter by buyer company
-    if (buyerCompany) {
-      filtered = filtered.filter(inv => 
-        (inv.buyerCompany || '').toLowerCase().includes(buyerCompany)
-      );
-    }
-    
-    // Filter by email
-    if (email) {
-      filtered = filtered.filter(inv => 
-        (inv.buyerEmail || '').toLowerCase().includes(email)
       );
     }
     
@@ -230,7 +194,7 @@ export async function renderInvoices() {
   };
   
   // Add event listeners for filters
-  ['filterInvoiceNumber', 'filterBuyerName', 'filterBuyerCompany', 'filterEmail', 'filterDateFrom', 'filterDateTo'].forEach(id => {
+  ['filterInvoiceNumber', 'filterDateFrom', 'filterDateTo'].forEach(id => {
     const element = document.getElementById(id);
     if (element) {
       element.addEventListener('input', applyFilters);
@@ -242,7 +206,7 @@ export async function renderInvoices() {
   const resetButton = document.getElementById('resetFilters');
   if (resetButton) {
     resetButton.addEventListener('click', () => {
-      ['filterInvoiceNumber', 'filterBuyerName', 'filterBuyerCompany', 'filterEmail', 'filterDateFrom', 'filterDateTo'].forEach(id => {
+      ['filterInvoiceNumber', 'filterDateFrom', 'filterDateTo'].forEach(id => {
         const element = document.getElementById(id);
         if (element) element.value = '';
       });

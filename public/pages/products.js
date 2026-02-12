@@ -3,6 +3,10 @@ import authManager from '../js/auth.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
+import { 
+  getSubcategories, 
+  isMainCategory
+} from '../js/categoryHierarchy.js';
 
 export async function renderProducts() {
   const t = languageManager.t.bind(languageManager);
@@ -153,7 +157,10 @@ export async function renderProducts() {
               
               <div class="form-group">
                 <label for="edit-stock">${t('products.stock')}</label>
-                <input type="number" id="edit-stock" class="form-control" min="0" value="0" />
+                <select id="edit-stock" class="form-control">
+                  <option value="available">${t('products.available') || 'Available'}</option>
+                  <option value="unavailable">${t('products.unavailable') || 'Out of Stock'}</option>
+                </select>
               </div>
               
               <div class="form-group">
@@ -426,7 +433,18 @@ async function editProduct(productId) {
     document.getElementById('edit-model-number').value = product.modelNumber || '';
     document.getElementById('edit-category').value = product.category || '';
     document.getElementById('edit-price').value = product.pricePerMeter || product.price || '';
-    document.getElementById('edit-stock').value = product.stock || 0;
+    
+    // Set stock dropdown value based on product stock
+    // If stock is a string (available/unavailable), use it directly
+    // Otherwise, convert number to available/unavailable (legacy compatibility)
+    let stockValue = 'available';
+    if (typeof product.stock === 'string') {
+      stockValue = product.stock;
+    } else if (typeof product.stock === 'number') {
+      stockValue = product.stock > 0 ? 'available' : 'unavailable';
+    }
+    document.getElementById('edit-stock').value = stockValue;
+    
     document.getElementById('edit-description').value = product.description || '';
     
     modal.style.display = 'flex';
@@ -594,7 +612,7 @@ function initializeEditProduct() {
       const modelNumber = document.getElementById('edit-model-number').value.trim();
       const category = document.getElementById('edit-category').value.trim();
       const pricePerMeter = parseFloat(document.getElementById('edit-price').value);
-      const stock = parseInt(document.getElementById('edit-stock').value) || 0;
+      const stock = document.getElementById('edit-stock').value; // Get string value: 'available' or 'unavailable'
       const description = document.getElementById('edit-description').value.trim();
       const imageFile = document.getElementById('edit-image').files[0];
       
@@ -762,10 +780,44 @@ function initializeBulkImport() {
       const rowNum = index + 2; // +2 because Excel starts at 1 and has header row
       const modelNumber = row['Model Number'] || row['model_number'] || row['ModelNumber'];
       const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
+      const category = row['Category'] || row['category'];
+      const subcategory = row['Subcategory'] || row['subcategory'] || row['SubCategory'];
       
       // Check for required fields
       if (!modelNumber) {
         validationErrors.push(`Row ${rowNum}: Model Number is required`);
+      }
+      
+      // Check for category and subcategory - both are required
+      if (!category || category.trim() === '') {
+        validationErrors.push(`Row ${rowNum}: Category is required`);
+      }
+      
+      if (!subcategory || subcategory.trim() === '') {
+        validationErrors.push(`Row ${rowNum}: Subcategory is required`);
+      }
+      
+      // Validate category hierarchy
+      if (category && subcategory) {
+        const trimmedCategory = category.trim();
+        const trimmedSubcategory = subcategory.trim();
+        
+        // Check if category is a valid main category
+        if (!isMainCategory(trimmedCategory)) {
+          validationErrors.push(`Row ${rowNum}: Invalid category "${trimmedCategory}". Please refer to the sample template for valid categories.`);
+        } else {
+          // Check if subcategory is valid for this main category
+          const validSubcategories = getSubcategories(trimmedCategory);
+          if (!validSubcategories.includes(trimmedSubcategory)) {
+            // Show only first 5 subcategories to keep error message readable
+            const subcatList = validSubcategories.slice(0, 5).join(', ');
+            const moreCount = validSubcategories.length - 5;
+            const subcatDisplay = validSubcategories.length > 5 
+              ? `${subcatList} (and ${moreCount} more)` 
+              : subcatList;
+            validationErrors.push(`Row ${rowNum}: Invalid subcategory "${trimmedSubcategory}" for category "${trimmedCategory}". Valid options include: ${subcatDisplay}. See sample template for full list.`);
+          }
+        }
       }
       
       // Check for duplicate model numbers in file
@@ -852,7 +904,8 @@ function initializeBulkImport() {
           try {
             // Map Excel columns to product fields
             const modelNumber = row['Model Number'] || row['model_number'] || row['ModelNumber'];
-            const category = row['Category'] || row['category'];
+            const mainCategory = row['Category'] || row['category'];
+            const subcategory = row['Subcategory'] || row['subcategory'] || row['SubCategory'];
             const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
             const imagePath = row['Image Path'] || row['image_path'] || row['ImagePath'];
             
@@ -876,7 +929,9 @@ function initializeBulkImport() {
               sellerId: profile.uid,
               sellerName: profile.displayName,
               modelNumber: modelNumber,
-              category: category,
+              mainCategory: mainCategory,
+              category: subcategory, // Store subcategory in 'category' field for backward compatibility
+              subcategory: subcategory, // Also store in dedicated subcategory field
               pricePerMeter: price,
               imageUrl: imageUrl,
               createdAt: new Date().toISOString(),
