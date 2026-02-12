@@ -11,6 +11,10 @@ import {
   isSubcategory
 } from '../js/categoryHierarchy.js';
 
+// Constants for dropdown placeholders
+const PLACEHOLDER_MAIN_CATEGORY = 'Select main category';
+const PLACEHOLDER_SUBCATEGORY = 'Select subcategory';
+
 export async function renderProducts() {
   const t = languageManager.t.bind(languageManager);
   
@@ -151,14 +155,14 @@ export async function renderProducts() {
               <div class="form-group">
                 <label for="edit-main-category">${t('products.mainCategory')} *</label>
                 <select id="edit-main-category" class="form-control" required>
-                  <option value="">Select Main Category</option>
+                  <option value="">${PLACEHOLDER_MAIN_CATEGORY}</option>
                 </select>
               </div>
               
               <div class="form-group">
                 <label for="edit-subcategory">${t('products.subcategory')} *</label>
                 <select id="edit-subcategory" class="form-control" required>
-                  <option value="">Select Subcategory</option>
+                  <option value="">${PLACEHOLDER_SUBCATEGORY}</option>
                 </select>
               </div>
               
@@ -444,8 +448,8 @@ async function editProduct(productId) {
     const subcategorySelect = document.getElementById('edit-subcategory');
     
     // Clear existing options
-    mainCategorySelect.innerHTML = '<option value="">Select Main Category</option>';
-    subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+    mainCategorySelect.innerHTML = `<option value="">${PLACEHOLDER_MAIN_CATEGORY}</option>`;
+    subcategorySelect.innerHTML = `<option value="">${PLACEHOLDER_SUBCATEGORY}</option>`;
     
     // Add main categories
     const mainCategories = getMainCategories();
@@ -467,8 +471,8 @@ async function editProduct(productId) {
         currentSubcategory = product.category;
         currentMainCategory = getMainCategoryForSubcategory(product.category);
       } else {
-        // If category doesn't match hierarchy, default to Construction
-        currentMainCategory = 'Construction';
+        // If category doesn't match hierarchy, default to first main category
+        currentMainCategory = mainCategories.length > 0 ? mainCategories[0] : '';
         currentSubcategory = product.category;
       }
     }
@@ -670,7 +674,7 @@ function initializeEditProduct() {
   if (mainCategorySelect) {
     mainCategorySelect.addEventListener('change', (e) => {
       const selectedMainCategory = e.target.value;
-      subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+      subcategorySelect.innerHTML = `<option value="">${PLACEHOLDER_SUBCATEGORY}</option>`;
       
       if (selectedMainCategory) {
         const subcategories = getSubcategories(selectedMainCategory);
