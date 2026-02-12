@@ -44,7 +44,9 @@ export default {
     selectDate: 'تاریخ منتخب کریں',
     from: 'سے',
     to: 'تک',
-    clear: 'صاف کریں'
+    clear: 'صاف کریں',
+    name: 'نام',
+    email: 'ای میل'
   },
   
   // زبانیں
@@ -65,14 +67,17 @@ export default {
     bulkImport: 'بلک امپورٹ',
     modelNumber: 'ماڈل نمبر',
     category: 'قسم',
+    subcategory: 'ذیلی قسم',
     pricePerMeter: 'فی میٹر قیمت',
     price: 'قیمت',
     imagePath: 'تصویر کا راستہ',
     description: 'تفصیل',
     stock: 'اسٹاک',
+    available: 'دستیاب',
+    unavailable: 'دستیاب نہیں',
     minOrder: 'کم سے کم آرڈر',
     uploadExcel: 'ایکسل فائل اپ لوڈ کریں',
-    importInstructions: 'کالموں کے ساتھ ایک ایکسل فائل اپ لوڈ کریں: ماڈل نمبر، قسم، فی میٹر قیمت، تصویر کا راستہ',
+    importInstructions: 'کالموں کے ساتھ ایک ایکسل فائل اپ لوڈ کریں: ماڈل نمبر، قسم، ذیلی قسم، فی میٹر قیمت، تصویر کا راستہ',
     selectFile: 'فائل منتخب کریں',
     importProducts: 'مصنوعات درآمد کریں',
     importSuccess: 'مصنوعات کامیابی سے درآمد ہوئیں',
@@ -142,7 +147,12 @@ export default {
     seller: 'فروخت کنندہ',
     trackAndManage: 'اپنے آرڈرز کو ٹریک اور منظم کریں',
     noOrders: 'ابھی تک کوئی آرڈر نہیں',
-    ordersWillAppear: 'آپ کی پہلی خریداری کے بعد آپ کے آرڈرز یہاں ظاہر ہوں گے'
+    ordersWillAppear: 'آپ کی پہلی خریداری کے بعد آپ کے آرڈرز یہاں ظاہر ہوں گے',
+    buyerName: 'خریدار کا نام',
+    buyerCompany: 'خریدار کی کمپنی',
+    email: 'ای میل',
+    filterOrders: 'آرڈرز فلٹر کریں',
+    dateRange: 'تاریخ کی حد'
   },
   
   // گفتگو
@@ -183,6 +193,7 @@ export default {
     overdue: 'میعاد ختم',
     download: 'ڈاؤن لوڈ',
     viewInvoice: 'رسید دیکھیں',
+    viewDetails: 'تفصیلات دیکھیں',
     noInvoices: 'ابھی تک کوئی رسید نہیں',
     invoicesWillAppear: 'آرڈر مکمل ہونے کے بعد آپ کی رسیدیں یہاں ظاہر ہوں گی',
     orderNumber: 'آرڈر نمبر',
@@ -193,7 +204,14 @@ export default {
     tax: 'ٹیکس',
     total: 'کل',
     buyer: 'خریدار',
-    seller: 'فروخت کنندہ'
+    seller: 'فروخت کنندہ',
+    buyerName: 'خریدار کا نام',
+    buyerCompany: 'خریدار کی کمپنی',
+    email: 'ای میل',
+    filterInvoices: 'رسیدیں فلٹر کریں',
+    dateRange: 'تاریخ کی حد',
+    depositPaid: 'جمع ادا شدہ',
+    remainingBalance: 'باقی رقم'
   },
   
   // ٹوکری
@@ -287,6 +305,10 @@ export default {
     noSellers: 'کوئی فروخت کنندگان دستیاب نہیں',
     productsFrom: 'مصنوعات سے',
     selectCategory: 'مصنوعات براؤز کرنے کے لیے زمرہ منتخب کریں',
+    selectSubcategory: 'مصنوعات براؤز کرنے کے لیے ذیلی زمرہ منتخب کریں',
+    viewSubcategories: 'ذیلی زمرے دیکھیں',
+    subcategories: 'ذیلی زمرے',
+    noSubcategories: 'کوئی ذیلی زمرے دستیاب نہیں',
     noCategories: 'کوئی زمرے دستیاب نہیں',
     categories: 'زمرے',
     clickToViewSellers: 'اس زمرے میں فروخت کنندگان دیکھنے کے لیے کلک کریں',
@@ -329,7 +351,12 @@ export default {
     subtitle: 'تعمیراتی مصنوعات کے سپلائرز کو براؤز کریں اور ان سے رابطہ کریں',
     loading: 'فروخت کنندگان لوڈ ہو رہے ہیں...',
     noSellers: 'کوئی فروخت کنندگان دستیاب نہیں',
-    directory: 'فروخت کنندگان کی ڈائرکٹری یہاں ظاہر ہوگی'
+    directory: 'فروخت کنندگان کی ڈائرکٹری یہاں ظاہر ہوگی',
+    filterByCategory: 'زمرے کے مطابق فلٹر کریں',
+    viewInfo: 'معلومات دیکھیں',
+    company: 'کمپنی',
+    city: 'شہر',
+    contactSeller: 'فروخت کنندہ سے رابطہ کریں'
   },
   
   // شاخیں
@@ -378,6 +405,68 @@ export default {
     preferredLanguage: 'ترجیحی زبان',
     languageDescription: 'انٹرفیس اور خودکار پیغام کی ترجمہ کے لیے اپنی ترجیحی زبان منتخب کریں'
   },
+  // معاونت
+  support: {
+    title: 'معاونت کا مرکز',
+    subtitle: 'اپنے اکاؤنٹ اور آرڈرز کے بارے میں مدد حاصل کریں',
+    contactUs: 'ہم سے رابطہ کریں',
+    contactDescription: 'کوئی سوال ہے یا مدد کی ضرورت ہے؟ نیچے دیا گیا فارم پُر کریں اور ہم جلد از جلد آپ سے رابطہ کریں گے۔',
+    subject: 'موضوع',
+    subjectPlaceholder: 'آپ کے سوال کی مختصر تفصیل',
+    message: 'پیغام',
+    messagePlaceholder: 'براہ کرم اپنے سوال کے بارے میں تفصیلات فراہم کریں...',
+    sendMessage: 'پیغام بھیجیں',
+    messageSent: 'آپ کا ای میل کلائنٹ کھول رہے ہیں۔ اپنی درخواست مکمل کرنے کے لیے براہ کرم ای میل بھیجیں۔',
+    directContact: 'آپ ہم سے براہ راست بھی رابطہ کر سکتے ہیں',
+    requestNewCategory: 'نئے زمرے کی درخواست کریں',
+    categoryName: 'زمرے کا نام',
+    reason: 'درخواست کی وجہ',
+    sendRequest: 'درخواست بھیجیں',
+    requestSent: 'آپ کی درخواست کامیابی سے بھیج دی گئی',
+    requestFailed: 'درخواست بھیجنے میں ناکامی۔ براہ کرم دوبارہ کوشش کریں۔',
+    contactEmail: 'contactus@ione.live',
+    contactSupportEmail: 'رابطہ: contactus@ione.live'
+  },
+  
+  // زمرے
+  categories: {
+    title: 'اپنا زمرہ منتخب کریں',
+    subtitle: 'وہ زمرہ منتخب کریں جسے آپ تلاش کرنا چاہتے ہیں',
+    selectCategory: 'زمرہ منتخب کریں',
+    noProductsInCategory: 'اس زمرے میں ابھی تک کوئی مصنوعات دستیاب نہیں',
+    apparelAccessories: 'لباس اور لوازمات',
+    automobilesMotorcycles: 'آٹوموبائل اور موٹر سائیکلیں',
+    businessServices: 'کاروباری خدمات',
+    chemicals: 'کیمیکل',
+    computerProductsElectronics: 'کمپیوٹر کی مصنوعات اور دفتری الیکٹرانکس',
+    constructionRealEstate: 'تعمیرات اور رئیل اسٹیٹ',
+    consumerElectronics: 'کنزیومر الیکٹرانکس',
+    electricalEquipmentSupplies: 'برقی آلات اور سامان',
+    electronicsComponentsSupplies: 'الیکٹرانک اجزاء اور سامان',
+    energy: 'توانائی',
+    environment: 'ماحولیات',
+    foodBeverage: 'کھانا اور مشروبات',
+    furniture: 'فرنیچر',
+    giftsSportsToys: 'تحائف، کھیل اور کھلونے',
+    hardware: 'ہارڈویئر',
+    healthBeauty: 'صحت اور خوبصورتی',
+    homeGarden: 'گھر اور باغ',
+    homeAppliances: 'گھریلو آلات',
+    industryLaserEquipment: 'صنعتی لیزر آلات',
+    lightsLighting: 'لائٹس اور روشنی',
+    luggageBagsCases: 'سامان، بیگ اور کیسز',
+    machinery: 'مشینری',
+    measurementAnalysisInstruments: 'پیمائش اور تجزیہ کے آلات',
+    metallurgyMineralEnergy: 'دھات سازی، معدنیات اور توانائی',
+    packagingPrinting: 'پیکیجنگ اور پرنٹنگ',
+    securityProtection: 'سیکیورٹی اور تحفظ',
+    shoesAccessories: 'جوتے اور لوازمات',
+    textilesLeatherProducts: 'کپڑے اور چمڑے کی مصنوعات',
+    transportation: 'نقل و حمل',
+    contactSupport: 'اگر آپ کو نئے زمرے کی ضرورت ہے تو براہ کرم معاونت سے رابطہ کریں',
+    contactSupportEmail: 'رابطہ: contactus@ione.live'
+  },
+  
   // لینڈنگ پیج
   landing: {
     nav: {
