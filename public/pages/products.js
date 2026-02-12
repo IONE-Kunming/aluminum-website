@@ -153,7 +153,10 @@ export async function renderProducts() {
               
               <div class="form-group">
                 <label for="edit-stock">${t('products.stock')}</label>
-                <input type="number" id="edit-stock" class="form-control" min="0" value="0" />
+                <select id="edit-stock" class="form-control">
+                  <option value="available">${t('products.available') || 'Available'}</option>
+                  <option value="unavailable">${t('products.unavailable') || 'Out of Stock'}</option>
+                </select>
               </div>
               
               <div class="form-group">
@@ -426,7 +429,18 @@ async function editProduct(productId) {
     document.getElementById('edit-model-number').value = product.modelNumber || '';
     document.getElementById('edit-category').value = product.category || '';
     document.getElementById('edit-price').value = product.pricePerMeter || product.price || '';
-    document.getElementById('edit-stock').value = product.stock || 0;
+    
+    // Set stock dropdown value based on product stock
+    // If stock is a string (available/unavailable), use it directly
+    // Otherwise, convert number to available/unavailable (legacy compatibility)
+    let stockValue = 'available';
+    if (typeof product.stock === 'string') {
+      stockValue = product.stock;
+    } else if (typeof product.stock === 'number') {
+      stockValue = product.stock > 0 ? 'available' : 'unavailable';
+    }
+    document.getElementById('edit-stock').value = stockValue;
+    
     document.getElementById('edit-description').value = product.description || '';
     
     modal.style.display = 'flex';
@@ -594,7 +608,7 @@ function initializeEditProduct() {
       const modelNumber = document.getElementById('edit-model-number').value.trim();
       const category = document.getElementById('edit-category').value.trim();
       const pricePerMeter = parseFloat(document.getElementById('edit-price').value);
-      const stock = parseInt(document.getElementById('edit-stock').value) || 0;
+      const stock = document.getElementById('edit-stock').value; // Get string value: 'available' or 'unavailable'
       const description = document.getElementById('edit-description').value.trim();
       const imageFile = document.getElementById('edit-image').files[0];
       
