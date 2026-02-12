@@ -109,8 +109,14 @@ export function renderSupport() {
         `Name: ${name}\nEmail: ${email}\n\n${message}`
       )}`;
       
-      // Open email client
-      window.location.href = mailtoLink;
+      // Use anchor element to avoid navigation issues
+      const mailtoAnchor = document.createElement('a');
+      mailtoAnchor.href = mailtoLink;
+      mailtoAnchor.target = '_blank';
+      mailtoAnchor.style.display = 'none';
+      document.body.appendChild(mailtoAnchor);
+      mailtoAnchor.click();
+      document.body.removeChild(mailtoAnchor);
       
       // Show success message
       if (window.toast) {

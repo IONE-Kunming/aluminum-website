@@ -807,12 +807,18 @@ function initializeBulkImport() {
         
         // Check if category is a valid main category
         if (!isMainCategory(trimmedCategory)) {
-          validationErrors.push(`Row ${rowNum}: Invalid category "${trimmedCategory}". Must be one of: ${getMainCategories().join(', ')}`);
+          validationErrors.push(`Row ${rowNum}: Invalid category "${trimmedCategory}". Please refer to the sample template for valid categories.`);
         } else {
           // Check if subcategory is valid for this main category
           const validSubcategories = getSubcategories(trimmedCategory);
           if (!validSubcategories.includes(trimmedSubcategory)) {
-            validationErrors.push(`Row ${rowNum}: Invalid subcategory "${trimmedSubcategory}" for category "${trimmedCategory}". Valid subcategories: ${validSubcategories.join(', ')}`);
+            // Show only first 5 subcategories to keep error message readable
+            const subcatList = validSubcategories.slice(0, 5).join(', ');
+            const moreCount = validSubcategories.length - 5;
+            const subcatDisplay = validSubcategories.length > 5 
+              ? `${subcatList} (and ${moreCount} more)` 
+              : subcatList;
+            validationErrors.push(`Row ${rowNum}: Invalid subcategory "${trimmedSubcategory}" for category "${trimmedCategory}". Valid options include: ${subcatDisplay}. See sample template for full list.`);
           }
         }
       }

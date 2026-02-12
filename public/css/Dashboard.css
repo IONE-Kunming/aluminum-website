@@ -32,6 +32,12 @@
   margin-bottom: var(--spacing-xl);
 }
 
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+}
+
 .stat-card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
