@@ -25,8 +25,8 @@ class DataService {
     if (window.firebase && window.firebase.firestore) {
       this.db = window.firebase.firestore();
       
-      // Check if cache needs to be cleared (version bump for deleted chats)
-      const CACHE_VERSION = '1.1.0'; // Increment this to force cache clear
+      // Check if cache needs to be cleared (version bump for products limit fix)
+      const CACHE_VERSION = '1.2.0'; // Increment this to force cache clear
       const currentVersion = localStorage.getItem('firestoreCacheVersion');
       
       if (currentVersion !== CACHE_VERSION) {
