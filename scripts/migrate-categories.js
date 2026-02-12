@@ -16,9 +16,14 @@
  * Run with: node scripts/migrate-categories.js
  */
 
-const admin = require('firebase-admin');
-const fs = require('fs');
-const path = require('path');
+import admin from 'firebase-admin';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ES module equivalents for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Initialize Firebase Admin
 let serviceAccount;
@@ -29,7 +34,9 @@ try {
   } else {
     const serviceAccountPath = path.join(__dirname, '..', 'serviceAccountKey.json');
     if (fs.existsSync(serviceAccountPath)) {
-      serviceAccount = require(serviceAccountPath);
+      // Use fs.readFileSync to load JSON file in ES modules
+      const serviceAccountData = fs.readFileSync(serviceAccountPath, 'utf8');
+      serviceAccount = JSON.parse(serviceAccountData);
     } else {
       console.error('❌ Service account key not found.');
       console.error('Please provide serviceAccountKey.json or set FIREBASE_SERVICE_ACCOUNT environment variable.');
