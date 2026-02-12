@@ -44,7 +44,9 @@ export default {
     selectDate: '选择日期',
     from: '从',
     to: '到',
-    clear: '清除'
+    clear: '清除',
+    name: '名称',
+    email: '电子邮件'
   },
   
   // 语言
@@ -65,14 +67,18 @@ export default {
     bulkImport: '批量导入',
     modelNumber: '型号',
     category: '类别',
+    mainCategory: '主类别',
+    subcategory: '子类别',
     pricePerMeter: '每米价格',
     price: '价格',
     imagePath: '图片路径',
     description: '描述',
     stock: '库存',
+    available: '可用',
+    unavailable: '缺货',
     minOrder: '最小订单',
     uploadExcel: '上传Excel文件',
-    importInstructions: '上传包含以下列的Excel文件：型号、类别、每米价格、图片路径',
+    importInstructions: '上传包含以下列的Excel文件：型号、类别、子类别、每米价格、图片路径',
     selectFile: '选择文件',
     importProducts: '导入产品',
     importSuccess: '产品导入成功',
@@ -142,7 +148,13 @@ export default {
     seller: '卖家',
     trackAndManage: '跟踪和管理您的订单',
     noOrders: '暂无订单',
-    ordersWillAppear: '您的订单将在首次购买后显示在这里'
+    ordersWillAppear: '您的订单将在首次购买后显示在这里',
+    buyerName: '买家姓名',
+    buyerCompany: '买家公司',
+    email: '电子邮件',
+    filterOrders: '筛选订单',
+    dateRange: '日期范围',
+    manageCustomerOrders: '管理客户订单'
   },
   
   // 聊天
@@ -183,6 +195,7 @@ export default {
     overdue: '逾期',
     download: '下载',
     viewInvoice: '查看发票',
+    viewDetails: '查看详情',
     noInvoices: '暂无发票',
     invoicesWillAppear: '订单完成后您的发票将显示在这里',
     orderNumber: '订单号',
@@ -193,7 +206,14 @@ export default {
     tax: '税费',
     total: '总计',
     buyer: '买家',
-    seller: '卖家'
+    seller: '卖家',
+    buyerName: '买家姓名',
+    buyerCompany: '买家公司',
+    email: '电子邮件',
+    filterInvoices: '筛选发票',
+    dateRange: '日期范围',
+    depositPaid: '已支付订金',
+    remainingBalance: '余额'
   },
   
   // 购物车
@@ -287,6 +307,10 @@ export default {
     noSellers: '暂无卖家',
     productsFrom: '产品来自',
     selectCategory: '选择类别浏览产品',
+    selectSubcategory: '选择子类别浏览产品',
+    viewSubcategories: '查看子类别',
+    subcategories: '子类别',
+    noSubcategories: '暂无子类别',
     noCategories: '暂无类别',
     categories: '类别',
     clickToViewSellers: '点击查看此类别中的卖家',
@@ -329,7 +353,12 @@ export default {
     subtitle: '浏览并联系建筑产品供应商',
     loading: '加载卖家中...',
     noSellers: '暂无卖家',
-    directory: '卖家目录将显示在这里'
+    directory: '卖家目录将显示在这里',
+    filterByCategory: '按类别筛选',
+    viewInfo: '查看信息',
+    company: '公司',
+    city: '城市',
+    contactSeller: '联系卖家'
   },
   
   // 分支机构
@@ -359,7 +388,10 @@ export default {
     companyName: '公司名称',
     phoneNumber: '电话号码',
     passwordMinLength: '密码必须至少6个字符',
-    continueWithGoogle: '使用Google继续'
+    continueWithGoogle: '使用Google继续',
+    notAuthenticated: '未认证',
+    pleaseLoginToViewOrders: '请登录以查看您的订单',
+    pleaseLoginToViewInvoices: '请登录以查看您的发票'
   },
   
   // 个人资料
@@ -379,7 +411,68 @@ export default {
     languageDescription: '选择您的界面首选语言和自动消息翻译语言'
   },
   
-  // 着陆页
+  // 支持
+  support: {
+    title: '支持中心',
+    subtitle: '获取有关您的帐户和订单的帮助',
+    contactUs: '联系我们',
+    contactDescription: '有问题或需要帮助吗？请填写下面的表格，我们会尽快回复您。',
+    subject: '主题',
+    subjectPlaceholder: '您的查询的简要说明',
+    message: '信息',
+    messagePlaceholder: '请提供有关您的查询的详细信息...',
+    sendMessage: '发送消息',
+    messageSent: '正在打开您的电子邮件客户端。请发送电子邮件以完成您的请求。',
+    directContact: '您也可以直接联系我们',
+    requestNewCategory: '请求新类别',
+    categoryName: '类别名称',
+    reason: '请求原因',
+    sendRequest: '发送请求',
+    requestSent: '您的请求已成功发送',
+    requestFailed: '发送请求失败。请重试。',
+    contactEmail: 'contactus@ione.live',
+    contactSupportEmail: '联系: contactus@ione.live'
+  },
+  
+  // 类别
+  categories: {
+    title: '选择您的类别',
+    subtitle: '选择您想探索的类别',
+    selectCategory: '选择类别',
+    noProductsInCategory: '此类别中暂无产品',
+    apparelAccessories: '服装及配件',
+    automobilesMotorcycles: '汽车及摩托车',
+    businessServices: '商业服务',
+    chemicals: '化学品',
+    computerProductsElectronics: '电脑产品及办公电子产品',
+    constructionRealEstate: '建筑及房地产',
+    consumerElectronics: '消费电子产品',
+    electricalEquipmentSupplies: '电气设备及用品',
+    electronicsComponentsSupplies: '电子元件及用品',
+    energy: '能源',
+    environment: '环境',
+    foodBeverage: '食品及饮料',
+    furniture: '家具',
+    giftsSportsToys: '礼品、运动及玩具',
+    hardware: '五金',
+    healthBeauty: '健康及美容',
+    homeGarden: '家居及园艺',
+    homeAppliances: '家用电器',
+    industryLaserEquipment: '工业激光设备',
+    lightsLighting: '灯具及照明',
+    luggageBagsCases: '行李、包及箱子',
+    machinery: '机械',
+    measurementAnalysisInstruments: '测量及分析仪器',
+    metallurgyMineralEnergy: '冶金、矿产及能源',
+    packagingPrinting: '包装及印刷',
+    securityProtection: '安全及保护',
+    shoesAccessories: '鞋类及配件',
+    textilesLeatherProducts: '纺织品及皮革制品',
+    transportation: '运输',
+    contactSupport: '如果您需要新类别，请联系支持',
+    contactSupportEmail: '联系: contactus@ione.live'
+  },
+  
   landing: {
     nav: {
       features: '功能',

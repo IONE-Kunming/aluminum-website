@@ -44,7 +44,9 @@ export default {
     selectDate: 'اختر التاريخ',
     from: 'من',
     to: 'إلى',
-    clear: 'مسح'
+    clear: 'مسح',
+    name: 'الاسم',
+    email: 'البريد الإلكتروني'
   },
   
   // اللغات
@@ -65,14 +67,18 @@ export default {
     bulkImport: 'استيراد جماعي',
     modelNumber: 'رقم الموديل',
     category: 'الفئة',
+    mainCategory: 'الفئة الرئيسية',
+    subcategory: 'الفئة الفرعية',
     pricePerMeter: 'السعر للمتر',
     price: 'السعر',
     imagePath: 'مسار الصورة',
     description: 'الوصف',
     stock: 'المخزون',
+    available: 'متوفر',
+    unavailable: 'غير متوفر',
     minOrder: 'الحد الأدنى للطلب',
     uploadExcel: 'تحميل ملف Excel',
-    importInstructions: 'قم بتحميل ملف Excel يحتوي على الأعمدة: رقم الموديل، الفئة، السعر للمتر، مسار الصورة',
+    importInstructions: 'قم بتحميل ملف Excel يحتوي على الأعمدة: رقم الموديل، الفئة، الفئة الفرعية، السعر للمتر، مسار الصورة',
     selectFile: 'اختر ملف',
     importProducts: 'استيراد المنتجات',
     importSuccess: 'تم استيراد المنتجات بنجاح',
@@ -142,7 +148,13 @@ export default {
     seller: 'البائع',
     trackAndManage: 'تتبع وإدارة طلباتك',
     noOrders: 'لا توجد طلبات بعد',
-    ordersWillAppear: 'ستظهر طلباتك هنا بمجرد إجراء أول عملية شراء'
+    ordersWillAppear: 'ستظهر طلباتك هنا بمجرد إجراء أول عملية شراء',
+    buyerName: 'اسم المشتري',
+    buyerCompany: 'شركة المشتري',
+    email: 'البريد الإلكتروني',
+    filterOrders: 'تصفية الطلبات',
+    dateRange: 'نطاق التاريخ',
+    manageCustomerOrders: 'إدارة طلبات العملاء'
   },
   
   // المحادثات
@@ -183,6 +195,7 @@ export default {
     overdue: 'متأخر',
     download: 'تحميل',
     viewInvoice: 'عرض الفاتورة',
+    viewDetails: 'عرض التفاصيل',
     noInvoices: 'لا توجد فواتير بعد',
     invoicesWillAppear: 'ستظهر فواتيرك هنا بعد اكتمال الطلب',
     orderNumber: 'رقم الطلب',
@@ -193,7 +206,14 @@ export default {
     tax: 'الضريبة',
     total: 'الإجمالي',
     buyer: 'المشتري',
-    seller: 'البائع'
+    seller: 'البائع',
+    buyerName: 'اسم المشتري',
+    buyerCompany: 'شركة المشتري',
+    email: 'البريد الإلكتروني',
+    filterInvoices: 'تصفية الفواتير',
+    dateRange: 'نطاق التاريخ',
+    depositPaid: 'العربون المدفوع',
+    remainingBalance: 'الرصيد المتبقي'
   },
   
   // سلة التسوق
@@ -287,6 +307,10 @@ export default {
     noSellers: 'لا يوجد بائعون متاحون',
     productsFrom: 'منتجات من',
     selectCategory: 'اختر فئة لتصفح المنتجات',
+    selectSubcategory: 'اختر فئة فرعية لتصفح المنتجات',
+    viewSubcategories: 'عرض الفئات الفرعية',
+    subcategories: 'الفئات الفرعية',
+    noSubcategories: 'لا توجد فئات فرعية متاحة',
     noCategories: 'لا توجد فئات متاحة',
     categories: 'الفئات',
     clickToViewSellers: 'انقر لعرض البائعين في هذه الفئة',
@@ -329,7 +353,12 @@ export default {
     subtitle: 'تصفح واتصل بموردي منتجات البناء',
     loading: 'جارٍ تحميل البائعين...',
     noSellers: 'لا يوجد بائعون متاحون',
-    directory: 'سيظهر دليل البائعين هنا'
+    directory: 'سيظهر دليل البائعين هنا',
+    filterByCategory: 'تصفية حسب الفئة',
+    viewInfo: 'عرض المعلومات',
+    company: 'الشركة',
+    city: 'المدينة',
+    contactSeller: 'اتصل بالبائع'
   },
   
   // الفروع
@@ -359,7 +388,10 @@ export default {
     companyName: 'اسم الشركة',
     phoneNumber: 'رقم الهاتف',
     passwordMinLength: 'يجب أن تكون كلمة المرور 6 أحرف على الأقل',
-    continueWithGoogle: 'المتابعة مع Google'
+    continueWithGoogle: 'المتابعة مع Google',
+    notAuthenticated: 'غير مصادق',
+    pleaseLoginToViewOrders: 'يرجى تسجيل الدخول لعرض طلباتك',
+    pleaseLoginToViewInvoices: 'يرجى تسجيل الدخول لعرض فواتيرك'
   },
   
   // الملف الشخصي
@@ -377,6 +409,68 @@ export default {
     accountInformation: 'معلومات الحساب',
     preferredLanguage: 'اللغة المفضلة',
     languageDescription: 'حدد لغتك المفضلة للواجهة والترجمة التلقائية للرسائل'
+  },
+  
+  // الدعم
+  support: {
+    title: 'مركز الدعم',
+    subtitle: 'احصل على المساعدة بشأن حسابك وطلباتك',
+    contactUs: 'اتصل بنا',
+    contactDescription: 'هل لديك سؤال أو تحتاج إلى مساعدة؟ املأ النموذج أدناه وسنعاود الاتصال بك في أقرب وقت ممكن.',
+    subject: 'الموضوع',
+    subjectPlaceholder: 'وصف موجز لاستفسارك',
+    message: 'الرسالة',
+    messagePlaceholder: 'يرجى تقديم تفاصيل حول استفسارك...',
+    sendMessage: 'إرسال الرسالة',
+    messageSent: 'جارٍ فتح عميل البريد الإلكتروني الخاص بك. يرجى إرسال البريد الإلكتروني لإكمال طلبك.',
+    directContact: 'يمكنك أيضًا الاتصال بنا مباشرة على',
+    requestNewCategory: 'طلب فئة جديدة',
+    categoryName: 'اسم الفئة',
+    reason: 'سبب الطلب',
+    sendRequest: 'إرسال الطلب',
+    requestSent: 'تم إرسال طلبك بنجاح',
+    requestFailed: 'فشل إرسال الطلب. يرجى المحاولة مرة أخرى.',
+    contactEmail: 'contactus@ione.live',
+    contactSupportEmail: 'اتصل: contactus@ione.live'
+  },
+  
+  // الفئات
+  categories: {
+    title: 'اختر فئتك',
+    subtitle: 'اختر الفئة التي تريد استكشافها',
+    selectCategory: 'اختر الفئة',
+    noProductsInCategory: 'لا توجد منتجات متاحة في هذه الفئة بعد',
+    apparelAccessories: 'الملابس والإكسسوارات',
+    automobilesMotorcycles: 'السيارات والدراجات النارية',
+    businessServices: 'خدمات الأعمال',
+    chemicals: 'المواد الكيميائية',
+    computerProductsElectronics: 'منتجات الكمبيوتر والإلكترونيات المكتبية',
+    constructionRealEstate: 'البناء والعقارات',
+    consumerElectronics: 'الإلكترونيات الاستهلاكية',
+    electricalEquipmentSupplies: 'المعدات واللوازم الكهربائية',
+    electronicsComponentsSupplies: 'المكونات واللوازم الإلكترونية',
+    energy: 'الطاقة',
+    environment: 'البيئة',
+    foodBeverage: 'الطعام والمشروبات',
+    furniture: 'الأثاث',
+    giftsSportsToys: 'الهدايا والرياضة والألعاب',
+    hardware: 'الأجهزة',
+    healthBeauty: 'الصحة والجمال',
+    homeGarden: 'المنزل والحديقة',
+    homeAppliances: 'الأجهزة المنزلية',
+    industryLaserEquipment: 'معدات الليزر الصناعية',
+    lightsLighting: 'الإضاءة',
+    luggageBagsCases: 'الأمتعة والحقائب والحقائب',
+    machinery: 'الآلات',
+    measurementAnalysisInstruments: 'أدوات القياس والتحليل',
+    metallurgyMineralEnergy: 'المعادن والمعادن والطاقة',
+    packagingPrinting: 'التغليف والطباعة',
+    securityProtection: 'الأمن والحماية',
+    shoesAccessories: 'الأحذية والإكسسوارات',
+    textilesLeatherProducts: 'المنسوجات والمنتجات الجلدية',
+    transportation: 'النقل',
+    contactSupport: 'إذا كنت بحاجة إلى فئة جديدة، يرجى الاتصال بالدعم',
+    contactSupportEmail: 'اتصل: contactus@ione.live'
   },
   
   // الصفحة الرئيسية

@@ -261,20 +261,92 @@ class DataService {
         return [];
       }
 
-      const snapshot = await this.db
-        .collection('products')
+      // Fetch all orders for this seller
+      const ordersSnapshot = await this.db
+        .collection('orders')
         .where('sellerId', '==', userId)
-        .orderBy('sales', 'desc')
-        .limit(limit)
         .get();
 
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      // Calculate sales count per product
+      const productSales = new Map();
+      const productDetails = new Map();
+
+      ordersSnapshot.docs.forEach(doc => {
+        const order = doc.data();
+        if (order.items && Array.isArray(order.items)) {
+          order.items.forEach(item => {
+            const productId = item.productId;
+            const quantity = item.quantity || 1;
+            
+            // Accumulate sales
+            if (productSales.has(productId)) {
+              productSales.set(productId, productSales.get(productId) + quantity);
+            } else {
+              productSales.set(productId, quantity);
+            }
+            
+            // Store product details (use first occurrence)
+            if (!productDetails.has(productId)) {
+              productDetails.set(productId, {
+                id: productId,
+                modelNumber: item.modelNumber || item.name || 'Unknown',
+                name: item.name || item.modelNumber || 'Unknown Product',
+                category: item.category,
+                price: item.price || item.pricePerMeter || 0,
+                stock: item.stock,
+                imageUrl: item.imageUrl || item.imagePath
+              });
+            }
+          });
+        }
+      });
+
+      // Convert to array and sort by sales count
+      const topProducts = Array.from(productSales.entries())
+        .map(([productId, salesCount]) => ({
+          ...productDetails.get(productId),
+          sales: salesCount
+        }))
+        .sort((a, b) => b.sales - a.sales)
+        .slice(0, limit);
+
+      // If no sales data, fall back to recent products
+      if (topProducts.length === 0) {
+        const productsSnapshot = await this.db
+          .collection('products')
+          .where('sellerId', '==', userId)
+          .orderBy('createdAt', 'desc')
+          .limit(limit)
+          .get();
+
+        return productsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          sales: 0
+        }));
+      }
+
+      return topProducts;
     } catch (error) {
       console.error('Error fetching top products:', error);
-      return [];
+      // Fallback to old method if new method fails
+      try {
+        const snapshot = await this.db
+          .collection('products')
+          .where('sellerId', '==', userId)
+          .orderBy('createdAt', 'desc')
+          .limit(limit)
+          .get();
+
+        return snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          sales: 0
+        }));
+      } catch (fallbackError) {
+        console.error('Error in fallback products fetch:', fallbackError);
+        return [];
+      }
     }
   }
 

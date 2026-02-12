@@ -67,6 +67,7 @@ export default {
     bulkImport: 'Bulk Import',
     modelNumber: 'Model Number',
     category: 'Category',
+    mainCategory: 'Main Category',
     subcategory: 'Subcategory',
     pricePerMeter: 'Price per Meter',
     price: 'Price',
@@ -152,7 +153,8 @@ export default {
     buyerCompany: 'Buyer Company',
     email: 'Email',
     filterOrders: 'Filter Orders',
-    dateRange: 'Date Range'
+    dateRange: 'Date Range',
+    manageCustomerOrders: 'Manage customer orders'
   },
   
   // Chats
@@ -409,7 +411,10 @@ export default {
     companyName: 'Company Name',
     phoneNumber: 'Phone Number',
     passwordMinLength: 'Password must be at least 6 characters',
-    continueWithGoogle: 'Continue with Google'
+    continueWithGoogle: 'Continue with Google',
+    notAuthenticated: 'Not Authenticated',
+    pleaseLoginToViewOrders: 'Please log in to view your orders',
+    pleaseLoginToViewInvoices: 'Please log in to view your invoices'
   },
   
   // Profile
