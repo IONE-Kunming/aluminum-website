@@ -30,6 +30,7 @@ const lazyPages = {
   cart: () => import('../pages/cart.js').then(m => m.renderCart),
   checkout: () => import('../pages/checkout.js').then(m => m.renderCheckout),
   orders: () => import('../pages/orders.js').then(m => m.renderOrders),
+  orderDetail: () => import('../pages/order-detail.js').then(m => m.renderOrderDetail),
   invoices: () => import('../pages/invoices.js').then(m => m.renderInvoices),
   invoiceDetail: () => import('../pages/invoice-detail.js').then(m => m.renderInvoiceDetail),
   sellers: () => import('../pages/sellers.js').then(m => m.renderSellers),
@@ -245,6 +246,9 @@ async function initApp() {
   router.register('/seller/support', protectedRoute(lazyRoute(lazyPages.support), 'seller'));
   router.register('/seller/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'seller'));
   router.register('/seller/profile', protectedRoute(lazyRoute(lazyPages.profile), 'seller'));
+  
+  // Register shared routes (accessible by both buyer and seller)
+  router.register('/order/detail', protectedRoute(lazyRoute(lazyPages.orderDetail)));
   
   // Register admin routes (lazy loaded)
   router.register('/admin/dashboard', protectedRoute(lazyRoute(lazyPages.adminDashboard), 'admin'));

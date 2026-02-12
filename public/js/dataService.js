@@ -750,6 +750,31 @@ class DataService {
     }
   }
 
+  // Get a single order by ID
+  async getOrderById(orderId) {
+    await this.init();
+    
+    try {
+      if (!this.db || !orderId) {
+        return null;
+      }
+      
+      const doc = await this.db.collection('orders').doc(orderId).get();
+      
+      if (doc.exists) {
+        return {
+          id: doc.id,
+          ...doc.data()
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.error('Error fetching order:', error);
+      return null;
+    }
+  }
+
   // Get a single product by ID
   async getProductById(productId) {
     await this.init();
