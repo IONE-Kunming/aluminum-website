@@ -101,6 +101,15 @@ export async function renderCheckout() {
                 <div class="deposit-label">${t('checkout.premiumDeposit')}</div>
               </div>
             </label>
+            
+            <label class="deposit-option">
+              <input type="radio" name="deposit" value="100" data-percentage="100" />
+              <div class="deposit-card">
+                <div class="deposit-percentage">100%</div>
+                <div class="deposit-amount">$${(cartTotal * 1.1 * 1.0).toFixed(2)}</div>
+                <div class="deposit-label">${t('checkout.fullPayment')}</div>
+              </div>
+            </label>
           </div>
           
           <div id="deposit-summary" class="deposit-summary" style="display: none;">
