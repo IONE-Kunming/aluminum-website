@@ -1162,6 +1162,26 @@ class DataService {
         paymentMethod: order.paymentMethod || 'N/A',
         paymentTerms: `${order.depositPercentage || 30}% deposit, ${100 - (order.depositPercentage || 30)}% on delivery`,
         
+        // Payment instructions (bank details for wire transfers)
+        paymentInstructions: {
+          bankName: sellerData.bankName || 'Bank of China',
+          accountName: sellerData.accountName || sellerData.company || 'N/A',
+          accountNumber: sellerData.accountNumber || 'XXXX-XXXX-XXXX-XXXX',
+          swiftCode: sellerData.swiftCode || 'BKCHCNBJ',
+          paymentMethodDetails: order.paymentMethod || 'Bank Transfer'
+        },
+        
+        // Terms and conditions
+        termsAndConditions: [
+          'Payment must be made within 30 days of invoice date.',
+          'Late payments may incur additional charges.',
+          'All prices are in USD unless otherwise specified.',
+          'Products are non-refundable once delivered.',
+          'Buyer is responsible for any import duties and taxes.',
+          'Seller retains ownership until full payment is received.',
+          'Disputes must be resolved through arbitration in the seller\'s jurisdiction.'
+        ],
+        
         // Dates
         dueDate: firebase.firestore.Timestamp.fromDate(dueDate),
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
