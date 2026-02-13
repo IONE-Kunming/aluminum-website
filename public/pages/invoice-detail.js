@@ -3,6 +3,15 @@ import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml, formatDate } from '../js/utils.js';
 
+// Default terms and conditions
+const DEFAULT_TERMS = [
+  'Payment must be made within 30 days of invoice date.',
+  'Late payments may incur additional charges.',
+  'All prices are in USD unless otherwise specified.',
+  'Products are non-refundable once delivered.',
+  'Buyer is responsible for any import duties and taxes.'
+];
+
 export async function renderInvoiceDetail() {
   // Get invoice ID from URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -189,13 +198,7 @@ function renderPage1(invoice) {
       <div class="invoice-terms-conditions">
         <h3 class="section-title">Terms and Conditions</h3>
         <ol class="terms-list">
-          ${(invoice.termsAndConditions || [
-            'Payment must be made within 30 days of invoice date.',
-            'Late payments may incur additional charges.',
-            'All prices are in USD unless otherwise specified.',
-            'Products are non-refundable once delivered.',
-            'Buyer is responsible for any import duties and taxes.'
-          ]).map(term => `<li>${escapeHtml(term)}</li>`).join('')}
+          ${(invoice.termsAndConditions || DEFAULT_TERMS).map(term => `<li>${escapeHtml(term)}</li>`).join('')}
         </ol>
       </div>
       
