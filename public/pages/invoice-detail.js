@@ -34,11 +34,8 @@ export async function renderInvoiceDetail() {
     
     const isBuyer = invoice.buyerId === user.uid;
     
-    // Render page 1 content (summary)
+    // Render page 1 content (single page invoice)
     const page1Content = renderPage1(invoice);
-    
-    // Render page 2 content (order details)
-    const page2Content = renderPage2(invoice);
     
     const content = `
       <div class="invoice-detail-page">
@@ -57,7 +54,6 @@ export async function renderInvoiceDetail() {
         
         <div class="invoice-document" id="invoice-document">
           ${page1Content}
-          ${page2Content}
         </div>
       </div>
     `;
@@ -79,118 +75,119 @@ export async function renderInvoiceDetail() {
 function renderPage1(invoice) {
   return `
     <div class="invoice-page page-1">
-      <!-- Header Section -->
+      <!-- Header Section with Logo -->
       <div class="invoice-header-section">
         <div class="invoice-logo">
-          <h1>INVOICE</h1>
-          <p class="invoice-number">${escapeHtml(invoice.invoiceNumber)}</p>
+          <img src="/logo.svg" alt="IONE Logo" class="invoice-logo-img">
+          <p class="invoice-company-name">${escapeHtml(invoice.sellerCompany || 'HK KANDIVAN I T C L')}</p>
         </div>
-        <div class="invoice-dates">
-          <p><strong>Date:</strong> ${formatDate(invoice.createdAt)}</p>
-          <p><strong>Due Date:</strong> ${formatDate(invoice.dueDate)}</p>
-          <p><strong>Status:</strong> <span class="status-badge status-${invoice.status}">${invoice.status}</span></p>
+        <div class="invoice-info-header">
+          <div class="invoice-header-row">
+            <div class="invoice-header-item">
+              <span class="invoice-label">Date:</span>
+              <span class="invoice-value">${formatDate(invoice.createdAt)}</span>
+            </div>
+            <div class="invoice-header-item">
+              <span class="invoice-label">Invoice No.:</span>
+              <span class="invoice-value invoice-number">${escapeHtml(invoice.invoiceNumber)}</span>
+            </div>
+          </div>
+          <div class="invoice-status-badge status-${invoice.status}">${invoice.status.toUpperCase()}</div>
         </div>
       </div>
       
       <!-- Parties Section -->
       <div class="invoice-parties">
         <div class="invoice-party">
-          <h3>From:</h3>
-          <p><strong>${escapeHtml(invoice.sellerCompany || 'N/A')}</strong></p>
-          <p>${escapeHtml(invoice.sellerName || 'N/A')}</p>
-          <p>${escapeHtml(invoice.sellerEmail || 'N/A')}</p>
-          ${invoice.sellerAddress && invoice.sellerAddress.street ? `
-            <p>${escapeHtml(invoice.sellerAddress.street)}</p>
-            <p>${escapeHtml(invoice.sellerAddress.city || '')}, ${escapeHtml(invoice.sellerAddress.state || '')} ${escapeHtml(invoice.sellerAddress.zip || '')}</p>
-            <p>${escapeHtml(invoice.sellerAddress.country || '')}</p>
-          ` : ''}
+          <h3>Seller</h3>
+          <div class="party-details">
+            <p class="party-name">${escapeHtml(invoice.sellerCompany || 'HK KANDIVAN I T C L')}</p>
+            ${invoice.sellerAddress && invoice.sellerAddress.street ? `
+              <p>${escapeHtml(invoice.sellerAddress.street)}</p>
+              <p>${escapeHtml(invoice.sellerAddress.city || 'Hua Qiang Bei, Shenzhen')}, ${escapeHtml(invoice.sellerAddress.state || 'Guandong')}</p>
+              <p>${escapeHtml(invoice.sellerAddress.country || 'China')}</p>
+            ` : `
+              <p>Hua Qiang Bei, Shenzhen, Guandong</p>
+            `}
+            <p>Phone Number: ${escapeHtml(invoice.sellerPhone || '008613332800284')}</p>
+            <p>Email: ${escapeHtml(invoice.sellerEmail || 'contactus@ione.live')}</p>
+          </div>
         </div>
         <div class="invoice-party">
-          <h3>Bill To:</h3>
-          <p><strong>${escapeHtml(invoice.buyerCompany || 'N/A')}</strong></p>
-          <p>${escapeHtml(invoice.buyerName || 'N/A')}</p>
-          <p>${escapeHtml(invoice.buyerEmail || 'N/A')}</p>
-          ${invoice.buyerAddress && invoice.buyerAddress.street ? `
-            <p>${escapeHtml(invoice.buyerAddress.street)}</p>
-            <p>${escapeHtml(invoice.buyerAddress.city || '')}, ${escapeHtml(invoice.buyerAddress.state || '')} ${escapeHtml(invoice.buyerAddress.zip || '')}</p>
-            <p>${escapeHtml(invoice.buyerAddress.country || '')}</p>
-          ` : ''}
+          <h3>Buyer</h3>
+          <div class="party-details">
+            <p class="party-name">${escapeHtml(invoice.buyerCompany || invoice.buyerName || 'N/A')}</p>
+            ${invoice.buyerAddress && invoice.buyerAddress.street ? `
+              <p>${escapeHtml(invoice.buyerAddress.street)}</p>
+              <p>${escapeHtml(invoice.buyerAddress.city || '')}, ${escapeHtml(invoice.buyerAddress.state || '')}</p>
+              ${invoice.buyerAddress.country ? `<p>${escapeHtml(invoice.buyerAddress.country)}</p>` : ''}
+            ` : ''}
+            ${invoice.buyerPhone ? `<p>Phone Number: ${escapeHtml(invoice.buyerPhone)}</p>` : ''}
+            <p>Email: ${escapeHtml(invoice.buyerEmail || 'N/A')}</p>
+          </div>
         </div>
-      </div>
-      
-      <!-- Summary Table -->
-      <div class="invoice-summary-section">
-        <h3 class="section-title">Order Summary</h3>
-        <table class="invoice-summary-table">
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th class="text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Total Items</td>
-              <td class="text-right">${invoice.items?.length || 0} item(s)</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      
-      <!-- Totals Section -->
-      <div class="invoice-totals">
-        <div class="invoice-total-row">
-          <span>Subtotal:</span>
-          <span>$${(invoice.subtotal || 0).toFixed(2)}</span>
-        </div>
-        <div class="invoice-total-row">
-          <span>Tax (${invoice.taxRate || 10}%):</span>
-          <span>$${(invoice.tax || 0).toFixed(2)}</span>
-        </div>
-        <div class="invoice-total-row invoice-total-main">
-          <span>Total:</span>
-          <span>$${(invoice.total || 0).toFixed(2)}</span>
-        </div>
-        <div class="invoice-total-row">
-          <span>Deposit Paid:</span>
-          <span class="text-success">$${(invoice.depositPaid || 0).toFixed(2)}</span>
-        </div>
-        <div class="invoice-total-row">
-          <span>Balance Due:</span>
-          <span class="text-warning">$${(invoice.remainingBalance || 0).toFixed(2)}</span>
-        </div>
-      </div>
-      
-      <!-- Payment Terms Section -->
-      <div class="invoice-payment-terms">
-        <h3 class="section-title">Payment Terms</h3>
-        <p class="payment-terms-text">${escapeHtml(invoice.paymentTerms || 'N/A')}</p>
       </div>
       
       <!-- Payment Instructions Section -->
       <div class="invoice-payment-instructions">
         <h3 class="section-title">Payment Instructions</h3>
-        <div class="payment-instructions-grid">
-          <div class="payment-instruction-item">
-            <label>Payment Method:</label>
-            <span>${escapeHtml((invoice.paymentInstructions?.paymentMethodDetails || invoice.paymentMethod || 'N/A'))}</span>
+        <div class="payment-instructions-content">
+          ${invoice.paymentInstructions ? `
+            <p><strong>Bank Name:</strong> ${escapeHtml(invoice.paymentInstructions.bankName || 'N/A')}</p>
+            <p><strong>Account Name:</strong> ${escapeHtml(invoice.paymentInstructions.accountName || 'N/A')}</p>
+            <p><strong>Account Number:</strong> ${escapeHtml(invoice.paymentInstructions.accountNumber || 'N/A')}</p>
+            <p><strong>SWIFT Code:</strong> ${escapeHtml(invoice.paymentInstructions.swiftCode || 'N/A')}</p>
+          ` : '<p>Payment instructions not available</p>'}
+        </div>
+      </div>
+      
+      <!-- Order Details and Payment Terms -->
+      <div class="invoice-order-summary">
+        <div class="order-items-summary">
+          <h3 class="section-title">Order Items</h3>
+          <div class="items-list">
+            ${(invoice.items || []).map((item, index) => `
+              <div class="item-row">
+                <span class="item-name">${escapeHtml(item.productName || 'N/A')}</span>
+                <span class="item-details">${item.quantity || 0} ${escapeHtml(item.unit || 'units')} × $${(item.pricePerUnit || 0).toFixed(2)}</span>
+                <span class="item-amount">$${(item.subtotal || 0).toFixed(2)}</span>
+              </div>
+            `).join('')}
           </div>
-          <div class="payment-instruction-item">
-            <label>Bank Name:</label>
-            <span>${escapeHtml(invoice.paymentInstructions?.bankName || 'N/A')}</span>
+        </div>
+        
+        <div class="invoice-totals-section">
+          <div class="totals-row">
+            <span>Subtotal:</span>
+            <span>$${(invoice.subtotal || 0).toFixed(2)}</span>
           </div>
-          <div class="payment-instruction-item">
-            <label>Account Name:</label>
-            <span>${escapeHtml(invoice.paymentInstructions?.accountName || 'N/A')}</span>
+          ${invoice.tax && invoice.tax > 0 ? `
+          <div class="totals-row">
+            <span>Tax (${invoice.taxRate || 10}%):</span>
+            <span>$${(invoice.tax || 0).toFixed(2)}</span>
           </div>
-          <div class="payment-instruction-item">
-            <label>Account Number:</label>
-            <span>${escapeHtml(invoice.paymentInstructions?.accountNumber || 'N/A')}</span>
+          ` : ''}
+          <div class="totals-row total-amount">
+            <span>Total Order Amount USD:</span>
+            <span>$${(invoice.total || 0).toFixed(2)}</span>
           </div>
-          <div class="payment-instruction-item">
-            <label>SWIFT Code:</label>
-            <span>${escapeHtml(invoice.paymentInstructions?.swiftCode || 'N/A')}</span>
+        </div>
+        
+        <div class="payment-terms-box">
+          <div class="payment-term-item">
+            <span class="term-label">Payment Term:</span>
+            <span class="term-value">${escapeHtml(invoice.paymentTerms || 'N/A')}</span>
           </div>
+          ${invoice.depositPaid && invoice.depositPaid > 0 ? `
+          <div class="payment-term-item">
+            <span class="term-label">Deposit Paid:</span>
+            <span class="term-value deposit-paid">$${(invoice.depositPaid || 0).toFixed(2)}</span>
+          </div>
+          <div class="payment-term-item">
+            <span class="term-label">Balance Due:</span>
+            <span class="term-value balance-due">$${(invoice.remainingBalance || 0).toFixed(2)}</span>
+          </div>
+          ` : ''}
         </div>
       </div>
       
@@ -204,75 +201,17 @@ function renderPage1(invoice) {
       
       ${invoice.notes ? `
         <div class="invoice-notes">
-          <p><strong>Notes:</strong></p>
-          <p>${escapeHtml(invoice.notes)}</p>
+          <p><strong>Notes:</strong> ${escapeHtml(invoice.notes)}</p>
         </div>
       ` : ''}
+      
+      <!-- Footer -->
+      <div class="invoice-footer">
+        <p>For questions about this invoice, please contact: ${escapeHtml(invoice.sellerEmail || 'contactus@ione.live')}</p>
+        <p class="thank-you">Thank you for your business!</p>
+      </div>
     </div>
   `;
 }
 
-function renderPage2(invoice) {
-  return `
-    <div class="invoice-page page-2">
-      <!-- Header for Page 2 -->
-      <div class="invoice-page-header">
-        <div class="invoice-logo-small">
-          <h2>INVOICE</h2>
-          <p class="invoice-number-small">${escapeHtml(invoice.invoiceNumber)}</p>
-        </div>
-      </div>
-      
-      <!-- Order Details Section -->
-      <div class="invoice-order-details">
-        <h3 class="section-title">Order Details</h3>
-        <table class="invoice-items-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Description</th>
-              <th class="text-right">Quantity</th>
-              <th class="text-right">Unit Price</th>
-              <th class="text-right">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${(invoice.items || []).map((item, index) => `
-              <tr>
-                <td>${index + 1}</td>
-                <td>
-                  <strong>${escapeHtml(item.productName || 'N/A')}</strong>
-                  ${item.description ? `<br><small class="item-description">${escapeHtml(item.description)}</small>` : ''}
-                  ${item.specifications ? `<br><small class="item-specs">${escapeHtml(item.specifications)}</small>` : ''}
-                </td>
-                <td class="text-right">${item.quantity || 0} ${escapeHtml(item.unit || 'units')}</td>
-                <td class="text-right">$${(item.pricePerUnit || 0).toFixed(2)}</td>
-                <td class="text-right">$${(item.subtotal || 0).toFixed(2)}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-          <tfoot>
-            <tr class="subtotal-row">
-              <td colspan="4" class="text-right"><strong>Subtotal:</strong></td>
-              <td class="text-right"><strong>$${(invoice.subtotal || 0).toFixed(2)}</strong></td>
-            </tr>
-            <tr class="tax-row">
-              <td colspan="4" class="text-right">Tax (${invoice.taxRate || 10}%):</td>
-              <td class="text-right">$${(invoice.tax || 0).toFixed(2)}</td>
-            </tr>
-            <tr class="total-row">
-              <td colspan="4" class="text-right"><strong>Total:</strong></td>
-              <td class="text-right"><strong>$${(invoice.total || 0).toFixed(2)}</strong></td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-      
-      <!-- Footer with contact info -->
-      <div class="invoice-footer">
-        <p class="footer-text">For questions about this invoice, please contact: ${escapeHtml(invoice.sellerEmail || 'N/A')}</p>
-        <p class="footer-text-small">Thank you for your business!</p>
-      </div>
-    </div>
-  `;
-}
+// Removed renderPage2 function - now using single-page design
