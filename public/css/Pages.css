@@ -4576,7 +4576,6 @@
   margin-top: var(--spacing-xl);
   padding: var(--spacing-lg);
   background: var(--card-bg);
-  border-left: 4px solid var(--electric-blue);
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   border-left: 4px solid var(--electric-blue);
@@ -4744,9 +4743,6 @@
     font-size: 1rem;
   }
   
-  .totals-row.total-amount {
-    font-size: 1.25rem;
-  }
   .totals-row.total-amount {
     font-size: 1.25rem;
   }
