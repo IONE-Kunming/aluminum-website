@@ -338,7 +338,7 @@ async function renderGuestProducts(category, t, app) {
             <div class="product-info">
               <div class="info-item">
                 <span class="label">${t('catalog.price')}</span>
-                <span class="value">$${product.pricePerMeter || product.price || 0}/${escapeHtml(product.unit || 'unit')}</span>
+                <span class="value">$${parseFloat(product.pricePerMeter || product.price || 0).toFixed(2)}/${escapeHtml(product.unit || 'unit')}</span>
               </div>
               <div class="info-item">
                 <span class="label">${t('catalog.minOrder')}</span>

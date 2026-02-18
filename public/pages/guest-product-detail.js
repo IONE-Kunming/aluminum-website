@@ -61,8 +61,12 @@ export async function renderGuestProductDetail() {
                   src="${product.imageUrl}" 
                   alt="${escapeHtml(product.modelNumber || product.name || 'Product')}" 
                   style="width: 100%; height: 100%; object-fit: cover;"
-                  onerror="this.onerror=null; this.style.display='none'; this.parentElement.innerHTML='<i data-lucide=\\'image-off\\' style=\\'width: 64px; height: 64px; color: white; opacity: 0.8;\\'></i><span style=\\'color: white; opacity: 0.8; margin-top: 8px;\\'>Image not available</span>';"
+                  onerror="this.onerror=null; this.style.display='none';"
                 />
+                <div style="display: none; flex-direction: column; align-items: center; color: white;">
+                  <i data-lucide="image-off" style="width: 64px; height: 64px; opacity: 0.8;"></i>
+                  <span style="opacity: 0.8; margin-top: 8px;">Image not available</span>
+                </div>
               </div>
             ` : `
               <div class="product-image-wrapper" style="width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
@@ -83,7 +87,7 @@ export async function renderGuestProductDetail() {
               <div class="details-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px;">
                 <div class="detail-item">
                   <span class="detail-label" style="font-weight: 500; color: var(--text-secondary);">${t('catalog.price')}</span>
-                  <span class="detail-value" style="font-size: 18px; font-weight: 600; color: var(--text-primary);">$${product.pricePerMeter || product.price || 0}/${escapeHtml(product.unit || 'unit')}</span>
+                  <span class="detail-value" style="font-size: 18px; font-weight: 600; color: var(--text-primary);">$${parseFloat(product.pricePerMeter || product.price || 0).toFixed(2)}/${escapeHtml(product.unit || 'unit')}</span>
                 </div>
                 <div class="detail-item">
                   <span class="detail-label" style="font-weight: 500; color: var(--text-secondary);">${t('catalog.minOrder')}</span>
