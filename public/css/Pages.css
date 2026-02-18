@@ -4679,9 +4679,11 @@
     color: #000 !important;
   }
   
-  /* Force black text for readability in print */
-  .invoice-party p,
-  .payment-instructions-content p {
+  /* Force black text for readability in print for all nested elements */
+  .invoice-party,
+  .invoice-party *,
+  .payment-instructions-content,
+  .payment-instructions-content * {
     color: #000 !important;
   }
   

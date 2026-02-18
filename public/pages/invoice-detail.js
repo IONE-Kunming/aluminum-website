@@ -134,7 +134,9 @@ export async function renderInvoiceDetail() {
 function renderPage1(invoice) {
   // Get base URL from Vite for proper logo path
   const baseUrl = import.meta.env.BASE_URL || '/';
-  const logoPath = `${baseUrl.replace(/\/+$/, '')}/logo.svg`.replace('//', '/'); // Ensure proper path construction
+  // Ensure proper path construction without breaking protocol prefixes
+  const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+  const logoPath = `${cleanBase}/logo.svg`;
   
   return `
     <div class="invoice-page page-1">
