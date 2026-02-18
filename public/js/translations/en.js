@@ -85,7 +85,8 @@ export default {
     importError: 'Error importing products',
     manageProductListings: 'Manage your product listings',
     downloadTemplate: 'Download Excel Template',
-    addToCart: 'Add to Cart'
+    addToCart: 'Add to Cart',
+    filterBySubcategory: 'Filter by Subcategory'
   },
   
   // Dashboard
@@ -154,7 +155,23 @@ export default {
     email: 'Email',
     filterOrders: 'Filter Orders',
     dateRange: 'Date Range',
-    manageCustomerOrders: 'Manage customer orders'
+    manageCustomerOrders: 'Manage customer orders',
+    customerOrdersWillAppear: 'Customer orders will appear here',
+    dateFrom: 'Date From',
+    dateTo: 'Date To',
+    allStatuses: 'All Statuses',
+    applyFilters: 'Apply Filters',
+    clear: 'Clear',
+    customer: 'Customer',
+    noOrdersMatchFilters: 'No orders match your filters',
+    adjustFilterCriteria: 'Try adjusting your filter criteria',
+    orderStatusUnderReview: 'Under Review',
+    orderStatusConfirmed: 'Confirmed',
+    orderStatusInProduction: 'In Production',
+    orderStatusOutOfProduction: 'Out Of Production',
+    orderStatusDeliveredToShipping: 'Delivered to the Shipping Company',
+    orderStatusReachedPort: 'Reached Port',
+    orderStatusCollected: 'Collected'
   },
   
   // Chats
@@ -213,7 +230,24 @@ export default {
     filterInvoices: 'Filter Invoices',
     dateRange: 'Date Range',
     depositPaid: 'Deposit Paid',
-    remainingBalance: 'Remaining Balance'
+    remainingBalance: 'Remaining Balance',
+    customer: 'Customer',
+    received: 'Received',
+    balanceDue: 'Balance Due',
+    markAsPaid: 'Mark as Paid',
+    markAsPaidConfirm: 'Mark this invoice as paid?',
+    invoiceMarkedPaid: 'Invoice marked as paid',
+    failedToUpdateStatus: 'Failed to update invoice status'
+  },
+  
+  // Notifications
+  notifications: {
+    title: 'Notifications',
+    subtitle: 'Stay updated with your activity',
+    noNotifications: 'No notifications',
+    allCaughtUp: "You're all caught up!",
+    markAsRead: 'Mark as Read',
+    notification: 'Notification'
   },
   
   // Cart
@@ -414,7 +448,9 @@ export default {
     continueWithGoogle: 'Continue with Google',
     notAuthenticated: 'Not Authenticated',
     pleaseLoginToViewOrders: 'Please log in to view your orders',
-    pleaseLoginToViewInvoices: 'Please log in to view your invoices'
+    pleaseLoginToViewInvoices: 'Please log in to view your invoices',
+    signInSuccess: 'Successfully logged in!',
+    signInError: 'Failed to sign in with Google'
   },
   
   // Profile
@@ -431,7 +467,23 @@ export default {
     manageAccountInfo: 'Manage your account information',
     accountInformation: 'Account Information',
     preferredLanguage: 'Preferred Language',
-    languageDescription: 'Select your preferred language for the interface and automatic message translation'
+    languageDescription: 'Select your preferred language for the interface and automatic message translation',
+    chooseRole: 'Choose Your Role',
+    chooseRoleDescription: 'Select how you want to use the platform',
+    buyerDescription: 'Browse products, place orders, and manage purchases',
+    sellerDescription: 'List products, manage inventory, and process orders',
+    buyerFeature1: 'Access product catalog',
+    buyerFeature2: 'Place and track orders',
+    buyerFeature3: 'Manage invoices',
+    buyerFeature4: 'Contact sellers',
+    sellerFeature1: 'Manage product listings',
+    sellerFeature2: 'Process customer orders',
+    sellerFeature3: 'Generate invoices',
+    sellerFeature4: 'Manage branches',
+    pleaseSelectRole: 'Please select a role',
+    updating: 'Updating...',
+    profileUpdated: 'Profile updated successfully!',
+    profileUpdateFailed: 'Failed to update profile'
   },
   // Landing Page
   landing: {

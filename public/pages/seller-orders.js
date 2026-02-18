@@ -41,47 +41,47 @@ export async function renderSellerOrders() {
       ${orders.length === 0 ? `
         <div class="empty-state">
           <i data-lucide="shopping-bag" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>No orders yet</h2>
-          <p>Customer orders will appear here</p>
+          <h2>${t('orders.noOrders')}</h2>
+          <p>${t('orders.customerOrdersWillAppear')}</p>
         </div>
       ` : `
         <!-- Filter Controls -->
         <div class="order-filters card" style="margin-bottom: 24px; padding: 20px;">
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
             <div class="form-group" style="margin: 0;">
-              <label for="filter-order-number" style="display: block; margin-bottom: 8px; font-weight: 500;">Order Number</label>
-              <input type="text" id="filter-order-number" class="form-control" placeholder="Search by order number..." />
+              <label for="filter-order-number" style="display: block; margin-bottom: 8px; font-weight: 500;">${t('orders.orderNumber')}</label>
+              <input type="text" id="filter-order-number" class="form-control" placeholder="${t('common.search')}..." />
             </div>
             <div class="form-group" style="margin: 0;">
-              <label for="filter-date-from" style="display: block; margin-bottom: 8px; font-weight: 500;">Date From</label>
+              <label for="filter-date-from" style="display: block; margin-bottom: 8px; font-weight: 500;">${t('orders.dateFrom')}</label>
               <input type="date" id="filter-date-from" class="form-control" />
             </div>
             <div class="form-group" style="margin: 0;">
-              <label for="filter-date-to" style="display: block; margin-bottom: 8px; font-weight: 500;">Date To</label>
+              <label for="filter-date-to" style="display: block; margin-bottom: 8px; font-weight: 500;">${t('orders.dateTo')}</label>
               <input type="date" id="filter-date-to" class="form-control" />
             </div>
             <div class="form-group" style="margin: 0;">
-              <label for="filter-status" style="display: block; margin-bottom: 8px; font-weight: 500;">Status</label>
+              <label for="filter-status" style="display: block; margin-bottom: 8px; font-weight: 500;">${t('orders.status')}</label>
               <select id="filter-status" class="form-control">
-                <option value="">All Statuses</option>
-                <option value="Under Review">Under Review</option>
-                <option value="Confirmed">Confirmed</option>
-                <option value="In Production">In Production</option>
-                <option value="Out Of Production">Out Of Production</option>
-                <option value="Delivered to the Shipping Company">Delivered to Shipping Company</option>
-                <option value="Reached Port">Reached Port</option>
-                <option value="Collected">Collected</option>
+                <option value="">${t('orders.allStatuses')}</option>
+                <option value="Under Review">${t('orders.orderStatusUnderReview')}</option>
+                <option value="Confirmed">${t('orders.orderStatusConfirmed')}</option>
+                <option value="In Production">${t('orders.orderStatusInProduction')}</option>
+                <option value="Out Of Production">${t('orders.orderStatusOutOfProduction')}</option>
+                <option value="Delivered to the Shipping Company">${t('orders.orderStatusDeliveredToShipping')}</option>
+                <option value="Reached Port">${t('orders.orderStatusReachedPort')}</option>
+                <option value="Collected">${t('orders.orderStatusCollected')}</option>
               </select>
             </div>
           </div>
           <div style="margin-top: 16px; display: flex; gap: 12px;">
             <button class="btn btn-primary" id="apply-filters-btn">
               <i data-lucide="filter"></i>
-              Apply Filters
+              ${t('orders.applyFilters')}
             </button>
             <button class="btn btn-secondary" id="clear-filters-btn">
               <i data-lucide="x"></i>
-              Clear
+              ${t('orders.clear')}
             </button>
           </div>
         </div>
@@ -95,7 +95,7 @@ export async function renderSellerOrders() {
                   <span class="order-date">${formatDate(order.createdAt)}</span>
                 </div>
                 <div class="order-compact-buyer">
-                  <span class="buyer-label">Customer:</span>
+                  <span class="buyer-label">${t('orders.customer')}:</span>
                   <span class="buyer-name">${escapeHtml(order.buyerName)}</span>
                 </div>
                 <div class="order-compact-status">
@@ -201,7 +201,7 @@ function initializeFilters(allOrders) {
             <span class="order-date">${formatDate(order.createdAt)}</span>
           </div>
           <div class="order-compact-buyer">
-            <span class="buyer-label">Customer:</span>
+            <span class="buyer-label">${t('orders.customer')}:</span>
             <span class="buyer-name">${escapeHtml(order.buyerName)}</span>
           </div>
           <div class="order-compact-status">
@@ -219,8 +219,8 @@ function initializeFilters(allOrders) {
       ordersList.innerHTML = `
         <div class="empty-state">
           <i data-lucide="filter-x" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>No orders match your filters</h2>
-          <p>Try adjusting your filter criteria</p>
+          <h2>${t('orders.noOrdersMatchFilters')}</h2>
+          <p>${t('orders.adjustFilterCriteria')}</p>
         </div>
       `;
     }

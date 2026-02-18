@@ -85,7 +85,8 @@ export default {
     importError: 'مصنوعات درآمد کرنے میں خرابی',
     manageProductListings: 'اپنی مصنوعات کی فہرست کا انتظام کریں',
     downloadTemplate: 'ایکسل ٹیمپلیٹ ڈاؤن لوڈ کریں',
-    addToCart: 'ٹوکری میں شامل کریں'
+    addToCart: 'ٹوکری میں شامل کریں',
+    filterBySubcategory: 'ذیلی زمرہ کے مطابق فلٹر کریں'
   },
   
   // ڈیش بورڈ
@@ -154,7 +155,23 @@ export default {
     email: 'ای میل',
     filterOrders: 'آرڈرز فلٹر کریں',
     dateRange: 'تاریخ کی حد',
-    manageCustomerOrders: 'گاہک کے آرڈرز کا انتظام کریں'
+    manageCustomerOrders: 'گاہک کے آرڈرز کا انتظام کریں',
+    customerOrdersWillAppear: 'گاہک کے آرڈرز یہاں ظاہر ہوں گے',
+    dateFrom: 'سے تاریخ',
+    dateTo: 'تک تاریخ',
+    allStatuses: 'تمام حالتیں',
+    applyFilters: 'فلٹرز لاگو کریں',
+    clear: 'صاف کریں',
+    customer: 'گاہک',
+    noOrdersMatchFilters: 'فلٹرز سے کوئی آرڈر میل نہیں کھاتا',
+    adjustFilterCriteria: 'فلٹر کے معیار کو ایڈجسٹ کرنے کی کوشش کریں',
+    orderStatusUnderReview: 'جائزے میں',
+    orderStatusConfirmed: 'تصدیق شدہ',
+    orderStatusInProduction: 'تیاری میں',
+    orderStatusOutOfProduction: 'تیاری سے باہر',
+    orderStatusDeliveredToShipping: 'شپنگ کمپنی کو بھیج دیا گیا',
+    orderStatusReachedPort: 'بندرگاہ پر پہنچ گیا',
+    orderStatusCollected: 'وصول شدہ'
   },
   
   // گفتگو
@@ -213,7 +230,24 @@ export default {
     filterInvoices: 'رسیدیں فلٹر کریں',
     dateRange: 'تاریخ کی حد',
     depositPaid: 'جمع ادا شدہ',
-    remainingBalance: 'باقی رقم'
+    remainingBalance: 'باقی رقم',
+    customer: 'گاہک',
+    received: 'موصول',
+    balanceDue: 'واجب الادا رقم',
+    markAsPaid: 'ادا شدہ کے طور پر نشان زد کریں',
+    markAsPaidConfirm: 'اس رسید کو ادا شدہ کے طور پر نشان زد کریں؟',
+    invoiceMarkedPaid: 'رسید ادا شدہ کے طور پر نشان زد کر دی گئی',
+    failedToUpdateStatus: 'رسید کی حیثیت کو اپ ڈیٹ کرنے میں ناکام'
+  },
+  
+  // اطلاعات
+  notifications: {
+    title: 'اطلاعات',
+    subtitle: 'اپنی سرگرمی سے باخبر رہیں',
+    noNotifications: 'کوئی اطلاعات نہیں',
+    allCaughtUp: 'آپ نے سب کچھ دیکھ لیا!',
+    markAsRead: 'پڑھا ہوا نشان زد کریں',
+    notification: 'اطلاع'
   },
   
   // ٹوکری
@@ -391,7 +425,9 @@ export default {
     continueWithGoogle: 'گوگل کے ساتھ جاری رکھیں',
     notAuthenticated: 'تصدیق شدہ نہیں',
     pleaseLoginToViewOrders: 'اپنے آرڈرز دیکھنے کے لیے براہ کرم لاگ ان کریں',
-    pleaseLoginToViewInvoices: 'اپنی رسیدیں دیکھنے کے لیے براہ کرم لاگ ان کریں'
+    pleaseLoginToViewInvoices: 'اپنی رسیدیں دیکھنے کے لیے براہ کرم لاگ ان کریں',
+    signInSuccess: 'کامیابی سے لاگ ان ہو گئے!',
+    signInError: 'Google سے سائن ان میں ناکام'
   },
   
   // پروفائل
@@ -408,7 +444,23 @@ export default {
     manageAccountInfo: 'اپنے اکاؤنٹ کی معلومات کا انتظام کریں',
     accountInformation: 'اکاؤنٹ کی معلومات',
     preferredLanguage: 'ترجیحی زبان',
-    languageDescription: 'انٹرفیس اور خودکار پیغام کی ترجمہ کے لیے اپنی ترجیحی زبان منتخب کریں'
+    languageDescription: 'انٹرفیس اور خودکار پیغام کی ترجمہ کے لیے اپنی ترجیحی زبان منتخب کریں',
+    chooseRole: 'اپنا کردار منتخب کریں',
+    chooseRoleDescription: 'منتخب کریں کہ آپ پلیٹ فارم کو کیسے استعمال کرنا چاہتے ہیں',
+    buyerDescription: 'مصنوعات براؤز کریں، آرڈر دیں اور خریداری کا نظم کریں',
+    sellerDescription: 'مصنوعات کی فہرست بنائیں، انوینٹری کا نظم کریں اور آرڈرز پر کارروائی کریں',
+    buyerFeature1: 'مصنوعات کی کیٹلاگ تک رسائی',
+    buyerFeature2: 'آرڈر دیں اور ٹریک کریں',
+    buyerFeature3: 'رسیدوں کا نظم کریں',
+    buyerFeature4: 'فروخت کنندگان سے رابطہ کریں',
+    sellerFeature1: 'مصنوعات کی فہرستوں کا نظم کریں',
+    sellerFeature2: 'گاہکوں کے آرڈرز پر کارروائی کریں',
+    sellerFeature3: 'رسیدیں بنائیں',
+    sellerFeature4: 'برانچز کا نظم کریں',
+    pleaseSelectRole: 'براہ کرم ایک کردار منتخب کریں',
+    updating: 'اپ ڈیٹ ہو رہا ہے...',
+    profileUpdated: 'پروفائل کامیابی سے اپ ڈیٹ ہو گئی!',
+    profileUpdateFailed: 'پروفائل اپ ڈیٹ کرنے میں ناکام'
   },
   // معاونت
   support: {

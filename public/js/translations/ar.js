@@ -85,7 +85,8 @@ export default {
     importError: 'خطأ في استيراد المنتجات',
     manageProductListings: 'إدارة قوائم المنتجات الخاصة بك',
     downloadTemplate: 'تحميل نموذج Excel',
-    addToCart: 'إضافة إلى السلة'
+    addToCart: 'إضافة إلى السلة',
+    filterBySubcategory: 'تصفية حسب الفئة الفرعية'
   },
   
   // لوحة التحكم
@@ -154,7 +155,23 @@ export default {
     email: 'البريد الإلكتروني',
     filterOrders: 'تصفية الطلبات',
     dateRange: 'نطاق التاريخ',
-    manageCustomerOrders: 'إدارة طلبات العملاء'
+    manageCustomerOrders: 'إدارة طلبات العملاء',
+    customerOrdersWillAppear: 'ستظهر طلبات العملاء هنا',
+    dateFrom: 'من التاريخ',
+    dateTo: 'إلى التاريخ',
+    allStatuses: 'جميع الحالات',
+    applyFilters: 'تطبيق الفلاتر',
+    clear: 'مسح',
+    customer: 'العميل',
+    noOrdersMatchFilters: 'لا توجد طلبات تطابق الفلاتر',
+    adjustFilterCriteria: 'حاول تعديل معايير التصفية',
+    orderStatusUnderReview: 'قيد المراجعة',
+    orderStatusConfirmed: 'مؤكد',
+    orderStatusInProduction: 'قيد الإنتاج',
+    orderStatusOutOfProduction: 'خارج الإنتاج',
+    orderStatusDeliveredToShipping: 'تم التسليم لشركة الشحن',
+    orderStatusReachedPort: 'وصل إلى الميناء',
+    orderStatusCollected: 'تم الاستلام'
   },
   
   // المحادثات
@@ -213,7 +230,24 @@ export default {
     filterInvoices: 'تصفية الفواتير',
     dateRange: 'نطاق التاريخ',
     depositPaid: 'العربون المدفوع',
-    remainingBalance: 'الرصيد المتبقي'
+    remainingBalance: 'الرصيد المتبقي',
+    customer: 'العميل',
+    received: 'المستلم',
+    balanceDue: 'الرصيد المستحق',
+    markAsPaid: 'تحديد كمدفوع',
+    markAsPaidConfirm: 'هل تريد تحديد هذه الفاتورة كمدفوعة؟',
+    invoiceMarkedPaid: 'تم تحديد الفاتورة كمدفوعة',
+    failedToUpdateStatus: 'فشل تحديث حالة الفاتورة'
+  },
+  
+  // الإشعارات
+  notifications: {
+    title: 'الإشعارات',
+    subtitle: 'ابق على اطلاع بنشاطك',
+    noNotifications: 'لا توجد إشعارات',
+    allCaughtUp: 'لقد شاهدت كل شيء!',
+    markAsRead: 'تحديد كمقروء',
+    notification: 'إشعار'
   },
   
   // سلة التسوق
@@ -391,7 +425,9 @@ export default {
     continueWithGoogle: 'المتابعة مع Google',
     notAuthenticated: 'غير مصادق',
     pleaseLoginToViewOrders: 'يرجى تسجيل الدخول لعرض طلباتك',
-    pleaseLoginToViewInvoices: 'يرجى تسجيل الدخول لعرض فواتيرك'
+    pleaseLoginToViewInvoices: 'يرجى تسجيل الدخول لعرض فواتيرك',
+    signInSuccess: 'تم تسجيل الدخول بنجاح!',
+    signInError: 'فشل تسجيل الدخول باستخدام Google'
   },
   
   // الملف الشخصي
@@ -408,7 +444,23 @@ export default {
     manageAccountInfo: 'إدارة معلومات حسابك',
     accountInformation: 'معلومات الحساب',
     preferredLanguage: 'اللغة المفضلة',
-    languageDescription: 'حدد لغتك المفضلة للواجهة والترجمة التلقائية للرسائل'
+    languageDescription: 'حدد لغتك المفضلة للواجهة والترجمة التلقائية للرسائل',
+    chooseRole: 'اختر دورك',
+    chooseRoleDescription: 'اختر كيف تريد استخدام المنصة',
+    buyerDescription: 'تصفح المنتجات وتقديم الطلبات وإدارة المشتريات',
+    sellerDescription: 'إدراج المنتجات وإدارة المخزون ومعالجة الطلبات',
+    buyerFeature1: 'الوصول إلى كتالوج المنتجات',
+    buyerFeature2: 'تقديم وتتبع الطلبات',
+    buyerFeature3: 'إدارة الفواتير',
+    buyerFeature4: 'التواصل مع البائعين',
+    sellerFeature1: 'إدارة قوائم المنتجات',
+    sellerFeature2: 'معالجة طلبات العملاء',
+    sellerFeature3: 'إنشاء الفواتير',
+    sellerFeature4: 'إدارة الفروع',
+    pleaseSelectRole: 'يرجى اختيار دور',
+    updating: 'جارٍ التحديث...',
+    profileUpdated: 'تم تحديث الملف الشخصي بنجاح!',
+    profileUpdateFailed: 'فشل تحديث الملف الشخصي'
   },
   
   // الدعم

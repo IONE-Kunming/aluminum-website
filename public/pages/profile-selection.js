@@ -1,17 +1,22 @@
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
+import languageManager from '../js/language.js';
 
 export function renderProfileSelection() {
   const app = document.getElementById('app');
+  const t = languageManager.t.bind(languageManager);
+  
+  // Get base URL from Vite for proper logo path
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const logoPath = `${baseUrl}logo.svg`.replace('//', '/'); // Avoid double slashes
   
   app.innerHTML = `
     <div class="auth-page">
       <div class="auth-container profile-selection-container">
         <div class="auth-header">
-          <h1 class="auth-logo">I ONE</h1>
-          <p class="auth-subtitle">Construction</p>
-          <h2 class="auth-title">Choose Your Role</h2>
-          <p class="auth-description">Select how you want to use the platform</p>
+          <img src="${logoPath}" alt="I ONE Construction" class="auth-logo-image" />
+          <h2 class="auth-title">${t('profile.chooseRole')}</h2>
+          <p class="auth-description">${t('profile.chooseRoleDescription')}</p>
         </div>
 
         <div class="role-cards">
@@ -19,13 +24,13 @@ export function renderProfileSelection() {
             <div class="role-card-icon">
               <i data-lucide="shopping-cart" style="width: 48px; height: 48px;"></i>
             </div>
-            <h3>Buyer</h3>
-            <p>Browse products, place orders, and manage purchases</p>
+            <h3>${t('profile.buyer')}</h3>
+            <p>${t('profile.buyerDescription')}</p>
             <ul class="role-features">
-              <li>Access product catalog</li>
-              <li>Place and track orders</li>
-              <li>Manage invoices</li>
-              <li>Contact sellers</li>
+              <li>${t('profile.buyerFeature1')}</li>
+              <li>${t('profile.buyerFeature2')}</li>
+              <li>${t('profile.buyerFeature3')}</li>
+              <li>${t('profile.buyerFeature4')}</li>
             </ul>
           </div>
 
@@ -33,19 +38,19 @@ export function renderProfileSelection() {
             <div class="role-card-icon">
               <i data-lucide="store" style="width: 48px; height: 48px;"></i>
             </div>
-            <h3>Seller</h3>
-            <p>List products, manage inventory, and process orders</p>
+            <h3>${t('profile.seller')}</h3>
+            <p>${t('profile.sellerDescription')}</p>
             <ul class="role-features">
-              <li>Manage product listings</li>
-              <li>Process customer orders</li>
-              <li>Generate invoices</li>
-              <li>Manage branches</li>
+              <li>${t('profile.sellerFeature1')}</li>
+              <li>${t('profile.sellerFeature2')}</li>
+              <li>${t('profile.sellerFeature3')}</li>
+              <li>${t('profile.sellerFeature4')}</li>
             </ul>
           </div>
         </div>
 
         <button id="continue-btn" class="btn btn-primary" disabled>
-          Continue
+          ${t('common.next')}
         </button>
       </div>
     </div>
@@ -71,16 +76,16 @@ export function renderProfileSelection() {
 
   continueBtn.addEventListener('click', async () => {
     if (!selectedRole) {
-      window.toast.error('Please select a role');
+      window.toast.error(t('profile.pleaseSelectRole'));
       return;
     }
 
     continueBtn.disabled = true;
-    continueBtn.textContent = 'Updating...';
+    continueBtn.textContent = t('profile.updating');
 
     const user = authManager.getCurrentUser();
     if (!user) {
-      window.toast.error('Not authenticated');
+      window.toast.error(t('auth.notAuthenticated'));
       router.navigate('/login');
       return;
     }
@@ -88,22 +93,24 @@ export function renderProfileSelection() {
     const result = await authManager.updateUserProfile(user.uid, {
       uid: user.uid,  // Explicitly store the user ID
       role: selectedRole,
+      displayName: user.displayName || user.email,
+      email: user.email,
       createdAt: new Date().toISOString()
     });
 
     if (result.success) {
-      window.toast.success('Profile updated successfully!');
+      window.toast.success(t('profile.profileUpdated'));
       
       // Navigate based on selected role
       if (selectedRole === 'seller') {
         router.navigate('/seller/dashboard');
       } else {
-        router.navigate('/buyer/dashboard');
+        router.navigate('/buyer/catalog');
       }
     } else {
-      window.toast.error('Failed to update profile');
+      window.toast.error(t('profile.profileUpdateFailed'));
       continueBtn.disabled = false;
-      continueBtn.textContent = 'Continue';
+      continueBtn.textContent = t('common.next');
     }
   });
 }

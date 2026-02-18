@@ -85,7 +85,8 @@ export default {
     importError: '导入产品时出错',
     manageProductListings: '管理您的产品列表',
     downloadTemplate: '下载Excel模板',
-    addToCart: '加入购物车'
+    addToCart: '加入购物车',
+    filterBySubcategory: '按子类别筛选'
   },
   
   // 仪表板
@@ -154,7 +155,23 @@ export default {
     email: '电子邮件',
     filterOrders: '筛选订单',
     dateRange: '日期范围',
-    manageCustomerOrders: '管理客户订单'
+    manageCustomerOrders: '管理客户订单',
+    customerOrdersWillAppear: '客户订单将显示在这里',
+    dateFrom: '开始日期',
+    dateTo: '结束日期',
+    allStatuses: '所有状态',
+    applyFilters: '应用筛选',
+    clear: '清除',
+    customer: '客户',
+    noOrdersMatchFilters: '没有符合筛选条件的订单',
+    adjustFilterCriteria: '请调整筛选条件',
+    orderStatusUnderReview: '审核中',
+    orderStatusConfirmed: '已确认',
+    orderStatusInProduction: '生产中',
+    orderStatusOutOfProduction: '已完成生产',
+    orderStatusDeliveredToShipping: '已交付给运输公司',
+    orderStatusReachedPort: '已到达港口',
+    orderStatusCollected: '已收货'
   },
   
   // 聊天
@@ -213,7 +230,24 @@ export default {
     filterInvoices: '筛选发票',
     dateRange: '日期范围',
     depositPaid: '已支付订金',
-    remainingBalance: '余额'
+    remainingBalance: '余额',
+    customer: '客户',
+    received: '已收到',
+    balanceDue: '应付余额',
+    markAsPaid: '标记为已支付',
+    markAsPaidConfirm: '将此发票标记为已支付？',
+    invoiceMarkedPaid: '发票已标记为已支付',
+    failedToUpdateStatus: '无法更新发票状态'
+  },
+  
+  // 通知
+  notifications: {
+    title: '通知',
+    subtitle: '了解您的活动更新',
+    noNotifications: '暂无通知',
+    allCaughtUp: '您已查看所有通知！',
+    markAsRead: '标记为已读',
+    notification: '通知'
   },
   
   // 购物车
@@ -391,7 +425,9 @@ export default {
     continueWithGoogle: '使用Google继续',
     notAuthenticated: '未认证',
     pleaseLoginToViewOrders: '请登录以查看您的订单',
-    pleaseLoginToViewInvoices: '请登录以查看您的发票'
+    pleaseLoginToViewInvoices: '请登录以查看您的发票',
+    signInSuccess: '登录成功！',
+    signInError: '使用Google登录失败'
   },
   
   // 个人资料
@@ -408,7 +444,23 @@ export default {
     manageAccountInfo: '管理您的账户信息',
     accountInformation: '账户信息',
     preferredLanguage: '首选语言',
-    languageDescription: '选择您的界面首选语言和自动消息翻译语言'
+    languageDescription: '选择您的界面首选语言和自动消息翻译语言',
+    chooseRole: '选择您的角色',
+    chooseRoleDescription: '选择您想如何使用平台',
+    buyerDescription: '浏览产品、下订单和管理采购',
+    sellerDescription: '列出产品、管理库存和处理订单',
+    buyerFeature1: '访问产品目录',
+    buyerFeature2: '下单和跟踪订单',
+    buyerFeature3: '管理发票',
+    buyerFeature4: '联系卖家',
+    sellerFeature1: '管理产品列表',
+    sellerFeature2: '处理客户订单',
+    sellerFeature3: '生成发票',
+    sellerFeature4: '管理分支机构',
+    pleaseSelectRole: '请选择一个角色',
+    updating: '正在更新...',
+    profileUpdated: '个人资料更新成功！',
+    profileUpdateFailed: '无法更新个人资料'
   },
   
   // 支持

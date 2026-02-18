@@ -225,24 +225,23 @@ export function renderLoginPage() {
     const result = await authManager.signInWithGoogle();
 
     if (result.success) {
-      window.toast.success('Successfully logged in with Google!');
+      window.toast.success(t('auth.signInSuccess'));
       
       // Wait for profile to load before navigation
       // This ensures the profile with role is properly loaded from Firestore
       const profile = await authManager.waitForProfile(PROFILE_LOAD_TIMEOUT_MS);
       
-      if (!profile) {
-        // Profile failed to load after timeout
-        // Since profile should exist per requirements, show error and retry
-        showError('Failed to load user profile. Please try again.');
-        setLoading(false);
+      if (!profile || !profile.role) {
+        // New Google user - no profile exists or no role set
+        // Navigate to profile selection page to choose buyer/seller role
+        router.navigate('/profile-selection');
         return;
       }
       
-      // Profile loaded successfully - navigate based on role
+      // Existing user with profile - navigate based on role
       navigateByRole(profile);
     } else {
-      showError(result.error || 'Failed to sign in with Google.');
+      showError(result.error || t('auth.signInError'));
       setLoading(false);
     }
   });
