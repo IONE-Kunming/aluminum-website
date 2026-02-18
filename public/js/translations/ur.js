@@ -354,6 +354,17 @@ export default {
     allSubCategories: 'ذیلی زمرے'
   },
   
+  // تمام مصنوعات
+  allProducts: {
+    title: 'تمام مصنوعات',
+    subtitle: 'تمام فروخت کنندگان کی مصنوعات براؤز کریں',
+    allCategories: 'تمام زمرے',
+    sortNewest: 'نیا پہلے',
+    sortPriceLow: 'قیمت: کم سے زیادہ',
+    sortPriceHigh: 'قیمت: زیادہ سے کم',
+    sortName: 'نام A-Z'
+  },
+  
   // زمرہ کے نام (اصل زمرہ کی قدروں کا ترجمہ کرنے کے لیے)
   categoryNames: {
     'Construction': 'تعمیرات',

@@ -354,6 +354,17 @@ export default {
     allSubCategories: 'الفئات الفرعية'
   },
   
+  // جميع المنتجات
+  allProducts: {
+    title: 'جميع المنتجات',
+    subtitle: 'تصفح المنتجات من جميع البائعين',
+    allCategories: 'جميع الفئات',
+    sortNewest: 'الأحدث أولاً',
+    sortPriceLow: 'السعر: من الأقل إلى الأعلى',
+    sortPriceHigh: 'السعر: من الأعلى إلى الأقل',
+    sortName: 'الاسم أ-ي'
+  },
+  
   // أسماء الفئات (لترجمة قيم الفئات الفعلية)
   categoryNames: {
     'Construction': 'البناء',

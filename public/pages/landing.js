@@ -56,7 +56,7 @@ export function renderLandingPage() {
               ${t('landing.hero.description')}
             </p>
             <div class="hero-buttons">
-              <button class="btn btn-primary btn-lg" data-nav="categories">
+              <button class="btn btn-primary btn-lg" data-nav="buyer/all-products">
                 ${t('landing.hero.startTrading')} <i data-lucide="arrow-right"></i>
               </button>
               <button class="btn btn-secondary btn-lg" data-nav="categories">

@@ -871,8 +871,8 @@ class DataService {
     }
   }
 
-  // Update order status
-  async updateOrderStatus(orderId, newStatus) {
+  // Update order status and other fields
+  async updateOrderStatus(orderId, updateData) {
     await this.init();
     
     try {
@@ -880,10 +880,12 @@ class DataService {
         throw new Error('Invalid order ID');
       }
       
-      await this.db.collection('orders').doc(orderId).update({
-        status: newStatus,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      // If updateData is a string, treat it as status only (backward compatibility)
+      const updates = typeof updateData === 'string' 
+        ? { status: updateData, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }
+        : { ...updateData, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+      
+      await this.db.collection('orders').doc(orderId).update(updates);
       
       return { success: true };
     } catch (error) {
