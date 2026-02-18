@@ -652,6 +652,30 @@ export default {
     contactSupportEmail: 'Contact: contactus@ione.live'
   },
   
+  // Admin
+  admin: {
+    userDeleted: 'User deleted successfully',
+    userDeleteFailed: 'Failed to delete user',
+    userActivated: 'User activated successfully',
+    userDeactivated: 'User deactivated successfully',
+    userStatusUpdateFailed: 'Failed to update user status',
+    editUserComingSoon: 'Edit user feature coming soon',
+    productDeleted: 'Product deleted successfully',
+    productDeleteFailed: 'Failed to delete product',
+    productActivated: 'Product activated successfully',
+    productDeactivated: 'Product deactivated successfully',
+    productStatusUpdateFailed: 'Failed to update product status',
+    orderDeleted: 'Order deleted successfully',
+    orderDeleteFailed: 'Failed to delete order',
+    sellerActivated: 'Seller activated successfully',
+    sellerDeactivated: 'Seller deactivated successfully',
+    sellerStatusUpdateFailed: 'Failed to update seller status',
+    sellerDeleted: 'Seller deleted successfully',
+    sellerDeleteFailed: 'Failed to delete seller',
+    invoiceDeleted: 'Invoice deleted successfully',
+    invoiceDeleteFailed: 'Failed to delete invoice'
+  },
+  
   // Language names
   languages: {
     en: 'English',

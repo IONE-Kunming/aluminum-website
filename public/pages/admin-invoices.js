@@ -181,12 +181,13 @@ async function deleteInvoice(invoice) {
     return;
   }
   
+  const t = languageManager.t.bind(languageManager);
   try {
     await dataService.db.collection('invoices').doc(invoice.id).delete();
-    window.toast.success('Invoice deleted successfully');
+    window.toast.success(t('admin.invoiceDeleted'));
     await loadInvoices();
   } catch (error) {
     console.error('Error deleting invoice:', error);
-    window.toast.error('Failed to delete invoice');
+    window.toast.error(t('admin.invoiceDeleteFailed'));
   }
 }

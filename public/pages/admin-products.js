@@ -238,27 +238,29 @@ async function deleteProduct(product) {
     return;
   }
   
+  const t = languageManager.t.bind(languageManager);
   try {
     await dataService.db.collection('products').doc(product.id).delete();
-    window.toast.success('Product deleted successfully');
+    window.toast.success(t('admin.productDeleted'));
     await loadProducts();
   } catch (error) {
     console.error('Error deleting product:', error);
-    window.toast.error('Failed to delete product');
+    window.toast.error(t('admin.productDeleteFailed'));
   }
 }
 
 async function toggleProductStatus(product) {
   const newStatus = !(product.isActive !== false);
+  const t = languageManager.t.bind(languageManager);
   
   try {
     await dataService.db.collection('products').doc(product.id).update({
       isActive: newStatus
     });
-    window.toast.success(`Product ${newStatus ? 'activated' : 'deactivated'} successfully`);
+    window.toast.success(t(newStatus ? 'admin.productActivated' : 'admin.productDeactivated'));
     await loadProducts();
   } catch (error) {
     console.error('Error updating product status:', error);
-    window.toast.error('Failed to update product status');
+    window.toast.error(t('admin.productStatusUpdateFailed'));
   }
 }

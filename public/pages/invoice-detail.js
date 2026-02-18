@@ -132,12 +132,16 @@ export async function renderInvoiceDetail() {
 }
 
 function renderPage1(invoice) {
+  // Get base URL from Vite for proper logo path
+  const baseUrl = import.meta.env.BASE_URL || '/';
+  const logoPath = `${baseUrl}logo.svg`.replace('//', '/'); // Avoid double slashes
+  
   return `
     <div class="invoice-page page-1">
       <!-- Header Section with Logo -->
       <div class="invoice-header-section">
         <div class="invoice-logo">
-          <img src="/logo.svg" alt="IONE Logo" class="invoice-logo-img">
+          <img src="${logoPath}" alt="IONE Logo" class="invoice-logo-img">
           <p class="invoice-company-name">${escapeHtml(invoice.sellerCompany || 'HK KANDIVAN I T C L')}</p>
         </div>
         <div class="invoice-info-header">

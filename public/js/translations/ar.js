@@ -652,6 +652,30 @@ export default {
     }
   },
   
+  // الإدارة
+  admin: {
+    userDeleted: 'تم حذف المستخدم بنجاح',
+    userDeleteFailed: 'فشل حذف المستخدم',
+    userActivated: 'تم تنشيط المستخدم بنجاح',
+    userDeactivated: 'تم إلغاء تنشيط المستخدم بنجاح',
+    userStatusUpdateFailed: 'فشل تحديث حالة المستخدم',
+    editUserComingSoon: 'ميزة تحرير المستخدم قريباً',
+    productDeleted: 'تم حذف المنتج بنجاح',
+    productDeleteFailed: 'فشل حذف المنتج',
+    productActivated: 'تم تنشيط المنتج بنجاح',
+    productDeactivated: 'تم إلغاء تنشيط المنتج بنجاح',
+    productStatusUpdateFailed: 'فشل تحديث حالة المنتج',
+    orderDeleted: 'تم حذف الطلب بنجاح',
+    orderDeleteFailed: 'فشل حذف الطلب',
+    sellerActivated: 'تم تنشيط البائع بنجاح',
+    sellerDeactivated: 'تم إلغاء تنشيط البائع بنجاح',
+    sellerStatusUpdateFailed: 'فشل تحديث حالة البائع',
+    sellerDeleted: 'تم حذف البائع بنجاح',
+    sellerDeleteFailed: 'فشل حذف البائع',
+    invoiceDeleted: 'تم حذف الفاتورة بنجاح',
+    invoiceDeleteFailed: 'فشل حذف الفاتورة'
+  },
+  
   // أسماء اللغات
   languages: {
     en: 'English',

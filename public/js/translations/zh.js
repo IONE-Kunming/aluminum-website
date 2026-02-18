@@ -651,6 +651,30 @@ export default {
     }
   },
   
+  // 管理员
+  admin: {
+    userDeleted: '用户已成功删除',
+    userDeleteFailed: '删除用户失败',
+    userActivated: '用户已成功激活',
+    userDeactivated: '用户已成功停用',
+    userStatusUpdateFailed: '更新用户状态失败',
+    editUserComingSoon: '编辑用户功能即将推出',
+    productDeleted: '产品已成功删除',
+    productDeleteFailed: '删除产品失败',
+    productActivated: '产品已成功激活',
+    productDeactivated: '产品已成功停用',
+    productStatusUpdateFailed: '更新产品状态失败',
+    orderDeleted: '订单已成功删除',
+    orderDeleteFailed: '删除订单失败',
+    sellerActivated: '卖家已成功激活',
+    sellerDeactivated: '卖家已成功停用',
+    sellerStatusUpdateFailed: '更新卖家状态失败',
+    sellerDeleted: '卖家已成功删除',
+    sellerDeleteFailed: '删除卖家失败',
+    invoiceDeleted: '发票已成功删除',
+    invoiceDeleteFailed: '删除发票失败'
+  },
+  
   // 语言名称
   languages: {
     en: 'English',

@@ -651,6 +651,30 @@ export default {
     }
   },
   
+  // انتظامیہ
+  admin: {
+    userDeleted: 'صارف کامیابی سے حذف ہو گیا',
+    userDeleteFailed: 'صارف کو حذف کرنے میں ناکامی',
+    userActivated: 'صارف کامیابی سے فعال ہو گیا',
+    userDeactivated: 'صارف کامیابی سے غیر فعال ہو گیا',
+    userStatusUpdateFailed: 'صارف کی حیثیت کو اپ ڈیٹ کرنے میں ناکامی',
+    editUserComingSoon: 'صارف میں ترمیم کی سہولت جلد آ رہی ہے',
+    productDeleted: 'مصنوعات کامیابی سے حذف ہو گئی',
+    productDeleteFailed: 'مصنوعات کو حذف کرنے میں ناکامی',
+    productActivated: 'مصنوعات کامیابی سے فعال ہو گئی',
+    productDeactivated: 'مصنوعات کامیابی سے غیر فعال ہو گئی',
+    productStatusUpdateFailed: 'مصنوعات کی حیثیت کو اپ ڈیٹ کرنے میں ناکامی',
+    orderDeleted: 'آرڈر کامیابی سے حذف ہو گیا',
+    orderDeleteFailed: 'آرڈر کو حذف کرنے میں ناکامی',
+    sellerActivated: 'بیچنے والا کامیابی سے فعال ہو گیا',
+    sellerDeactivated: 'بیچنے والا کامیابی سے غیر فعال ہو گیا',
+    sellerStatusUpdateFailed: 'بیچنے والے کی حیثیت کو اپ ڈیٹ کرنے میں ناکامی',
+    sellerDeleted: 'بیچنے والا کامیابی سے حذف ہو گیا',
+    sellerDeleteFailed: 'بیچنے والے کو حذف کرنے میں ناکامی',
+    invoiceDeleted: 'رسید کامیابی سے حذف ہو گئی',
+    invoiceDeleteFailed: 'رسید کو حذف کرنے میں ناکامی'
+  },
+  
   // زبان کے نام
   languages: {
     en: 'English',

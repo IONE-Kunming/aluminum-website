@@ -185,12 +185,13 @@ async function deleteOrder(order) {
     return;
   }
   
+  const t = languageManager.t.bind(languageManager);
   try {
     await dataService.db.collection('orders').doc(order.id).delete();
-    window.toast.success('Order deleted successfully');
+    window.toast.success(t('admin.orderDeleted'));
     await loadOrders();
   } catch (error) {
     console.error('Error deleting order:', error);
-    window.toast.error('Failed to delete order');
+    window.toast.error(t('admin.orderDeleteFailed'));
   }
 }

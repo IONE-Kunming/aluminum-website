@@ -214,16 +214,17 @@ function viewSeller(seller) {
 
 async function toggleSellerStatus(seller) {
   const newStatus = !(seller.isActive !== false);
+  const t = languageManager.t.bind(languageManager);
   
   try {
     await dataService.db.collection('users').doc(seller.id).update({
       isActive: newStatus
     });
-    window.toast.success(`Seller ${newStatus ? 'activated' : 'deactivated'} successfully`);
+    window.toast.success(t(newStatus ? 'admin.sellerActivated' : 'admin.sellerDeactivated'));
     await loadSellers();
   } catch (error) {
     console.error('Error updating seller status:', error);
-    window.toast.error('Failed to update seller status');
+    window.toast.error(t('admin.sellerStatusUpdateFailed'));
   }
 }
 
@@ -232,12 +233,13 @@ async function deleteSeller(seller) {
     return;
   }
   
+  const t = languageManager.t.bind(languageManager);
   try {
     await dataService.db.collection('users').doc(seller.id).delete();
-    window.toast.success('Seller deleted successfully');
+    window.toast.success(t('admin.sellerDeleted'));
     await loadSellers();
   } catch (error) {
     console.error('Error deleting seller:', error);
-    window.toast.error('Failed to delete seller');
+    window.toast.error(t('admin.sellerDeleteFailed'));
   }
 }
