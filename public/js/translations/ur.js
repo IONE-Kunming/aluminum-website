@@ -85,7 +85,8 @@ export default {
     importError: 'مصنوعات درآمد کرنے میں خرابی',
     manageProductListings: 'اپنی مصنوعات کی فہرست کا انتظام کریں',
     downloadTemplate: 'ایکسل ٹیمپلیٹ ڈاؤن لوڈ کریں',
-    addToCart: 'ٹوکری میں شامل کریں'
+    addToCart: 'ٹوکری میں شامل کریں',
+    filterBySubcategory: 'ذیلی زمرہ کے مطابق فلٹر کریں'
   },
   
   // ڈیش بورڈ

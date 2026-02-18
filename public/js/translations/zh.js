@@ -85,7 +85,8 @@ export default {
     importError: '导入产品时出错',
     manageProductListings: '管理您的产品列表',
     downloadTemplate: '下载Excel模板',
-    addToCart: '加入购物车'
+    addToCart: '加入购物车',
+    filterBySubcategory: '按子类别筛选'
   },
   
   // 仪表板

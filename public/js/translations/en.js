@@ -85,7 +85,8 @@ export default {
     importError: 'Error importing products',
     manageProductListings: 'Manage your product listings',
     downloadTemplate: 'Download Excel Template',
-    addToCart: 'Add to Cart'
+    addToCart: 'Add to Cart',
+    filterBySubcategory: 'Filter by Subcategory'
   },
   
   // Dashboard

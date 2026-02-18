@@ -320,6 +320,7 @@ function displayProducts(products, filterSubcategory = null) {
   gridEl.style.display = 'grid';
   
   // Get unique subcategories from all products
+  // Note: Product subcategories are stored in the 'category' field
   const subcategories = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
   
   // Filter products if a subcategory is selected
@@ -338,7 +339,7 @@ function displayProducts(products, filterSubcategory = null) {
     ${subcategories.length > 0 ? `
       <div style="margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
         <div style="margin-bottom: 12px; font-size: 14px; font-weight: 500; color: #374151;">
-          ${t('products.subcategory')} ${t('common.filter')}:
+          ${t('products.filterBySubcategory')}:
         </div>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           ${subcategories.map(subcat => {

@@ -85,7 +85,8 @@ export default {
     importError: 'خطأ في استيراد المنتجات',
     manageProductListings: 'إدارة قوائم المنتجات الخاصة بك',
     downloadTemplate: 'تحميل نموذج Excel',
-    addToCart: 'إضافة إلى السلة'
+    addToCart: 'إضافة إلى السلة',
+    filterBySubcategory: 'تصفية حسب الفئة الفرعية'
   },
   
   // لوحة التحكم
