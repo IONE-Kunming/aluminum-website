@@ -4,13 +4,6 @@ import authManager from '../js/auth.js';
 import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
-import { 
-  isMainCategory, 
-  isSubcategory, 
-  getSubcategories,
-  getMainCategories,
-  getMainCategoryForSubcategory
-} from '../js/categoryHierarchy.js';
 
 // Helper function to translate category names
 function translateCategory(category, t) {
