@@ -10,6 +10,22 @@ import languageManager from '../js/language.js';
 const CM_TO_METERS = 100;
 const ZOOM_LENS_SIZE = 100; // pixels
 
+// Categories that require dimensions (exterior gates and fences)
+const DIMENSION_REQUIRED_CATEGORIES = [
+  'Exterior Gates',
+  'Gates', 
+  'Fences',
+  'Fencing'
+];
+
+// Helper function to check if product requires dimensions
+function requiresDimensions(product) {
+  if (!product.category) return false;
+  return DIMENSION_REQUIRED_CATEGORIES.some(cat => 
+    product.category.toLowerCase().includes(cat.toLowerCase())
+  );
+}
+
 export async function renderProductDetail() {
   const t = languageManager.t.bind(languageManager);
   const profile = authManager.getUserProfile();
@@ -32,6 +48,9 @@ export async function renderProductDetail() {
     router.navigate('/buyer/catalog');
     return;
   }
+  
+  // Check if this product requires dimensions
+  const needsDimensions = requiresDimensions(product);
   
   const content = `
     <div class="product-detail-page">
@@ -103,6 +122,7 @@ export async function renderProductDetail() {
           <div class="product-order-form card">
             <h2>${t('catalog.orderDetails')}</h2>
             <form id="add-to-cart-form">
+              ${needsDimensions ? `
               <div class="form-row">
                 <div class="form-group">
                   <label for="dimension-length">${t('cart.length')} (cm) *</label>
@@ -129,6 +149,7 @@ export async function renderProductDetail() {
                   />
                 </div>
               </div>
+              ` : ''}
               
               <div class="form-group">
                 <label for="quantity">${t('cart.quantity')} *</label>
@@ -244,20 +265,43 @@ export async function renderProductDetail() {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       
-      const length = parseFloat(document.getElementById('dimension-length').value);
-      const width = parseFloat(document.getElementById('dimension-width').value);
+      let dimensions = null;
+      
+      // Only validate and process dimensions if required for this product
+      if (needsDimensions) {
+        const lengthInput = document.getElementById('dimension-length');
+        const widthInput = document.getElementById('dimension-width');
+        
+        if (!lengthInput || !widthInput) {
+          window.toast.error('Dimension fields not found');
+          return;
+        }
+        
+        const length = parseFloat(lengthInput.value);
+        const width = parseFloat(widthInput.value);
+        
+        // Validate dimensions
+        if (isNaN(length) || !isFinite(length) || length <= 0) {
+          window.toast.error(t('cart.pleaseEnterValidDimensions'));
+          return;
+        }
+        
+        if (isNaN(width) || !isFinite(width) || width <= 0) {
+          window.toast.error(t('cart.pleaseEnterValidDimensions'));
+          return;
+        }
+        
+        // Convert cm to meters for storage
+        const lengthInMeters = length / CM_TO_METERS;
+        const widthInMeters = width / CM_TO_METERS;
+        
+        dimensions = {
+          length: lengthInMeters,
+          width: widthInMeters
+        };
+      }
+      
       const quantity = parseInt(quantityInput.value);
-      
-      // Validate dimensions
-      if (isNaN(length) || !isFinite(length) || length <= 0) {
-        window.toast.error(t('cart.pleaseEnterValidDimensions'));
-        return;
-      }
-      
-      if (isNaN(width) || !isFinite(width) || width <= 0) {
-        window.toast.error(t('cart.pleaseEnterValidDimensions'));
-        return;
-      }
       
       // Validate quantity
       if (isNaN(quantity) || quantity < minOrder) {
@@ -272,12 +316,11 @@ export async function renderProductDetail() {
         return;
       }
       
-      // Convert cm to meters for storage
-      const lengthInMeters = length / CM_TO_METERS;
-      const widthInMeters = width / CM_TO_METERS;
-      
-      // Create a unique cart item ID that includes dimensions
-      const cartItemId = `${product.id}_${lengthInMeters}_${widthInMeters}`;
+      // Create a unique cart item ID
+      // For products with dimensions, include them in the ID to allow same product with different dimensions
+      const cartItemId = dimensions 
+        ? `${product.id}_${dimensions.length}_${dimensions.width}`
+        : product.id;
       
       // Normalize product data for cart
       const cartProduct = {
@@ -289,12 +332,13 @@ export async function renderProductDetail() {
         sellerId: product.sellerId,
         price: product.pricePerMeter || product.price || 0,
         unit: product.unit || 'unit',
-        minOrder: product.minOrder || 1,
-        dimensions: {
-          length: lengthInMeters,
-          width: widthInMeters
-        }
+        minOrder: product.minOrder || 1
       };
+      
+      // Only add dimensions if they exist
+      if (dimensions) {
+        cartProduct.dimensions = dimensions;
+      }
       
       // Add to cart
       await cartManager.addToCart(cartProduct, quantity);

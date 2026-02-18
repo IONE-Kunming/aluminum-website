@@ -1,7 +1,8 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
-import { escapeHtml, formatDate } from '../js/utils.js';
+import { escapeHtml, formatDate, exportInvoiceToCSV, exportInvoiceToTXT } from '../js/utils.js';
+import html2pdf from 'html2pdf.js';
 
 // Default terms and conditions
 const DEFAULT_TERMS = [
@@ -45,9 +46,17 @@ export async function renderInvoiceDetail() {
             Back
           </button>
           <div class="invoice-actions">
-            <button class="btn btn-secondary" id="print-invoice-btn">
-              <i data-lucide="printer"></i>
-              Print
+            <button class="btn btn-secondary" id="download-pdf-btn">
+              <i data-lucide="file-text"></i>
+              Download PDF
+            </button>
+            <button class="btn btn-secondary" id="download-csv-btn">
+              <i data-lucide="table"></i>
+              Download CSV
+            </button>
+            <button class="btn btn-secondary" id="download-txt-btn">
+              <i data-lucide="file"></i>
+              Download TXT
             </button>
           </div>
         </div>
@@ -61,9 +70,59 @@ export async function renderInvoiceDetail() {
     renderPageWithLayout(content, isBuyer ? 'buyer' : 'seller');
     if (window.lucide) window.lucide.createIcons();
     
-    // Print button
-    document.getElementById('print-invoice-btn').addEventListener('click', () => {
-      window.print();
+    // PDF download button (uses html2pdf.js for proper export)
+    document.getElementById('download-pdf-btn').addEventListener('click', async () => {
+      const element = document.getElementById('invoice-document');
+      const invoiceNumber = invoice.invoiceNumber || 'export';
+      
+      // Clone the element to avoid modifying the original
+      const clone = element.cloneNode(true);
+      
+      // Create a temporary container
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.top = '0';
+      tempContainer.style.width = '8.5in'; // US Letter width
+      tempContainer.appendChild(clone);
+      document.body.appendChild(tempContainer);
+      
+      try {
+        const opt = {
+          margin: 0.75,
+          filename: `invoice-${invoiceNumber}.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { 
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+          },
+          jsPDF: { 
+            unit: 'in', 
+            format: 'letter', 
+            orientation: 'portrait'
+          }
+        };
+        
+        await html2pdf().set(opt).from(clone).save();
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        window.toast.error('Failed to generate PDF. Please try again.');
+      } finally {
+        // Clean up
+        document.body.removeChild(tempContainer);
+      }
+    });
+    
+    // CSV download button
+    document.getElementById('download-csv-btn').addEventListener('click', () => {
+      exportInvoiceToCSV(invoice);
+    });
+    
+    // TXT download button
+    document.getElementById('download-txt-btn').addEventListener('click', () => {
+      exportInvoiceToTXT(invoice);
     });
     
   } catch (error) {
