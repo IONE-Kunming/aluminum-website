@@ -27,6 +27,7 @@ const lazyPages = {
   sellerDashboard: () => import('../pages/seller-dashboard.js').then(m => m.renderSellerDashboard),
   categorySelection: () => import('../pages/category-selection.js').then(m => m.renderCategorySelection),
   catalog: () => import('../pages/catalog.js').then(m => m.renderCatalog),
+  allProducts: () => import('../pages/all-products.js').then(m => m.renderAllProducts),
   productDetail: () => import('../pages/product-detail.js').then(m => m.renderProductDetail),
   cart: () => import('../pages/cart.js').then(m => m.renderCart),
   checkout: () => import('../pages/checkout.js').then(m => m.renderCheckout),
@@ -232,6 +233,7 @@ async function initApp() {
   router.register('/buyer/dashboard', protectedRoute(lazyRoute(lazyPages.buyerDashboard), 'buyer'));
   router.register('/buyer/category-selection', protectedRoute(lazyRoute(lazyPages.categorySelection), 'buyer'));
   router.register('/buyer/catalog', protectedRoute(lazyRoute(lazyPages.catalog), 'buyer'));
+  router.register('/buyer/all-products', protectedRoute(lazyRoute(lazyPages.allProducts), 'buyer'));
   router.register('/buyer/product', protectedRoute(lazyRoute(lazyPages.productDetail), 'buyer'));
   router.register('/buyer/cart', protectedRoute(lazyRoute(lazyPages.cart), 'buyer'));
   router.register('/buyer/checkout', protectedRoute(lazyRoute(lazyPages.checkout), 'buyer'));

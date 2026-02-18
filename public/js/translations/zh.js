@@ -354,6 +354,17 @@ export default {
     allSubCategories: '子类别'
   },
   
+  // 所有产品页面
+  allProducts: {
+    title: '所有产品',
+    subtitle: '浏览所有卖家的产品',
+    allCategories: '所有类别',
+    sortNewest: '最新优先',
+    sortPriceLow: '价格：从低到高',
+    sortPriceHigh: '价格：从高到低',
+    sortName: '名称 A-Z'
+  },
+  
   // 类别名称（用于翻译实际类别值）
   categoryNames: {
     'Construction': '建筑',

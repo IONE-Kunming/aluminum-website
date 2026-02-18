@@ -356,6 +356,17 @@ export default {
     allSubCategories: 'Sub Categories'
   },
   
+  // All Products Page
+  allProducts: {
+    title: 'All Products',
+    subtitle: 'Browse products from all sellers',
+    allCategories: 'All Categories',
+    sortNewest: 'Newest First',
+    sortPriceLow: 'Price: Low to High',
+    sortPriceHigh: 'Price: High to Low',
+    sortName: 'Name A-Z'
+  },
+  
   // Category Names (for translating actual category values)
   categoryNames: {
     'Construction': 'Construction',
