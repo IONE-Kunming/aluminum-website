@@ -173,7 +173,21 @@ export default {
     orderStatusOutOfProduction: 'Out Of Production',
     orderStatusDeliveredToShipping: 'Delivered to the Shipping Company',
     orderStatusReachedPort: 'Reached Port',
-    orderStatusCollected: 'Collected'
+    orderStatusCollected: 'Collected',
+    draftOrders: 'Draft Orders',
+    activeOrders: 'Active Orders',
+    noDraftOrders: 'No draft orders',
+    draftOrdersWillAppear: 'Draft orders will appear here when you add items to cart',
+    draftOrdersDescription: 'These are your draft orders waiting to be checked out. Each order is for a different seller and needs to be paid separately.',
+    checkoutOrder: 'Checkout Order',
+    completePayment: 'Complete payment for this order',
+    backToOrders: 'Back to Orders',
+    confirmPayment: 'Confirm Payment',
+    paymentSuccessful: 'Payment successful! Order confirmed.',
+    paymentFailed: 'Payment failed. Please try again.',
+    checkoutError: 'Failed to checkout order',
+    orderNotFound: 'Order not found or already checked out',
+    viewDetails: 'View Details'
   },
   
   // Chats
@@ -318,7 +332,9 @@ export default {
     wechat: 'WeChat Pay',
     bankTransfer: 'Bank Transfer',
     cardPayment: 'Card Payment',
-    units: 'units'
+    units: 'units',
+    draftOrdersCreated: 'Draft orders created successfully. Please checkout each order separately.',
+    fullPayment: 'Full Payment'
   },
   
   // Catalog

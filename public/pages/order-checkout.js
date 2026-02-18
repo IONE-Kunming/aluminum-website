@@ -1,38 +1,34 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
-import cartManager from '../js/cart.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
 
-export async function renderCheckout() {
+export async function renderOrderCheckout() {
   const t = languageManager.t.bind(languageManager);
-  const cartItems = cartManager.getCart();
-  const cartTotal = cartManager.getCartTotal();
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderId = urlParams.get('id');
   
-  if (cartItems.length === 0) {
-    router.navigate('/buyer/cart');
+  if (!orderId) {
+    router.navigate('/buyer/orders');
     return;
   }
   
-  // Validate all products before checkout
-  const productIds = cartItems.map(item => item.id.toString());
-  const productValidation = await dataService.validateProducts(productIds);
-  const hasUnavailableItems = Object.values(productValidation).some(isValid => !isValid);
+  // Fetch the order
+  const order = await dataService.getOrderById(orderId);
   
-  // If there are unavailable items, redirect back to cart with a message
-  if (hasUnavailableItems) {
-    window.toast.error(t('cart.someItemsUnavailable'));
-    router.navigate('/buyer/cart');
+  if (!order || order.status !== 'draft') {
+    window.toast.error(t('orders.orderNotFound') || 'Order not found or already checked out');
+    router.navigate('/buyer/orders');
     return;
   }
   
   const content = `
-    <div class="checkout-page">
+    <div class="order-checkout-page">
       <div class="page-header">
-        <h1>${t('checkout.title')}</h1>
-        <p>${t('checkout.subtitle')}</p>
+        <h1>${t('orders.checkoutOrder') || 'Checkout Order'}</h1>
+        <p>${t('orders.completePayment') || 'Complete payment for this order'}</p>
       </div>
 
       <div class="checkout-container">
@@ -40,15 +36,15 @@ export async function renderCheckout() {
         <div class="checkout-section card">
           <h2>${t('checkout.orderSummary')}</h2>
           <div class="checkout-items">
-            ${cartItems.map(item => `
+            ${order.items.map(item => `
               <div class="checkout-item">
                 <div class="checkout-item-info">
-                  <h4>${escapeHtml(item.modelNumber || item.name)}</h4>
+                  <h4>${escapeHtml(item.productName)}</h4>
                   <p class="text-muted">${escapeHtml(item.seller)}</p>
                 </div>
                 <div class="checkout-item-details">
-                  <span>${item.quantity} ${escapeHtml(item.unit || t('checkout.units'))}</span>
-                  <span class="checkout-item-price">$${(item.price * item.quantity).toFixed(2)}</span>
+                  <span>${item.quantity} ${escapeHtml(item.unit || 'units')}</span>
+                  <span class="checkout-item-price">$${item.subtotal.toFixed(2)}</span>
                 </div>
               </div>
             `).join('')}
@@ -56,15 +52,15 @@ export async function renderCheckout() {
           <div class="checkout-totals">
             <div class="checkout-total-row">
               <span>${t('checkout.subtotal')}:</span>
-              <span>$${cartTotal.toFixed(2)}</span>
+              <span>$${order.subtotal.toFixed(2)}</span>
             </div>
             <div class="checkout-total-row">
               <span>${t('checkout.tax')} (10%):</span>
-              <span>$${(cartTotal * 0.1).toFixed(2)}</span>
+              <span>$${order.tax.toFixed(2)}</span>
             </div>
             <div class="checkout-total-row total">
               <span>${t('checkout.total')}:</span>
-              <span id="order-total">$${(cartTotal * 1.1).toFixed(2)}</span>
+              <span id="order-total">$${order.total.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -79,7 +75,7 @@ export async function renderCheckout() {
               <input type="radio" name="deposit" value="5" data-percentage="5" />
               <div class="deposit-card">
                 <div class="deposit-percentage">5%</div>
-                <div class="deposit-amount">$${(cartTotal * 1.1 * 0.05).toFixed(2)}</div>
+                <div class="deposit-amount">$${(order.total * 0.05).toFixed(2)}</div>
                 <div class="deposit-label">${t('checkout.minimumDeposit')}</div>
               </div>
             </label>
@@ -88,7 +84,7 @@ export async function renderCheckout() {
               <input type="radio" name="deposit" value="30" data-percentage="30" />
               <div class="deposit-card">
                 <div class="deposit-percentage">30%</div>
-                <div class="deposit-amount">$${(cartTotal * 1.1 * 0.30).toFixed(2)}</div>
+                <div class="deposit-amount">$${(order.total * 0.30).toFixed(2)}</div>
                 <div class="deposit-label">${t('checkout.standardDeposit')}</div>
               </div>
             </label>
@@ -97,7 +93,7 @@ export async function renderCheckout() {
               <input type="radio" name="deposit" value="65" data-percentage="65" />
               <div class="deposit-card">
                 <div class="deposit-percentage">65%</div>
-                <div class="deposit-amount">$${(cartTotal * 1.1 * 0.65).toFixed(2)}</div>
+                <div class="deposit-amount">$${(order.total * 0.65).toFixed(2)}</div>
                 <div class="deposit-label">${t('checkout.premiumDeposit')}</div>
               </div>
             </label>
@@ -106,25 +102,25 @@ export async function renderCheckout() {
               <input type="radio" name="deposit" value="100" data-percentage="100" />
               <div class="deposit-card">
                 <div class="deposit-percentage">100%</div>
-                <div class="deposit-amount">$${(cartTotal * 1.1 * 1.0).toFixed(2)}</div>
+                <div class="deposit-amount">$${order.total.toFixed(2)}</div>
                 <div class="deposit-label">${t('checkout.fullPayment')}</div>
               </div>
             </label>
           </div>
           
-          <div id="deposit-summary" class="deposit-summary" style="display: none;">
-            <div class="summary-row">
+          <div id="deposit-summary" style="margin-top: 24px; padding: 16px; background: var(--background-secondary); border-radius: 8px; display: none;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
               <span>${t('checkout.depositAmountLabel')}:</span>
-              <span id="deposit-amount-display">$0.00</span>
+              <span id="deposit-amount-display" style="font-weight: bold; color: var(--success-color);">$0.00</span>
             </div>
-            <div class="summary-row">
+            <div style="display: flex; justify-content: space-between;">
               <span>${t('checkout.remainingBalance')}:</span>
-              <span id="remaining-balance-display">$${(cartTotal * 1.1).toFixed(2)}</span>
+              <span id="remaining-balance-display" style="font-weight: bold; color: var(--warning-color);">$0.00</span>
             </div>
           </div>
         </div>
 
-        <!-- Payment Method -->
+        <!-- Payment Method Selection -->
         <div class="checkout-section card">
           <h2>${t('checkout.paymentMethod')} <span class="required-badge">${t('checkout.required')}</span></h2>
           <p class="section-description">${t('checkout.selectPaymentMethod')}</p>
@@ -180,13 +176,13 @@ export async function renderCheckout() {
 
         <!-- Action Buttons -->
         <div class="checkout-actions">
-          <button class="btn btn-secondary" id="back-to-cart-btn">
+          <button class="btn btn-secondary" id="back-to-orders-btn">
             <i data-lucide="arrow-left"></i>
-            ${t('checkout.backToCart')}
+            ${t('orders.backToOrders') || 'Back to Orders'}
           </button>
-          <button class="btn btn-primary" id="confirm-order-btn" disabled>
+          <button class="btn btn-primary" id="confirm-payment-btn" disabled>
             <i data-lucide="check-circle"></i>
-            ${t('checkout.confirmOrder')}
+            ${t('orders.confirmPayment') || 'Confirm Payment'}
           </button>
         </div>
       </div>
@@ -198,15 +194,15 @@ export async function renderCheckout() {
   if (window.lucide) window.lucide.createIcons();
   
   // Initialize checkout functionality
-  initializeCheckout(cartItems, cartTotal);
+  initializeOrderCheckout(order);
 }
 
-function initializeCheckout(cartItems, cartTotal) {
+function initializeOrderCheckout(order) {
   const t = languageManager.t.bind(languageManager);
   const depositOptions = document.querySelectorAll('input[name="deposit"]');
   const paymentOptions = document.querySelectorAll('input[name="payment"]');
-  const confirmBtn = document.getElementById('confirm-order-btn');
-  const backBtn = document.getElementById('back-to-cart-btn');
+  const confirmBtn = document.getElementById('confirm-payment-btn');
+  const backBtn = document.getElementById('back-to-orders-btn');
   const depositSummary = document.getElementById('deposit-summary');
   const depositAmountDisplay = document.getElementById('deposit-amount-display');
   const remainingBalanceDisplay = document.getElementById('remaining-balance-display');
@@ -214,7 +210,7 @@ function initializeCheckout(cartItems, cartTotal) {
   let selectedDeposit = null;
   let selectedPayment = null;
   
-  const orderTotal = cartTotal * 1.1;
+  const orderTotal = order.total;
   
   // Handle deposit selection
   depositOptions.forEach(option => {
@@ -261,12 +257,12 @@ function initializeCheckout(cartItems, cartTotal) {
     }
   }
   
-  // Back to cart
+  // Back to orders
   backBtn.addEventListener('click', () => {
-    router.navigate('/buyer/cart');
+    router.navigate('/buyer/orders');
   });
   
-  // Confirm order
+  // Confirm payment
   confirmBtn.addEventListener('click', async () => {
     if (!selectedDeposit || !selectedPayment) {
       window.toast.warning(t('checkout.selectDepositAndPayment'));
@@ -278,122 +274,46 @@ function initializeCheckout(cartItems, cartTotal) {
     if (window.lucide) window.lucide.createIcons();
     
     try {
-      // Simulate payment processing (mock)
+      // Simulate payment processing
       await processPayment(selectedPayment, orderTotal, selectedDeposit);
       
-      // Create order in database
-      const user = authManager.getCurrentUser();
-      const userProfile = authManager.getUserProfile();
+      // Update order with deposit and payment info
+      const depositAmount = orderTotal * (selectedDeposit / 100);
+      const remainingBalance = orderTotal - depositAmount;
       
-      if (!user) {
-        throw new Error('User not authenticated');
-      }
-      
-      // Group items by seller to create separate orders for each seller
-      const itemsBySeller = {};
-      
-      // Validate all items have sellerId before proceeding
-      const invalidItems = cartItems.filter(item => !item.sellerId || item.sellerId === '');
-      if (invalidItems.length > 0) {
-        console.error('Items without seller ID:', invalidItems);
-        throw new Error('Some items in cart are missing seller information. Please remove them and try again.');
-      }
-      
-      cartItems.forEach(item => {
-        const sellerId = item.sellerId;
-        if (!itemsBySeller[sellerId]) {
-          itemsBySeller[sellerId] = [];
-        }
-        itemsBySeller[sellerId].push(item);
+      await dataService.updateOrderStatus(order.id, {
+        status: 'pending',
+        paymentStatus: 'deposit_paid',
+        depositPercentage: selectedDeposit,
+        depositAmount: depositAmount,
+        remainingBalance: remainingBalance,
+        paymentMethod: selectedPayment,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       });
       
-      // Create separate order for each seller using batched writes for atomicity
-      const ordersData = Object.entries(itemsBySeller).map(([sellerId, items]) => {
-        const sellerSubtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        const sellerTax = sellerSubtotal * 0.1;
-        const sellerTotal = sellerSubtotal + sellerTax;
-        const sellerDepositAmount = sellerTotal * (selectedDeposit / 100);
-        const sellerRemainingBalance = sellerTotal - sellerDepositAmount;
-        
-        return {
-          buyerId: user.uid,
-          buyerName: userProfile?.displayName || user.displayName || 'Unknown',
-          buyerEmail: userProfile?.email || user.email,
-          buyerCompany: userProfile?.companyName || 'N/A',
-          sellerId: sellerId,
-          sellerName: items[0]?.seller || items[0]?.sellerName || 'Unknown Seller',
-          items: items.map(item => {
-            // Validate and sanitize cart item data
-            const quantity = Number(item.quantity) || 0;
-            const pricePerUnit = Number(item.price) || 0;
-            
-            if (quantity <= 0 || pricePerUnit < 0) {
-              throw new Error('Invalid cart item data');
-            }
-            
-            return {
-              productId: item.id,
-              productName: item.name || item.modelNumber,
-              seller: item.seller || item.sellerName,
-              sellerId: item.sellerId,
-              quantity: quantity,
-              unit: item.unit || 'units',
-              pricePerUnit: pricePerUnit,
-              subtotal: pricePerUnit * quantity
-            };
-          }),
-          subtotal: sellerSubtotal,
-          tax: sellerTax,
-          total: sellerTotal,
-          depositPercentage: selectedDeposit,
-          depositAmount: sellerDepositAmount,
-          remainingBalance: sellerRemainingBalance,
-          paymentMethod: selectedPayment,
-          status: 'draft',
-          paymentStatus: 'pending',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        };
-      });
+      // Create invoice for the order
+      try {
+        await dataService.createInvoice(order.id);
+        console.log('Invoice created for order:', order.id);
+      } catch (invoiceError) {
+        console.error('Error creating invoice:', invoiceError);
+        // Continue even if invoice creation fails
+      }
       
-      // Create all orders atomically using batched write
-      // This ensures either all orders succeed or all fail - no partial orders
-      const orderResult = await dataService.createOrdersBatch(ordersData);
+      // Show success message
+      window.toast.success(t('orders.paymentSuccessful') || 'Payment successful! Order confirmed.');
       
-      console.log('Orders created successfully as drafts:', orderResult.orderIds);
-      
-      // DO NOT create invoices for draft orders
-      // Invoices will be created when buyer checks out each draft order separately
-      
-      console.log('Draft orders created, clearing cart...');
-      
-      // Clear cart
-      await cartManager.clearCart();
-      
-      // Show success message for draft orders
-      window.toast.success(t('checkout.draftOrdersCreated') || 'Draft orders created successfully. Please checkout each order separately.');
-      
-      // Add a longer delay to ensure Firestore replication completes
-      // before navigating to orders page
+      // Navigate back to orders
       setTimeout(() => {
         router.navigate('/buyer/orders');
-      }, 2500);
+      }, 2000);
       
     } catch (error) {
-      console.error('Error placing order:', error);
-      console.error('Error details:', {
-        message: error.message,
-        stack: error.stack,
-        user: authManager.getCurrentUser()?.uid,
-        cartItems: cartItems.length
-      });
-      
-      // Show more specific error message if available
-      const errorMessage = error.message || t('checkout.orderFailed');
-      window.toast.error(errorMessage);
+      console.error('Error processing payment:', error);
+      window.toast.error(t('orders.paymentFailed') || 'Payment failed. Please try again.');
       
       confirmBtn.disabled = false;
-      confirmBtn.innerHTML = `<i data-lucide="check-circle"></i> ${t('checkout.confirmOrder')}`;
+      confirmBtn.innerHTML = `<i data-lucide="check-circle"></i> ${t('orders.confirmPayment') || 'Confirm Payment'}`;
       if (window.lucide) window.lucide.createIcons();
     }
   });
@@ -401,7 +321,6 @@ function initializeCheckout(cartItems, cartTotal) {
 
 // Mock payment processing
 async function processPayment(method, amount, depositPercentage) {
-  // Simulate payment gateway delay
   return new Promise((resolve) => {
     setTimeout(() => {
       console.log(`Processing ${method} payment for $${(amount * depositPercentage / 100).toFixed(2)}`);

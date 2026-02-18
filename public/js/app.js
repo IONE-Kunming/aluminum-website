@@ -31,6 +31,7 @@ const lazyPages = {
   productDetail: () => import('../pages/product-detail.js').then(m => m.renderProductDetail),
   cart: () => import('../pages/cart.js').then(m => m.renderCart),
   checkout: () => import('../pages/checkout.js').then(m => m.renderCheckout),
+  orderCheckout: () => import('../pages/order-checkout.js').then(m => m.renderOrderCheckout),
   orders: () => import('../pages/orders.js').then(m => m.renderOrders),
   orderDetail: () => import('../pages/order-detail.js').then(m => m.renderOrderDetail),
   invoices: () => import('../pages/invoices.js').then(m => m.renderInvoices),
@@ -237,6 +238,7 @@ async function initApp() {
   router.register('/buyer/product', protectedRoute(lazyRoute(lazyPages.productDetail), 'buyer'));
   router.register('/buyer/cart', protectedRoute(lazyRoute(lazyPages.cart), 'buyer'));
   router.register('/buyer/checkout', protectedRoute(lazyRoute(lazyPages.checkout), 'buyer'));
+  router.register('/buyer/order-checkout', protectedRoute(lazyRoute(lazyPages.orderCheckout), 'buyer'));
   router.register('/buyer/orders', protectedRoute(lazyRoute(lazyPages.orders), 'buyer'));
   router.register('/buyer/invoices', protectedRoute(lazyRoute(lazyPages.invoices), 'buyer'));
   router.register('/buyer/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'buyer'));
