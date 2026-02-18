@@ -4674,12 +4674,12 @@
     padding: var(--spacing-lg) 0.75in;
   }
   
-  /* Ensure text is readable in print, but keep important brand colors */
+  /* Ensure text is readable in print by forcing black for body text */
   .invoice-page {
     color: #000 !important;
   }
   
-  /* Allow specific elements to keep their brand colors */
+  /* Force black text for readability in print */
   .invoice-party p,
   .payment-instructions-content p {
     color: #000 !important;
