@@ -67,6 +67,7 @@ let allUsers = [];
 
 async function loadUsers() {
   try {
+    await dataService.init(); // Initialize dataService before accessing db
     const usersSnapshot = await dataService.db.collection('users').get();
     allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     

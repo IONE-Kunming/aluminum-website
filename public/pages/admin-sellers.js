@@ -61,6 +61,7 @@ let sellerStats = {};
 
 async function loadSellers() {
   try {
+    await dataService.init(); // Initialize dataService before accessing db
     // Load sellers
     const sellersSnapshot = await dataService.db.collection('users').where('role', '==', 'seller').get();
     allSellers = sellersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));

@@ -63,6 +63,7 @@ let allOrders = [];
 
 async function loadOrders() {
   try {
+    await dataService.init(); // Initialize dataService before accessing db
     const ordersSnapshot = await dataService.db.collection('orders').get();
     allOrders = ordersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     

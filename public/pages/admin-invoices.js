@@ -61,6 +61,7 @@ let allInvoices = [];
 
 async function loadInvoices() {
   try {
+    await dataService.init(); // Initialize dataService before accessing db
     const invoicesSnapshot = await dataService.db.collection('invoices').get();
     allInvoices = invoicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     

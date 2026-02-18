@@ -69,6 +69,7 @@ let sellers = {};
 
 async function loadProducts() {
   try {
+    await dataService.init(); // Initialize dataService before accessing db
     // Load products with high limit
     const products = await dataService.getProducts({ limit: 1000000 });
     allProducts = products;
