@@ -1,4 +1,3 @@
-import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
