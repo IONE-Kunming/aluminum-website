@@ -4614,36 +4614,98 @@
 }
 
 
-/* Print Styles */
+/* Print Styles - Consolidated and optimized for PDF export */
 @media print {
   .no-print,
   .invoice-actions-header {
     display: none !important;
   }
   
+  body {
+    background: white !important;
+    margin: 0;
+    padding: 0;
+  }
+  
   .invoice-document {
     border: none;
     box-shadow: none;
+    border-radius: 0;
   }
   
   .invoice-page {
-    padding: 0;
-    min-height: auto;
+    padding: 0.75in;
+    min-height: 0;
     page-break-after: auto;
+    margin: 0;
+    box-sizing: border-box;
   }
   
-  /* Ensure logo and colors print correctly */
+  /* Ensure all colors and backgrounds print correctly */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+  
+  /* Optimize logo size for print */
   .invoice-logo-img {
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
+    max-width: 180px;
+    height: auto;
   }
   
-  /* Preserve gradients and colors in print */
+  /* Ensure proper spacing and avoid page breaks in critical sections */
+  .invoice-header-section,
+  .invoice-parties,
+  .invoice-payment-instructions,
+  .invoice-order-summary,
+  .invoice-terms-conditions {
+    page-break-inside: avoid;
+  }
+  
+  /* Adjust header section for print */
+  .invoice-header-section {
+    margin: -0.75in -0.75in var(--spacing-xl) -0.75in;
+    padding: var(--spacing-lg) 0.75in;
+  }
+  
+  /* Ensure text is readable in print */
+  .invoice-page,
+  .invoice-page * {
+    color: #000 !important;
+  }
+  
+  /* Keep brand colors for specific elements */
+  .invoice-company-name,
+  .invoice-number,
+  .invoice-party h3,
+  .section-title,
+  .term-value,
+  .item-amount,
+  .totals-row.total-amount span:last-child {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Ensure backgrounds are visible */
   .invoice-header-section,
   .invoice-payment-instructions,
-  .payment-terms-box {
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
+  .payment-terms-box,
+  .invoice-parties,
+  .invoice-totals-section,
+  .invoice-terms-conditions,
+  .item-row {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* Optimize font sizes for print */
+  body {
+    font-size: 11pt;
+  }
+  
+  .invoice-footer {
+    margin-top: var(--spacing-lg);
   }
 }
 
@@ -4660,39 +4722,6 @@
   margin-top: var(--spacing-md);
   font-style: italic;
   font-weight: 600;
-}
-
-/* Print Styles */
-@media print {
-  .no-print,
-  .invoice-actions-header {
-    display: none !important;
-  }
-  
-  .invoice-document {
-    border: none;
-    box-shadow: none;
-  }
-  
-  .invoice-page {
-    page-break-after: auto;
-    min-height: 0;
-    padding: 0.5in;
-  }
-  
-  body {
-    background: white;
-  }
-  
-  * {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  
-  /* Ensure logo and colors print correctly */
-  .invoice-logo-img {
-    max-width: 180px;
-  }
 }
 
 /* Responsive Styles */
