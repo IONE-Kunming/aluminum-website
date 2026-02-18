@@ -262,6 +262,7 @@ async function initApp() {
   router.register('/admin/orders', protectedRoute(lazyRoute(lazyPages.adminOrders), 'admin'));
   router.register('/admin/sellers', protectedRoute(lazyRoute(lazyPages.adminSellers), 'admin'));
   router.register('/admin/invoices', protectedRoute(lazyRoute(lazyPages.adminInvoices), 'admin'));
+  router.register('/admin/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'admin'));
   router.register('/admin/support', protectedRoute(lazyRoute(lazyPages.support), 'admin'));
   router.register('/admin/profile', protectedRoute(lazyRoute(lazyPages.profile), 'admin'));
   

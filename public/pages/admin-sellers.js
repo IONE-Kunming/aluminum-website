@@ -210,7 +210,8 @@ function filterSellers() {
 }
 
 function viewSeller(seller) {
-  window.router.navigate(`/buyer/seller-detail?id=${seller.id}`);
+  // Sellers don't have a detail page, so view their products in admin products page with filter
+  window.router.navigate(`/admin/products?sellerId=${seller.id}`);
 }
 
 async function toggleSellerStatus(seller) {

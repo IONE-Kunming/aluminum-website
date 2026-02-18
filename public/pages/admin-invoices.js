@@ -174,7 +174,7 @@ function filterInvoices() {
 }
 
 function viewInvoice(invoice) {
-  window.router.navigate(`/buyer/invoice-detail?id=${invoice.id}`);
+  window.router.navigate(`/admin/invoice?id=${invoice.id}`);
 }
 
 async function deleteInvoice(invoice) {

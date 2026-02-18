@@ -10,7 +10,7 @@ export default {
     support: 'Support',
     notifications: 'Notifications',
     profile: 'Profile',
-    products: 'My Products',
+    products: 'Products',
     branches: 'Branches',
     users: 'Users',
     signOut: 'Sign Out'
