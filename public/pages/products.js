@@ -257,6 +257,8 @@ export async function renderProducts() {
 }
 
 // Load products from Firestore
+let allProducts = []; // Store all products globally for filtering
+
 async function loadProducts() {
   const loadingEl = document.getElementById('products-loading');
   const gridEl = document.getElementById('products-grid');
@@ -271,14 +273,14 @@ async function loadProducts() {
     }
 
     // Fetch products for current seller (limit: 2000 products per seller)
-    const products = await dataService.getProducts({ sellerId: user.uid, limit: 2000 });
+    allProducts = await dataService.getProducts({ sellerId: user.uid, limit: 2000 });
     
     if (loadingEl) loadingEl.style.display = 'none';
     
-    if (products.length === 0) {
+    if (allProducts.length === 0) {
       showEmptyState();
     } else {
-      displayProducts(products);
+      displayProducts(allProducts);
     }
   } catch (error) {
     console.error('Error loading products:', error);
@@ -305,7 +307,10 @@ function showEmptyState() {
 }
 
 // Display products in grid
-function displayProducts(products) {
+let selectedSubcategory = null; // Track selected subcategory filter
+
+function displayProducts(products, filterSubcategory = null) {
+  const t = languageManager.t.bind(languageManager);
   const gridEl = document.getElementById('products-grid');
   const emptyStateEl = document.getElementById('empty-state');
   
@@ -314,6 +319,14 @@ function displayProducts(products) {
   if (emptyStateEl) emptyStateEl.style.display = 'none';
   gridEl.style.display = 'grid';
   
+  // Get unique subcategories from all products
+  const subcategories = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
+  
+  // Filter products if a subcategory is selected
+  const displayedProducts = filterSubcategory 
+    ? products.filter(p => p.category === filterSubcategory)
+    : products;
+  
   gridEl.innerHTML = `
     <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
       <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none;">
@@ -321,8 +334,50 @@ function displayProducts(products) {
         <span style="font-size: 14px; font-weight: 500; color: #374151;">Select All</span>
       </label>
     </div>
+    
+    ${subcategories.length > 0 ? `
+      <div style="margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+        <div style="margin-bottom: 12px; font-size: 14px; font-weight: 500; color: #374151;">
+          ${t('products.subcategory')} ${t('common.filter')}:
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          ${subcategories.map(subcat => {
+            const isSelected = filterSubcategory === subcat;
+            return `
+              <button 
+                class="subcategory-filter-btn" 
+                data-subcategory="${escapeHtml(subcat)}"
+                style="
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 6px;
+                  padding: 8px 14px;
+                  border-radius: 6px;
+                  border: 1px solid ${isSelected ? '#3b82f6' : '#d1d5db'};
+                  background: ${isSelected ? '#3b82f6' : '#ffffff'};
+                  color: ${isSelected ? '#ffffff' : '#374151'};
+                  font-size: 13px;
+                  font-weight: 500;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+                  white-space: nowrap;
+                "
+                onmouseover="if (!this.classList.contains('selected')) { this.style.borderColor='#9ca3af'; this.style.background='#f3f4f6'; }"
+                onmouseout="if (!this.classList.contains('selected')) { this.style.borderColor='#d1d5db'; this.style.background='#ffffff'; }"
+              >
+                <span>${escapeHtml(subcat)}</span>
+                ${isSelected ? `
+                  <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                ` : ''}
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    ` : ''}
+    
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 20px 0;">
-      ${products.map(product => `
+      ${displayedProducts.map(product => `
         <div class="product-card" data-product-id="${product.id}" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; background: white; position: relative; display: flex; flex-direction: column;">
           <div style="position: absolute; top: 12px; right: 12px; z-index: 10;">
             <input type="checkbox" class="product-checkbox" data-id="${product.id}" style="width: 20px; height: 20px; cursor: pointer;" />
@@ -376,6 +431,9 @@ function displayProducts(products) {
   
   // Initialize bulk selection
   initializeBulkSelection();
+  
+  // Initialize subcategory filter buttons
+  initializeSubcategoryFilter();
   
   // Add event listeners for edit and delete buttons
   document.querySelectorAll('.edit-product-btn').forEach(btn => {
@@ -1032,6 +1090,27 @@ function initializeBulkImport() {
       cancelImportBtn.disabled = false;
       document.getElementById('import-progress').style.display = 'none';
     }
+  });
+}
+
+// Initialize subcategory filter functionality
+function initializeSubcategoryFilter() {
+  const filterButtons = document.querySelectorAll('.subcategory-filter-btn');
+  
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const subcategory = btn.getAttribute('data-subcategory');
+      
+      // If clicking the same subcategory, clear the filter
+      if (selectedSubcategory === subcategory) {
+        selectedSubcategory = null;
+        displayProducts(allProducts, null);
+      } else {
+        // Set new filter
+        selectedSubcategory = subcategory;
+        displayProducts(allProducts, subcategory);
+      }
+    });
   });
 }
 
