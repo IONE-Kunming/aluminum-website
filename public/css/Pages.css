@@ -4674,9 +4674,16 @@
     padding: var(--spacing-lg) 0.75in;
   }
   
-  /* Ensure text is readable in print */
-  .invoice-page,
-  .invoice-page * {
+  /* Ensure text is readable in print by forcing black for body text */
+  .invoice-page {
+    color: #000 !important;
+  }
+  
+  /* Force black text for readability in print for all nested elements */
+  .invoice-party,
+  .invoice-party *,
+  .payment-instructions-content,
+  .payment-instructions-content * {
     color: #000 !important;
   }
   

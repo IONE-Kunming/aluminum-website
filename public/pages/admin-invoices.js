@@ -61,6 +61,7 @@ let allInvoices = [];
 
 async function loadInvoices() {
   try {
+    await dataService.init(); // Initialize dataService before accessing db
     const invoicesSnapshot = await dataService.db.collection('invoices').get();
     allInvoices = invoicesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     
@@ -181,12 +182,13 @@ async function deleteInvoice(invoice) {
     return;
   }
   
+  const t = languageManager.t.bind(languageManager);
   try {
     await dataService.db.collection('invoices').doc(invoice.id).delete();
-    window.toast.success('Invoice deleted successfully');
+    window.toast.success(t('admin.invoiceDeleted'));
     await loadInvoices();
   } catch (error) {
     console.error('Error deleting invoice:', error);
-    window.toast.error('Failed to delete invoice');
+    window.toast.error(t('admin.invoiceDeleteFailed'));
   }
 }

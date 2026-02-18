@@ -67,6 +67,7 @@ let allUsers = [];
 
 async function loadUsers() {
   try {
+    await dataService.init(); // Initialize dataService before accessing db
     const usersSnapshot = await dataService.db.collection('users').get();
     allUsers = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     
@@ -195,8 +196,9 @@ function filterUsers() {
 }
 
 async function editUser(user) {
+  const t = languageManager.t.bind(languageManager);
   // TODO: Implement edit user modal
-  window.toast.info('Edit user feature coming soon');
+  window.toast.info(t('admin.editUserComingSoon'));
 }
 
 async function deleteUser(user) {
@@ -204,27 +206,29 @@ async function deleteUser(user) {
     return;
   }
   
+  const t = languageManager.t.bind(languageManager);
   try {
     await dataService.db.collection('users').doc(user.id).delete();
-    window.toast.success('User deleted successfully');
+    window.toast.success(t('admin.userDeleted'));
     await loadUsers();
   } catch (error) {
     console.error('Error deleting user:', error);
-    window.toast.error('Failed to delete user');
+    window.toast.error(t('admin.userDeleteFailed'));
   }
 }
 
 async function toggleUserStatus(user) {
   const newStatus = !(user.isActive !== false);
+  const t = languageManager.t.bind(languageManager);
   
   try {
     await dataService.db.collection('users').doc(user.id).update({
       isActive: newStatus
     });
-    window.toast.success(`User ${newStatus ? 'activated' : 'deactivated'} successfully`);
+    window.toast.success(t(newStatus ? 'admin.userActivated' : 'admin.userDeactivated'));
     await loadUsers();
   } catch (error) {
     console.error('Error updating user status:', error);
-    window.toast.error('Failed to update user status');
+    window.toast.error(t('admin.userStatusUpdateFailed'));
   }
 }
