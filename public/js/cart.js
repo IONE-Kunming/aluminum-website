@@ -212,8 +212,9 @@ class CartManager {
 
   // Switch user context (called on login/logout)
   async switchUser(userId) {
-    // Save guest cart before switching
-    const guestCart = this.getUserStorageKey() === this.storageKey 
+    // Capture guest cart BEFORE changing user context
+    const guestStorageKey = this.storageKey; // The original guest key
+    const guestCart = this.currentUserId === null 
       ? this.getCartFromLocalStorage() 
       : [];
     
@@ -239,8 +240,8 @@ class CartManager {
       // Save merged cart
       await this.saveCart(mergedCart);
       
-      // Clear guest cart from localStorage
-      localStorage.removeItem(this.storageKey);
+      // Clear guest cart from localStorage using the original guest key
+      localStorage.removeItem(guestStorageKey);
     }
   }
 

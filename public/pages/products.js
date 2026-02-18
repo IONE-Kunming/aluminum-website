@@ -22,7 +22,7 @@ export async function renderProducts() {
     <div class="products-page">
       <div class="page-header">
         <h1>${t('products.title')}</h1>
-        <p>View all products from all sellers on the platform</p>
+        <p>${t('products.viewAllProducts')}</p>
         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
           <button class="btn btn-primary" id="add-product-btn">
             <i data-lucide="plus"></i>

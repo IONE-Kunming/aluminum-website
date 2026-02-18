@@ -152,15 +152,3 @@ export async function renderPublicCategories() {
     });
   });
 }
-        
-        // Navigate to catalog
-        router.navigate('/buyer/catalog');
-      } catch (error) {
-        console.error('Error saving category selection:', error);
-        if (window.toast) {
-          window.toast.error('Failed to save category selection');
-        }
-      }
-    });
-  });
-}

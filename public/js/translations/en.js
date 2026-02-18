@@ -62,6 +62,7 @@ export default {
   products: {
     title: 'Products',
     myProducts: 'My Products',
+    viewAllProducts: 'View all products from all sellers on the platform',
     addProduct: 'Add Product',
     editProduct: 'Edit Product',
     deleteProduct: 'Delete Product',

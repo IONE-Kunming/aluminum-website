@@ -2,6 +2,9 @@ import router from '../js/router.js';
 import languageManager from '../js/language.js';
 import { CATEGORY_HIERARCHY } from '../js/categoryHierarchy.js';
 
+// Maximum number of categories to show on landing page
+const MAX_LANDING_CATEGORIES = 8;
+
 export function renderLandingPage() {
   const app = document.getElementById('app');
   const t = languageManager.t.bind(languageManager);
@@ -175,7 +178,7 @@ export function renderLandingPage() {
             <p class="section-subtitle">Browse through our comprehensive collection of high-quality products across multiple industries</p>
           </div>
           <div class="categories-showcase">
-            ${Object.entries(CATEGORY_HIERARCHY).slice(0, 8).map(([key, category]) => `
+            ${Object.entries(CATEGORY_HIERARCHY).slice(0, MAX_LANDING_CATEGORIES).map(([key, category]) => `
               <div class="category-showcase-card card card-elevated" data-category="${key}">
                 <div class="category-showcase-image">
                   <div class="category-image-placeholder">
