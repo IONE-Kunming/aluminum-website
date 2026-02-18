@@ -1,9 +1,11 @@
 import { renderPageWithLayout } from '../js/layout.js';
+import languageManager from '../js/language.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
 
 export async function renderNotifications() {
+  const t = languageManager.t.bind(languageManager);
   const profile = authManager.getUserProfile();
   const user = authManager.getCurrentUser();
   
@@ -15,15 +17,15 @@ export async function renderNotifications() {
   const content = `
     <div class="notifications-page">
       <div class="page-header">
-        <h1>Notifications</h1>
-        <p>Stay updated with your activity</p>
+        <h1>${t('notifications.title')}</h1>
+        <p>${t('notifications.subtitle')}</p>
       </div>
 
       ${notifications.length === 0 ? `
         <div class="empty-state">
           <i data-lucide="bell" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>No notifications</h2>
-          <p>You're all caught up!</p>
+          <h2>${t('notifications.noNotifications')}</h2>
+          <p>${t('notifications.allCaughtUp')}</p>
         </div>
       ` : `
         <div class="notifications-list">
@@ -44,12 +46,12 @@ export async function renderNotifications() {
                   <i data-lucide="${getNotificationIcon(notif.type)}"></i>
                 </div>
                 <div class="notification-content">
-                  <h4>${escapeHtml(notif.title || 'Notification')}</h4>
+                  <h4>${escapeHtml(notif.title || t('notifications.notification'))}</h4>
                   <p>${escapeHtml(notif.message || '')}</p>
                   <span class="notification-time">${timeStr}</span>
                 </div>
                 ${!notif.read ? `
-                  <button class="btn-mark-read" data-notification-id="${notif.id}">
+                  <button class="btn-mark-read" data-notification-id="${notif.id}" title="${t('notifications.markAsRead')}">
                     <i data-lucide="check"></i>
                   </button>
                 ` : ''}

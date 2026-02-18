@@ -62,22 +62,22 @@ export async function renderSellerInvoices() {
               </div>
               
               <div class="invoice-details">
-                <p><strong>Customer:</strong> ${escapeHtml(invoice.buyerCompany || invoice.buyerName || 'N/A')}</p>
-                <p><strong>Email:</strong> ${escapeHtml(invoice.buyerEmail || 'N/A')}</p>
-                <p><strong>Items:</strong> ${invoice.items?.length || 0}</p>
+                <p><strong>${t('invoices.customer')}:</strong> ${escapeHtml(invoice.buyerCompany || invoice.buyerName || 'N/A')}</p>
+                <p><strong>${t('invoices.email')}:</strong> ${escapeHtml(invoice.buyerEmail || 'N/A')}</p>
+                <p><strong>${t('invoices.items')}:</strong> ${invoice.items?.length || 0}</p>
               </div>
               
               <div class="invoice-summary">
                 <div class="invoice-summary-row">
-                  <span>Total:</span>
+                  <span>${t('invoices.total')}:</span>
                   <span class="invoice-total">$${invoice.total?.toFixed(2) || '0.00'}</span>
                 </div>
                 <div class="invoice-summary-row">
-                  <span>Received:</span>
+                  <span>${t('invoices.received')}:</span>
                   <span class="text-success">$${invoice.depositPaid?.toFixed(2) || '0.00'}</span>
                 </div>
                 <div class="invoice-summary-row">
-                  <span>Balance Due:</span>
+                  <span>${t('invoices.balanceDue')}:</span>
                   <span class="text-warning">$${invoice.remainingBalance?.toFixed(2) || '0.00'}</span>
                 </div>
               </div>
@@ -85,12 +85,12 @@ export async function renderSellerInvoices() {
               <div class="invoice-actions">
                 <button class="btn btn-secondary btn-sm view-invoice-btn" data-invoice-id="${invoice.id}">
                   <i data-lucide="eye"></i>
-                  View Details
+                  ${t('invoices.viewDetails')}
                 </button>
                 ${invoice.status !== 'paid' ? `
                   <button class="btn btn-primary btn-sm mark-paid-btn" data-invoice-id="${invoice.id}">
                     <i data-lucide="check-circle"></i>
-                    Mark as Paid
+                    ${t('invoices.markAsPaid')}
                   </button>
                 ` : ''}
               </div>
@@ -118,15 +118,15 @@ export async function renderSellerInvoices() {
       e.stopPropagation();
       const invoiceId = btn.dataset.invoiceId;
       
-      if (confirm('Mark this invoice as paid?')) {
+      if (confirm(t('invoices.markAsPaidConfirm'))) {
         try {
           await dataService.updateInvoiceStatus(invoiceId, 'paid');
-          window.toast?.success('Invoice marked as paid');
+          window.toast?.success(t('invoices.invoiceMarkedPaid'));
           // Reload page to show updated status
           renderSellerInvoices();
         } catch (error) {
           console.error('Error marking invoice as paid:', error);
-          window.toast?.error('Failed to update invoice status');
+          window.toast?.error(t('invoices.failedToUpdateStatus'));
         }
       }
     });

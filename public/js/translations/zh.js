@@ -154,7 +154,23 @@ export default {
     email: '电子邮件',
     filterOrders: '筛选订单',
     dateRange: '日期范围',
-    manageCustomerOrders: '管理客户订单'
+    manageCustomerOrders: '管理客户订单',
+    customerOrdersWillAppear: '客户订单将显示在这里',
+    dateFrom: '开始日期',
+    dateTo: '结束日期',
+    allStatuses: '所有状态',
+    applyFilters: '应用筛选',
+    clear: '清除',
+    customer: '客户',
+    noOrdersMatchFilters: '没有符合筛选条件的订单',
+    adjustFilterCriteria: '请调整筛选条件',
+    orderStatusUnderReview: '审核中',
+    orderStatusConfirmed: '已确认',
+    orderStatusInProduction: '生产中',
+    orderStatusOutOfProduction: '已完成生产',
+    orderStatusDeliveredToShipping: '已交付给运输公司',
+    orderStatusReachedPort: '已到达港口',
+    orderStatusCollected: '已收货'
   },
   
   // 聊天
@@ -213,7 +229,24 @@ export default {
     filterInvoices: '筛选发票',
     dateRange: '日期范围',
     depositPaid: '已支付订金',
-    remainingBalance: '余额'
+    remainingBalance: '余额',
+    customer: '客户',
+    received: '已收到',
+    balanceDue: '应付余额',
+    markAsPaid: '标记为已支付',
+    markAsPaidConfirm: '将此发票标记为已支付？',
+    invoiceMarkedPaid: '发票已标记为已支付',
+    failedToUpdateStatus: '无法更新发票状态'
+  },
+  
+  // 通知
+  notifications: {
+    title: '通知',
+    subtitle: '了解您的活动更新',
+    noNotifications: '暂无通知',
+    allCaughtUp: '您已查看所有通知！',
+    markAsRead: '标记为已读',
+    notification: '通知'
   },
   
   // 购物车

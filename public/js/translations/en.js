@@ -154,7 +154,23 @@ export default {
     email: 'Email',
     filterOrders: 'Filter Orders',
     dateRange: 'Date Range',
-    manageCustomerOrders: 'Manage customer orders'
+    manageCustomerOrders: 'Manage customer orders',
+    customerOrdersWillAppear: 'Customer orders will appear here',
+    dateFrom: 'Date From',
+    dateTo: 'Date To',
+    allStatuses: 'All Statuses',
+    applyFilters: 'Apply Filters',
+    clear: 'Clear',
+    customer: 'Customer',
+    noOrdersMatchFilters: 'No orders match your filters',
+    adjustFilterCriteria: 'Try adjusting your filter criteria',
+    orderStatusUnderReview: 'Under Review',
+    orderStatusConfirmed: 'Confirmed',
+    orderStatusInProduction: 'In Production',
+    orderStatusOutOfProduction: 'Out Of Production',
+    orderStatusDeliveredToShipping: 'Delivered to the Shipping Company',
+    orderStatusReachedPort: 'Reached Port',
+    orderStatusCollected: 'Collected'
   },
   
   // Chats
@@ -213,7 +229,24 @@ export default {
     filterInvoices: 'Filter Invoices',
     dateRange: 'Date Range',
     depositPaid: 'Deposit Paid',
-    remainingBalance: 'Remaining Balance'
+    remainingBalance: 'Remaining Balance',
+    customer: 'Customer',
+    received: 'Received',
+    balanceDue: 'Balance Due',
+    markAsPaid: 'Mark as Paid',
+    markAsPaidConfirm: 'Mark this invoice as paid?',
+    invoiceMarkedPaid: 'Invoice marked as paid',
+    failedToUpdateStatus: 'Failed to update invoice status'
+  },
+  
+  // Notifications
+  notifications: {
+    title: 'Notifications',
+    subtitle: 'Stay updated with your activity',
+    noNotifications: 'No notifications',
+    allCaughtUp: "You're all caught up!",
+    markAsRead: 'Mark as Read',
+    notification: 'Notification'
   },
   
   // Cart

@@ -154,7 +154,23 @@ export default {
     email: 'البريد الإلكتروني',
     filterOrders: 'تصفية الطلبات',
     dateRange: 'نطاق التاريخ',
-    manageCustomerOrders: 'إدارة طلبات العملاء'
+    manageCustomerOrders: 'إدارة طلبات العملاء',
+    customerOrdersWillAppear: 'ستظهر طلبات العملاء هنا',
+    dateFrom: 'من التاريخ',
+    dateTo: 'إلى التاريخ',
+    allStatuses: 'جميع الحالات',
+    applyFilters: 'تطبيق الفلاتر',
+    clear: 'مسح',
+    customer: 'العميل',
+    noOrdersMatchFilters: 'لا توجد طلبات تطابق الفلاتر',
+    adjustFilterCriteria: 'حاول تعديل معايير التصفية',
+    orderStatusUnderReview: 'قيد المراجعة',
+    orderStatusConfirmed: 'مؤكد',
+    orderStatusInProduction: 'قيد الإنتاج',
+    orderStatusOutOfProduction: 'خارج الإنتاج',
+    orderStatusDeliveredToShipping: 'تم التسليم لشركة الشحن',
+    orderStatusReachedPort: 'وصل إلى الميناء',
+    orderStatusCollected: 'تم الاستلام'
   },
   
   // المحادثات
@@ -213,7 +229,24 @@ export default {
     filterInvoices: 'تصفية الفواتير',
     dateRange: 'نطاق التاريخ',
     depositPaid: 'العربون المدفوع',
-    remainingBalance: 'الرصيد المتبقي'
+    remainingBalance: 'الرصيد المتبقي',
+    customer: 'العميل',
+    received: 'المستلم',
+    balanceDue: 'الرصيد المستحق',
+    markAsPaid: 'تحديد كمدفوع',
+    markAsPaidConfirm: 'هل تريد تحديد هذه الفاتورة كمدفوعة؟',
+    invoiceMarkedPaid: 'تم تحديد الفاتورة كمدفوعة',
+    failedToUpdateStatus: 'فشل تحديث حالة الفاتورة'
+  },
+  
+  // الإشعارات
+  notifications: {
+    title: 'الإشعارات',
+    subtitle: 'ابق على اطلاع بنشاطك',
+    noNotifications: 'لا توجد إشعارات',
+    allCaughtUp: 'لقد شاهدت كل شيء!',
+    markAsRead: 'تحديد كمقروء',
+    notification: 'إشعار'
   },
   
   // سلة التسوق

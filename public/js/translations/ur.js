@@ -154,7 +154,23 @@ export default {
     email: 'ای میل',
     filterOrders: 'آرڈرز فلٹر کریں',
     dateRange: 'تاریخ کی حد',
-    manageCustomerOrders: 'گاہک کے آرڈرز کا انتظام کریں'
+    manageCustomerOrders: 'گاہک کے آرڈرز کا انتظام کریں',
+    customerOrdersWillAppear: 'گاہک کے آرڈرز یہاں ظاہر ہوں گے',
+    dateFrom: 'سے تاریخ',
+    dateTo: 'تک تاریخ',
+    allStatuses: 'تمام حالتیں',
+    applyFilters: 'فلٹرز لاگو کریں',
+    clear: 'صاف کریں',
+    customer: 'گاہک',
+    noOrdersMatchFilters: 'فلٹرز سے کوئی آرڈر میل نہیں کھاتا',
+    adjustFilterCriteria: 'فلٹر کے معیار کو ایڈجسٹ کرنے کی کوشش کریں',
+    orderStatusUnderReview: 'جائزے میں',
+    orderStatusConfirmed: 'تصدیق شدہ',
+    orderStatusInProduction: 'تیاری میں',
+    orderStatusOutOfProduction: 'تیاری سے باہر',
+    orderStatusDeliveredToShipping: 'شپنگ کمپنی کو بھیج دیا گیا',
+    orderStatusReachedPort: 'بندرگاہ پر پہنچ گیا',
+    orderStatusCollected: 'وصول شدہ'
   },
   
   // گفتگو
@@ -213,7 +229,24 @@ export default {
     filterInvoices: 'رسیدیں فلٹر کریں',
     dateRange: 'تاریخ کی حد',
     depositPaid: 'جمع ادا شدہ',
-    remainingBalance: 'باقی رقم'
+    remainingBalance: 'باقی رقم',
+    customer: 'گاہک',
+    received: 'موصول',
+    balanceDue: 'واجب الادا رقم',
+    markAsPaid: 'ادا شدہ کے طور پر نشان زد کریں',
+    markAsPaidConfirm: 'اس رسید کو ادا شدہ کے طور پر نشان زد کریں؟',
+    invoiceMarkedPaid: 'رسید ادا شدہ کے طور پر نشان زد کر دی گئی',
+    failedToUpdateStatus: 'رسید کی حیثیت کو اپ ڈیٹ کرنے میں ناکام'
+  },
+  
+  // اطلاعات
+  notifications: {
+    title: 'اطلاعات',
+    subtitle: 'اپنی سرگرمی سے باخبر رہیں',
+    noNotifications: 'کوئی اطلاعات نہیں',
+    allCaughtUp: 'آپ نے سب کچھ دیکھ لیا!',
+    markAsRead: 'پڑھا ہوا نشان زد کریں',
+    notification: 'اطلاع'
   },
   
   // ٹوکری
