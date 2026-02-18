@@ -178,7 +178,7 @@ function filterOrders() {
 }
 
 function viewOrder(order) {
-  window.router.navigate(`/buyer/order-detail?id=${order.id}`);
+  window.router.navigate(`/order/detail?id=${order.id}`);
 }
 
 async function deleteOrder(order) {

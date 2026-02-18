@@ -212,7 +212,37 @@ class CartManager {
 
   // Switch user context (called on login/logout)
   async switchUser(userId) {
+    // Capture guest cart BEFORE changing user context
+    const guestStorageKey = this.storageKey; // The original guest key
+    const guestCart = this.currentUserId === null 
+      ? this.getCartFromLocalStorage() 
+      : [];
+    
     await this.init(userId);
+    
+    // Merge guest cart with user cart if guest had items
+    if (guestCart.length > 0) {
+      const currentCart = this.getCart();
+      const mergedCart = [...currentCart];
+      
+      // Merge guest cart items
+      guestCart.forEach(guestItem => {
+        const existingIndex = mergedCart.findIndex(item => item.id === guestItem.id);
+        if (existingIndex >= 0) {
+          // Update quantity if item already exists
+          mergedCart[existingIndex].quantity += guestItem.quantity;
+        } else {
+          // Add new item
+          mergedCart.push(guestItem);
+        }
+      });
+      
+      // Save merged cart
+      await this.saveCart(mergedCart);
+      
+      // Clear guest cart from localStorage using the original guest key
+      localStorage.removeItem(guestStorageKey);
+    }
   }
 
   // Clear user context (called on logout)

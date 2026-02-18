@@ -101,11 +101,26 @@ export function renderProfileSelection() {
     if (result.success) {
       window.toast.success(t('profile.profileUpdated'));
       
-      // Navigate based on selected role
-      if (selectedRole === 'seller') {
-        router.navigate('/seller/dashboard');
+      // Check for intended action from session storage
+      const intendedAction = sessionStorage.getItem('intended-action');
+      const intendedCategory = sessionStorage.getItem('intended-category');
+      
+      if (intendedAction === 'checkout') {
+        // Clear session storage and redirect to checkout
+        sessionStorage.removeItem('intended-action');
+        router.navigate('/buyer/checkout');
+      } else if (intendedAction === 'browse-category' && intendedCategory) {
+        // Clear session storage and redirect to catalog with category
+        sessionStorage.removeItem('intended-action');
+        sessionStorage.removeItem('intended-category');
+        router.navigate(`/buyer/catalog?category=${encodeURIComponent(intendedCategory)}`);
       } else {
-        router.navigate('/buyer/catalog');
+        // Navigate based on selected role
+        if (selectedRole === 'seller') {
+          router.navigate('/seller/dashboard');
+        } else {
+          router.navigate('/buyer/catalog');
+        }
       }
     } else {
       window.toast.error(t('profile.profileUpdateFailed'));

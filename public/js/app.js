@@ -19,6 +19,7 @@ import { renderLandingPage } from '../pages/landing.js';
 import { renderLoginPage } from '../pages/login.js';
 import { renderSignupPage } from '../pages/signup.js';
 import { renderProfileSelection } from '../pages/profile-selection.js';
+import { renderPublicCategories } from '../pages/public-categories.js';
 
 // Lazy load dashboard pages (loaded on demand)
 const lazyPages = {
@@ -198,6 +199,7 @@ async function initApp() {
   router.register('/', renderLandingPage);
   router.register('/login', renderLoginPage);
   router.register('/signup', renderSignupPage);
+  router.register('/categories', renderPublicCategories);
   router.register('/profile-selection', async () => {
     // Wait for Firebase to determine the initial auth state
     await authManager.waitForAuthState(5000);
@@ -262,6 +264,7 @@ async function initApp() {
   router.register('/admin/orders', protectedRoute(lazyRoute(lazyPages.adminOrders), 'admin'));
   router.register('/admin/sellers', protectedRoute(lazyRoute(lazyPages.adminSellers), 'admin'));
   router.register('/admin/invoices', protectedRoute(lazyRoute(lazyPages.adminInvoices), 'admin'));
+  router.register('/admin/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'admin'));
   router.register('/admin/support', protectedRoute(lazyRoute(lazyPages.support), 'admin'));
   router.register('/admin/profile', protectedRoute(lazyRoute(lazyPages.profile), 'admin'));
   

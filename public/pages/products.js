@@ -21,8 +21,8 @@ export async function renderProducts() {
   const content = `
     <div class="products-page">
       <div class="page-header">
-        <h1>${t('products.myProducts')}</h1>
-        <p>${t('products.manageProductListings')}</p>
+        <h1>${t('products.title')}</h1>
+        <p>${t('products.viewAllProducts')}</p>
         <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
           <button class="btn btn-primary" id="add-product-btn">
             <i data-lucide="plus"></i>
@@ -272,8 +272,8 @@ async function loadProducts() {
       return;
     }
 
-    // Fetch products for current seller (limit: 2000 products per seller)
-    allProducts = await dataService.getProducts({ sellerId: user.uid, limit: 2000 });
+    // Fetch all products from all sellers (limit: 2000 products)
+    allProducts = await dataService.getProducts({ limit: 2000 });
     
     if (loadingEl) loadingEl.style.display = 'none';
     
