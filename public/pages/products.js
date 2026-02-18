@@ -360,7 +360,10 @@ function displayProducts(products, filterSubcategory = null) {
                   font-weight: 500;
                   cursor: pointer;
                   transition: all 0.2s ease;
-                  white-space: nowrap;
+                  max-width: 250px;
+                  word-wrap: break-word;
+                  overflow-wrap: break-word;
+                  text-align: left;
                 "
                 onmouseover="if (!this.classList.contains('selected')) { this.style.borderColor='#9ca3af'; this.style.background='#f3f4f6'; }"
                 onmouseout="if (!this.classList.contains('selected')) { this.style.borderColor='#d1d5db'; this.style.background='#ffffff'; }"
