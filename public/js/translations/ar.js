@@ -424,7 +424,9 @@ export default {
     continueWithGoogle: 'المتابعة مع Google',
     notAuthenticated: 'غير مصادق',
     pleaseLoginToViewOrders: 'يرجى تسجيل الدخول لعرض طلباتك',
-    pleaseLoginToViewInvoices: 'يرجى تسجيل الدخول لعرض فواتيرك'
+    pleaseLoginToViewInvoices: 'يرجى تسجيل الدخول لعرض فواتيرك',
+    signInSuccess: 'تم تسجيل الدخول بنجاح!',
+    signInError: 'فشل تسجيل الدخول باستخدام Google'
   },
   
   // الملف الشخصي
@@ -441,7 +443,23 @@ export default {
     manageAccountInfo: 'إدارة معلومات حسابك',
     accountInformation: 'معلومات الحساب',
     preferredLanguage: 'اللغة المفضلة',
-    languageDescription: 'حدد لغتك المفضلة للواجهة والترجمة التلقائية للرسائل'
+    languageDescription: 'حدد لغتك المفضلة للواجهة والترجمة التلقائية للرسائل',
+    chooseRole: 'اختر دورك',
+    chooseRoleDescription: 'اختر كيف تريد استخدام المنصة',
+    buyerDescription: 'تصفح المنتجات وتقديم الطلبات وإدارة المشتريات',
+    sellerDescription: 'إدراج المنتجات وإدارة المخزون ومعالجة الطلبات',
+    buyerFeature1: 'الوصول إلى كتالوج المنتجات',
+    buyerFeature2: 'تقديم وتتبع الطلبات',
+    buyerFeature3: 'إدارة الفواتير',
+    buyerFeature4: 'التواصل مع البائعين',
+    sellerFeature1: 'إدارة قوائم المنتجات',
+    sellerFeature2: 'معالجة طلبات العملاء',
+    sellerFeature3: 'إنشاء الفواتير',
+    sellerFeature4: 'إدارة الفروع',
+    pleaseSelectRole: 'يرجى اختيار دور',
+    updating: 'جارٍ التحديث...',
+    profileUpdated: 'تم تحديث الملف الشخصي بنجاح!',
+    profileUpdateFailed: 'فشل تحديث الملف الشخصي'
   },
   
   // الدعم

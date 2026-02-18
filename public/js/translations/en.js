@@ -447,7 +447,9 @@ export default {
     continueWithGoogle: 'Continue with Google',
     notAuthenticated: 'Not Authenticated',
     pleaseLoginToViewOrders: 'Please log in to view your orders',
-    pleaseLoginToViewInvoices: 'Please log in to view your invoices'
+    pleaseLoginToViewInvoices: 'Please log in to view your invoices',
+    signInSuccess: 'Successfully logged in!',
+    signInError: 'Failed to sign in with Google'
   },
   
   // Profile
@@ -464,7 +466,23 @@ export default {
     manageAccountInfo: 'Manage your account information',
     accountInformation: 'Account Information',
     preferredLanguage: 'Preferred Language',
-    languageDescription: 'Select your preferred language for the interface and automatic message translation'
+    languageDescription: 'Select your preferred language for the interface and automatic message translation',
+    chooseRole: 'Choose Your Role',
+    chooseRoleDescription: 'Select how you want to use the platform',
+    buyerDescription: 'Browse products, place orders, and manage purchases',
+    sellerDescription: 'List products, manage inventory, and process orders',
+    buyerFeature1: 'Access product catalog',
+    buyerFeature2: 'Place and track orders',
+    buyerFeature3: 'Manage invoices',
+    buyerFeature4: 'Contact sellers',
+    sellerFeature1: 'Manage product listings',
+    sellerFeature2: 'Process customer orders',
+    sellerFeature3: 'Generate invoices',
+    sellerFeature4: 'Manage branches',
+    pleaseSelectRole: 'Please select a role',
+    updating: 'Updating...',
+    profileUpdated: 'Profile updated successfully!',
+    profileUpdateFailed: 'Failed to update profile'
   },
   // Landing Page
   landing: {

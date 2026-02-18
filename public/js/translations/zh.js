@@ -424,7 +424,9 @@ export default {
     continueWithGoogle: '使用Google继续',
     notAuthenticated: '未认证',
     pleaseLoginToViewOrders: '请登录以查看您的订单',
-    pleaseLoginToViewInvoices: '请登录以查看您的发票'
+    pleaseLoginToViewInvoices: '请登录以查看您的发票',
+    signInSuccess: '登录成功！',
+    signInError: '使用Google登录失败'
   },
   
   // 个人资料
@@ -441,7 +443,23 @@ export default {
     manageAccountInfo: '管理您的账户信息',
     accountInformation: '账户信息',
     preferredLanguage: '首选语言',
-    languageDescription: '选择您的界面首选语言和自动消息翻译语言'
+    languageDescription: '选择您的界面首选语言和自动消息翻译语言',
+    chooseRole: '选择您的角色',
+    chooseRoleDescription: '选择您想如何使用平台',
+    buyerDescription: '浏览产品、下订单和管理采购',
+    sellerDescription: '列出产品、管理库存和处理订单',
+    buyerFeature1: '访问产品目录',
+    buyerFeature2: '下单和跟踪订单',
+    buyerFeature3: '管理发票',
+    buyerFeature4: '联系卖家',
+    sellerFeature1: '管理产品列表',
+    sellerFeature2: '处理客户订单',
+    sellerFeature3: '生成发票',
+    sellerFeature4: '管理分支机构',
+    pleaseSelectRole: '请选择一个角色',
+    updating: '正在更新...',
+    profileUpdated: '个人资料更新成功！',
+    profileUpdateFailed: '无法更新个人资料'
   },
   
   // 支持
