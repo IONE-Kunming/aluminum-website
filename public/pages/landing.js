@@ -1,5 +1,6 @@
 import router from '../js/router.js';
 import languageManager from '../js/language.js';
+import { CATEGORY_HIERARCHY } from '../js/categoryHierarchy.js';
 
 export function renderLandingPage() {
   const app = document.getElementById('app');
@@ -52,12 +53,12 @@ export function renderLandingPage() {
               ${t('landing.hero.description')}
             </p>
             <div class="hero-buttons">
-              <button class="btn btn-primary btn-lg" data-nav="signup">
+              <button class="btn btn-primary btn-lg" data-nav="categories">
                 ${t('landing.hero.startTrading')} <i data-lucide="arrow-right"></i>
               </button>
-              <a href="#how-it-works" class="btn btn-secondary btn-lg">
+              <button class="btn btn-secondary btn-lg" data-nav="categories">
                 ${t('landing.hero.learnMore')}
-              </a>
+              </button>
             </div>
             <div class="hero-stats">
               <div class="stat-item">
@@ -162,6 +163,45 @@ export function renderLandingPage() {
                 ${t('landing.features.multiUser.description')}
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Categories Showcase Section -->
+      <section id="categories" class="categories-section">
+        <div class="section-container">
+          <div class="section-header">
+            <h2 class="section-title">Explore Our Product Categories</h2>
+            <p class="section-subtitle">Browse through our comprehensive collection of high-quality products across multiple industries</p>
+          </div>
+          <div class="categories-showcase">
+            ${Object.entries(CATEGORY_HIERARCHY).slice(0, 8).map(([key, category]) => `
+              <div class="category-showcase-card card card-elevated" data-category="${key}">
+                <div class="category-showcase-image">
+                  <div class="category-image-placeholder">
+                    <i data-lucide="package" style="width: 48px; height: 48px; opacity: 0.4;"></i>
+                  </div>
+                </div>
+                <div class="category-showcase-content">
+                  <h3 class="category-showcase-title">${category.name}</h3>
+                  <p class="category-showcase-count">${category.subcategories.length} subcategories</p>
+                  <div class="category-showcase-subcategories">
+                    ${category.subcategories.slice(0, 4).map(sub => `
+                      <span class="subcategory-badge">${sub}</span>
+                    `).join('')}
+                    ${category.subcategories.length > 4 ? `<span class="subcategory-badge more">+${category.subcategories.length - 4} more</span>` : ''}
+                  </div>
+                  <button class="btn btn-secondary btn-sm category-explore-btn" data-nav="categories">
+                    Explore Category <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div style="text-align: center; margin-top: 48px;">
+            <button class="btn btn-primary btn-lg" data-nav="categories">
+              View All Categories <i data-lucide="grid" style="width: 20px; height: 20px;"></i>
+            </button>
           </div>
         </div>
       </section>
@@ -285,7 +325,7 @@ export function renderLandingPage() {
             ${t('landing.cta.description')}
           </p>
           <div class="cta-buttons">
-            <button class="btn btn-primary btn-lg" data-nav="signup">
+            <button class="btn btn-primary btn-lg" data-nav="categories">
               ${t('landing.cta.getStarted')} <i data-lucide="arrow-right"></i>
             </button>
           </div>
