@@ -20,6 +20,8 @@ import { renderLoginPage } from '../pages/login.js';
 import { renderSignupPage } from '../pages/signup.js';
 import { renderProfileSelection } from '../pages/profile-selection.js';
 import { renderPublicCategories } from '../pages/public-categories.js';
+import { renderGuestCatalog } from '../pages/guest-catalog.js';
+import { renderGuestProductDetail } from '../pages/guest-product-detail.js';
 
 // Lazy load dashboard pages (loaded on demand)
 const lazyPages = {
@@ -202,6 +204,8 @@ async function initApp() {
   router.register('/login', renderLoginPage);
   router.register('/signup', renderSignupPage);
   router.register('/categories', renderPublicCategories);
+  router.register('/guest/catalog', renderGuestCatalog);
+  router.register('/guest/product', renderGuestProductDetail);
   router.register('/profile-selection', async () => {
     // Wait for Firebase to determine the initial auth state
     await authManager.waitForAuthState(5000);

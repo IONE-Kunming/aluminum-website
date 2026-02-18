@@ -138,16 +138,9 @@ export async function renderPublicCategories() {
   // Add event listeners for category selection
   document.querySelectorAll('.category-tile').forEach(tile => {
     tile.addEventListener('click', async () => {
-      // Save intended category and redirect to signup
       const category = tile.dataset.category;
-      sessionStorage.setItem('intended-category', category);
-      sessionStorage.setItem('intended-action', 'browse-category');
-      
-      // Show toast and redirect
-      if (window.toast) {
-        window.toast.info('Please sign in to browse products');
-      }
-      router.navigate('/signup');
+      // Navigate directly to guest catalog to browse products
+      router.navigate(`/guest/catalog?category=${encodeURIComponent(category)}`);
     });
   });
 }
