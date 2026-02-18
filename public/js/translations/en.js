@@ -12,6 +12,7 @@ export default {
     profile: 'Profile',
     products: 'My Products',
     branches: 'Branches',
+    users: 'Users',
     signOut: 'Sign Out'
   },
   

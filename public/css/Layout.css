@@ -320,8 +320,10 @@
 [dir="rtl"] .nav-item {
   border-left: none;
   border-right: 3px solid transparent;
-  flex-direction: row-reverse;
-  text-align: right;
+  flex-direction: row-reverse; /* Icon on right, text on left */
+  text-align: left; /* Text aligned to left side */
+  padding-right: var(--spacing-lg); /* Padding on icon side */
+  padding-left: var(--spacing-lg); /* Padding on text side */
 }
 
 [dir="rtl"] .nav-item:hover {

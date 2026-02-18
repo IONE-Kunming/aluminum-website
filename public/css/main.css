@@ -281,7 +281,7 @@ a:hover {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--neon-cyan), var(--electric-blue));
-  color: var(--dark-bg);
+  color: #000000; /* Force black text for readability on bright gradient */
 }
 
 .btn-primary:hover:not(:disabled) {
