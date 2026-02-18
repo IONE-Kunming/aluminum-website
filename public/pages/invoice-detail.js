@@ -108,7 +108,7 @@ export async function renderInvoiceDetail() {
         await html2pdf().set(opt).from(clone).save();
       } catch (error) {
         console.error('Error generating PDF:', error);
-        alert('Failed to generate PDF. Please try again.');
+        window.toast.error('Failed to generate PDF. Please try again.');
       } finally {
         // Clean up
         document.body.removeChild(tempContainer);

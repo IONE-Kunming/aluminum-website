@@ -211,10 +211,10 @@ export function exportInvoiceToTXT(invoice) {
   lines.push(`Phone: ${invoice.sellerPhone || '008613332800284'}`);
   if (invoice.sellerAddress && invoice.sellerAddress.street) {
     lines.push(`Address: ${invoice.sellerAddress.street}`);
-    lines.push(`         ${invoice.sellerAddress.city || 'Shenzhen'}, ${invoice.sellerAddress.state || 'Guandong'}`);
+    lines.push(`         ${invoice.sellerAddress.city || 'Shenzhen'}, ${invoice.sellerAddress.state || 'Guangdong'}`);
     lines.push(`         ${invoice.sellerAddress.country || 'China'}`);
   } else {
-    lines.push('Address: Hua Qiang Bei, Shenzhen, Guandong, China');
+    lines.push('Address: Hua Qiang Bei, Shenzhen, Guangdong, China');
   }
   lines.push('');
   
