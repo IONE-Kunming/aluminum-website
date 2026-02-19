@@ -393,42 +393,20 @@ function displayProducts(products, filterSubcategory = null) {
     </div>
     
     ${subcategories.length > 0 ? `
-      <div style="margin-bottom: 20px; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
-        <div style="margin-bottom: 12px; font-size: 14px; font-weight: 500; color: #374151;">
-          ${t('products.filterBySubcategory')}:
-        </div>
-        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <div class="category-chips-section">
+        <p class="category-chips-title">
+          ${t('products.filterBySubcategory')}
+        </p>
+        <div class="category-chips">
           ${subcategories.map(subcat => {
             const isSelected = filterSubcategory === subcat;
             return `
               <button 
-                class="subcategory-filter-btn" 
+                class="category-chip${isSelected ? ' active' : ''}" 
                 data-subcategory="${escapeHtml(subcat)}"
-                style="
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 6px;
-                  padding: 8px 14px;
-                  border-radius: 6px;
-                  border: 1px solid ${isSelected ? '#3b82f6' : '#d1d5db'};
-                  background: ${isSelected ? '#3b82f6' : '#ffffff'};
-                  color: ${isSelected ? '#ffffff' : '#374151'};
-                  font-size: 13px;
-                  font-weight: 500;
-                  cursor: pointer;
-                  transition: all 0.2s ease;
-                  max-width: 250px;
-                  word-wrap: break-word;
-                  overflow-wrap: break-word;
-                  text-align: left;
-                "
-                onmouseover="if (!this.classList.contains('selected')) { this.style.borderColor='#9ca3af'; this.style.background='#f3f4f6'; }"
-                onmouseout="if (!this.classList.contains('selected')) { this.style.borderColor='#d1d5db'; this.style.background='#ffffff'; }"
               >
+                <span class="chip-dot"></span>
                 <span>${escapeHtml(subcat)}</span>
-                ${isSelected ? `
-                  <i data-lucide="x" style="width: 14px; height: 14px;"></i>
-                ` : ''}
               </button>
             `;
           }).join('')}
@@ -1177,7 +1155,7 @@ function initializeBulkImport() {
 
 // Initialize subcategory filter functionality
 function initializeSubcategoryFilter() {
-  const filterButtons = document.querySelectorAll('.subcategory-filter-btn');
+  const filterButtons = document.querySelectorAll('.category-chip');
   
   filterButtons.forEach(btn => {
     btn.addEventListener('click', () => {
