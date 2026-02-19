@@ -31,9 +31,14 @@ class AuthManager {
             const userDoc = await this.db.collection('users').doc(user.uid).get();
             // Only update profile if this is still the current user
             // This prevents race conditions when multiple users log in simultaneously
-            if (this.user && this.user.uid === currentUserUid && userDoc.exists) {
-              // Include the UID in the profile data for tracking
-              this.userProfile = { uid: user.uid, ...userDoc.data() };
+            if (this.user && this.user.uid === currentUserUid) {
+              if (userDoc.exists) {
+                // Include the UID in the profile data for tracking
+                this.userProfile = { uid: user.uid, ...userDoc.data() };
+              } else {
+                // User document doesn't exist in Firestore - set to null
+                this.userProfile = null;
+              }
             }
           } catch (error) {
             console.error('Error fetching user profile:', error);
