@@ -3,18 +3,18 @@ import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml, formatDate } from '../js/utils.js';
 import languageManager from '../js/language.js';
+import router from '../js/router.js';
 
 export async function renderSellerOrders() {
   const t = languageManager.t.bind(languageManager);
-  
-  // Get current user (seller)
+
   const user = authManager.getCurrentUser();
   if (!user) {
     const content = `
       <div class="orders-page">
         <div class="page-header">
-          <h1>${t('orders.title')}</h1>
-          <p>${t('orders.manageCustomerOrders')}</p>
+          <h1>${t('orders.manageCustomerOrders')}</h1>
+          <p>${t('orders.myOrders')}</p>
         </div>
         <div class="empty-state">
           <i data-lucide="alert-circle" style="width: 64px; height: 64px; opacity: 0.3;"></i>
@@ -27,235 +27,231 @@ export async function renderSellerOrders() {
     if (window.lucide) window.lucide.createIcons();
     return;
   }
-  
-  // Fetch orders for this seller
-  const orders = await dataService.getOrders({ sellerId: user.uid });
-  
+
+  const userProfile = await dataService.getUserProfile(user.uid);
+  if (!userProfile || userProfile.role !== 'seller') {
+    const content = `
+      <div class="orders-page">
+        <div class="page-header">
+          <h1>${t('orders.manageCustomerOrders')}</h1>
+        </div>
+        <div class="empty-state">
+          <i data-lucide="shield-off" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+          <h2>${t('auth.accessDenied') || 'Access Denied'}</h2>
+          <p>${t('auth.sellerOnly') || 'This page is for sellers only.'}</p>
+        </div>
+      </div>
+    `;
+    renderPageWithLayout(content, 'seller');
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  const allOrders = await dataService.getOrders({ sellerId: user.uid });
+  allOrders.sort((a, b) => {
+    const da = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+    const db = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+    return db - da;
+  });
+
+  const totalActive = allOrders.filter(o => o.status !== 'draft' && o.status !== 'collected' && o.status !== 'Collected').length;
+  const completedOrders = allOrders.filter(o => o.status === 'collected' || o.status === 'Collected').length;
+  const pendingReview = allOrders.filter(o =>
+    o.status === 'under review' || o.status === 'Under Review' || o.status === 'pending'
+  ).length;
+
+  const PAGE_SIZE = 10;
+  let currentPage = 1;
+  let lastFiltered = allOrders;
+
+  const renderSellerOrdersTable = (orders, page) => {
+    const container = document.querySelector('.seller-orders-list-container');
+    if (!container) return;
+
+    const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
+    page = Math.min(Math.max(1, page), totalPages);
+    const pageOrders = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+    if (orders.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="shopping-bag" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+          <h2>${t('orders.customerOrdersWillAppear')}</h2>
+        </div>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="card" style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">${t('orders.orderNumber')}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">${t('orders.date') || 'Date'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">${t('orders.customer') || 'Customer'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px; text-align: right;">${t('orders.items') || 'Items'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">${t('orders.status') || 'Status'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px; text-align: right;">${t('checkout.total') || 'Total'}</th>
+              <th style="padding: 10px 12px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pageOrders.map(order => `
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; font-weight: 600; font-size: 14px;">#${order.id.substring(0, 8).toUpperCase()}</td>
+                <td style="padding: 12px; color: var(--text-secondary); font-size: 13px;">${formatDate(order.createdAt)}</td>
+                <td style="padding: 12px; font-size: 14px;">${escapeHtml(order.buyerName || order.buyerEmail || 'N/A')}</td>
+                <td style="padding: 12px; text-align: right; font-size: 14px;">${order.items?.length || 0}</td>
+                <td style="padding: 12px;"><span class="status-badge status-${order.status}">${escapeHtml(order.status)}</span></td>
+                <td style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600;">$${(order.total || 0).toFixed(2)}</td>
+                <td style="padding: 12px; text-align: right;">
+                  <button class="btn btn-secondary btn-sm view-seller-order-btn" data-order-id="${order.id}">
+                    ${t('orders.viewDetails') || 'View Details'}
+                  </button>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      ${totalPages > 1 ? `
+      <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; flex-wrap: wrap;">
+        <button class="btn btn-secondary btn-sm seller-order-page-btn" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>&#8249; ${t('common.previous') || 'Previous'}</button>
+        <span style="font-size: 14px; color: var(--text-secondary);">${t('common.page') || 'Page'} ${page} ${t('common.of') || 'of'} ${totalPages}</span>
+        <button class="btn btn-secondary btn-sm seller-order-page-btn" data-page="${page + 1}" ${page >= totalPages ? 'disabled' : ''}>${t('common.next') || 'Next'} &#8250;</button>
+      </div>
+      ` : ''}
+    `;
+
+    container.querySelectorAll('.view-seller-order-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        router.navigate(`/seller/order-detail?id=${btn.dataset.orderId}`);
+      });
+    });
+
+    container.querySelectorAll('.seller-order-page-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentPage = parseInt(btn.dataset.page);
+        renderSellerOrdersTable(lastFiltered, currentPage);
+      });
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
   const content = `
     <div class="orders-page">
       <div class="page-header">
-        <h1>${t('orders.title')}</h1>
-        <p>${t('orders.manageCustomerOrders')}</p>
+        <h1>${t('orders.manageCustomerOrders')}</h1>
+        <p>${t('orders.myOrders')}</p>
       </div>
 
-      ${orders.length === 0 ? `
-        <div class="empty-state">
-          <i data-lucide="shopping-bag" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>${t('orders.noOrders')}</h2>
-          <p>${t('orders.customerOrdersWillAppear')}</p>
+      <!-- Summary Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('orders.totalOrders')}</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${allOrders.length}</p>
         </div>
-      ` : `
-        <!-- Filter Controls -->
-        <div class="order-filters card" style="margin-bottom: 24px; padding: 20px;">
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
-            <div class="form-group" style="margin: 0;">
-              <label for="filter-order-number" style="display: block; margin-bottom: 8px; font-weight: 500;">${t('orders.orderNumber')}</label>
-              <input type="text" id="filter-order-number" class="form-control" placeholder="${t('common.search')}..." />
-            </div>
-            <div class="form-group" style="margin: 0;">
-              <label for="filter-date-from" style="display: block; margin-bottom: 8px; font-weight: 500;">${t('orders.dateFrom')}</label>
-              <input type="date" id="filter-date-from" class="form-control" />
-            </div>
-            <div class="form-group" style="margin: 0;">
-              <label for="filter-date-to" style="display: block; margin-bottom: 8px; font-weight: 500;">${t('orders.dateTo')}</label>
-              <input type="date" id="filter-date-to" class="form-control" />
-            </div>
-            <div class="form-group" style="margin: 0;">
-              <label for="filter-status" style="display: block; margin-bottom: 8px; font-weight: 500;">${t('orders.status')}</label>
-              <select id="filter-status" class="form-control">
-                <option value="">${t('orders.allStatuses')}</option>
-                <option value="Under Review">${t('orders.orderStatusUnderReview')}</option>
-                <option value="Confirmed">${t('orders.orderStatusConfirmed')}</option>
-                <option value="In Production">${t('orders.orderStatusInProduction')}</option>
-                <option value="Out Of Production">${t('orders.orderStatusOutOfProduction')}</option>
-                <option value="Delivered to the Shipping Company">${t('orders.orderStatusDeliveredToShipping')}</option>
-                <option value="Reached Port">${t('orders.orderStatusReachedPort')}</option>
-                <option value="Collected">${t('orders.orderStatusCollected')}</option>
-              </select>
-            </div>
-          </div>
-          <div style="margin-top: 16px; display: flex; gap: 12px;">
-            <button class="btn btn-primary" id="apply-filters-btn">
-              <i data-lucide="filter"></i>
-              ${t('orders.applyFilters')}
-            </button>
-            <button class="btn btn-secondary" id="clear-filters-btn">
-              <i data-lucide="x"></i>
-              ${t('orders.clear')}
-            </button>
-          </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('orders.activeOrders')}</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${totalActive}</p>
         </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('orders.completedOrders')}</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${completedOrders}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('orders.pendingReview')}</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${pendingReview}</p>
+        </div>
+      </div>
 
-        <div class="orders-list" id="orders-list">
-          ${orders.map(order => `
-            <div class="order-card-compact card clickable" data-order-id="${order.id}">
-              <div class="order-compact-content">
-                <div class="order-compact-info">
-                  <h3>Order #${order.id && order.id.length >= 8 ? order.id.substring(0, 8).toUpperCase() : (order.id || 'N/A').toUpperCase()}</h3>
-                  <span class="order-date">${formatDate(order.createdAt)}</span>
-                </div>
-                <div class="order-compact-buyer">
-                  <span class="buyer-label">${t('orders.customer')}:</span>
-                  <span class="buyer-name">${escapeHtml(order.buyerName)}</span>
-                </div>
-                <div class="order-compact-status">
-                  <span class="status-badge">${order.status}</span>
-                </div>
-                <div class="order-compact-action">
-                  <i data-lucide="chevron-right"></i>
-                </div>
-              </div>
-            </div>
-          `).join('')}
+      <!-- Filter Section -->
+      <div class="filter-section card" style="margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="margin: 0;">${t('orders.filterOrders') || 'Filter Orders'}</h3>
+          <button class="btn btn-text btn-sm" id="resetFilters">
+            <i data-lucide="x"></i>
+            ${t('common.reset')}
+          </button>
         </div>
-      `}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div class="form-group">
+            <label>${t('orders.orderNumber')}</label>
+            <input type="text" id="filterOrderNumber" class="form-control" placeholder="${t('common.search')}...">
+          </div>
+          <div class="form-group">
+            <label>${t('common.from')}</label>
+            <input type="date" id="filterDateFrom" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>${t('common.to')}</label>
+            <input type="date" id="filterDateTo" class="form-control">
+          </div>
+        </div>
+      </div>
+
+      <div class="seller-orders-list-container"></div>
     </div>
   `;
 
   renderPageWithLayout(content, 'seller');
   if (window.lucide) window.lucide.createIcons();
-  
-  // Add event listeners for order cards
-  initializeOrderCards();
-  
-  // Add event listeners for filters
-  initializeFilters(orders);
-}
 
-// Initialize order card click handlers
-function initializeOrderCards() {
-  const orderCards = document.querySelectorAll('.order-card-compact.clickable');
-  
-  orderCards.forEach(card => {
-    card.addEventListener('click', () => {
-      const orderId = card.getAttribute('data-order-id');
-      if (orderId) {
-        router.navigate(`/order/detail?id=${orderId}`);
-      }
-    });
-    
-    // Add hover effect
-    card.style.cursor = 'pointer';
-  });
-}
+  renderSellerOrdersTable(allOrders, 1);
 
-// Initialize filter functionality
-function initializeFilters(allOrders) {
-  const applyFiltersBtn = document.getElementById('apply-filters-btn');
-  const clearFiltersBtn = document.getElementById('clear-filters-btn');
-  const filterOrderNumber = document.getElementById('filter-order-number');
-  const filterDateFrom = document.getElementById('filter-date-from');
-  const filterDateTo = document.getElementById('filter-date-to');
-  const filterStatus = document.getElementById('filter-status');
-  const ordersList = document.getElementById('orders-list');
-  
-  if (!applyFiltersBtn || !ordersList) return;
-  
-  // Apply filters function
   const applyFilters = () => {
-    const orderNumberFilter = filterOrderNumber.value.toLowerCase().trim();
-    const dateFromFilter = filterDateFrom.value;
-    const dateToFilter = filterDateTo.value;
-    const statusFilter = filterStatus.value;
-    
-    // Filter orders
-    const filteredOrders = allOrders.filter(order => {
-      // Order number filter
-      if (orderNumberFilter && !order.id.toLowerCase().includes(orderNumberFilter)) {
-        return false;
-      }
-      
-      // Date from filter
-      if (dateFromFilter && order.createdAt) {
-        const orderDate = order.createdAt.toDate ? order.createdAt.toDate() : new Date(order.createdAt);
-        const fromDate = new Date(dateFromFilter);
-        if (orderDate < fromDate) {
-          return false;
-        }
-      }
-      
-      // Date to filter
-      if (dateToFilter && order.createdAt) {
-        const orderDate = order.createdAt.toDate ? order.createdAt.toDate() : new Date(order.createdAt);
-        const toDate = new Date(dateToFilter);
-        toDate.setHours(23, 59, 59, 999); // End of day
-        if (orderDate > toDate) {
-          return false;
-        }
-      }
-      
-      // Status filter
-      if (statusFilter && order.status !== statusFilter) {
-        return false;
-      }
-      
-      return true;
-    });
-    
-    // Re-render orders list
-    ordersList.innerHTML = filteredOrders.map(order => `
-      <div class="order-card-compact card clickable" data-order-id="${order.id}">
-        <div class="order-compact-content">
-          <div class="order-compact-info">
-            <h3>Order #${order.id && order.id.length >= 8 ? order.id.substring(0, 8).toUpperCase() : (order.id || 'N/A').toUpperCase()}</h3>
-            <span class="order-date">${formatDate(order.createdAt)}</span>
-          </div>
-          <div class="order-compact-buyer">
-            <span class="buyer-label">${t('orders.customer')}:</span>
-            <span class="buyer-name">${escapeHtml(order.buyerName)}</span>
-          </div>
-          <div class="order-compact-status">
-            <span class="status-badge">${order.status}</span>
-          </div>
-          <div class="order-compact-action">
-            <i data-lucide="chevron-right"></i>
-          </div>
-        </div>
-      </div>
-    `).join('');
-    
-    // Show empty state if no results
-    if (filteredOrders.length === 0) {
-      ordersList.innerHTML = `
-        <div class="empty-state">
-          <i data-lucide="filter-x" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>${t('orders.noOrdersMatchFilters')}</h2>
-          <p>${t('orders.adjustFilterCriteria')}</p>
-        </div>
-      `;
+    const orderNumber = (document.getElementById('filterOrderNumber')?.value || '').toLowerCase();
+    const dateFrom = document.getElementById('filterDateFrom')?.value || '';
+    const dateTo = document.getElementById('filterDateTo')?.value || '';
+
+    let filtered = allOrders;
+
+    if (orderNumber) {
+      filtered = filtered.filter(o => (o.id || '').toLowerCase().includes(orderNumber));
     }
-    
-    // Reinitialize lucide icons and click handlers
-    if (window.lucide) window.lucide.createIcons();
-    initializeOrderCards();
-    
-    // Show toast
-    if (window.toast) {
-      window.toast.success(`Found ${filteredOrders.length} order${filteredOrders.length !== 1 ? 's' : ''}`);
-    }
-  };
-  
-  // Clear filters function
-  const clearFilters = () => {
-    filterOrderNumber.value = '';
-    filterDateFrom.value = '';
-    filterDateTo.value = '';
-    filterStatus.value = '';
-    applyFilters();
-  };
-  
-  // Add event listeners
-  applyFiltersBtn.addEventListener('click', applyFilters);
-  clearFiltersBtn.addEventListener('click', clearFilters);
-  
-  // Allow Enter key to apply filters
-  [filterOrderNumber, filterDateFrom, filterDateTo, filterStatus].forEach(input => {
-    if (input) {
-      input.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          applyFilters();
-        }
+    if (dateFrom) {
+      const from = new Date(dateFrom);
+      from.setHours(0, 0, 0, 0);
+      filtered = filtered.filter(o => {
+        const d = o.createdAt?.toDate ? o.createdAt.toDate() : new Date(o.createdAt);
+        return d >= from;
       });
     }
+    if (dateTo) {
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(o => {
+        const d = o.createdAt?.toDate ? o.createdAt.toDate() : new Date(o.createdAt);
+        return d <= to;
+      });
+    }
+
+    lastFiltered = filtered;
+    currentPage = 1;
+    renderSellerOrdersTable(filtered, 1);
+  };
+
+  ['filterOrderNumber', 'filterDateFrom', 'filterDateTo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', applyFilters);
+      el.addEventListener('change', applyFilters);
+    }
   });
+
+  const resetBtn = document.getElementById('resetFilters');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      ['filterOrderNumber', 'filterDateFrom', 'filterDateTo'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      lastFiltered = allOrders;
+      currentPage = 1;
+      renderSellerOrdersTable(allOrders, 1);
+    });
+  }
 }
