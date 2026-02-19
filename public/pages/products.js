@@ -1078,22 +1078,37 @@ function initializeBulkImport() {
             const mainCategory = row['Category'] || row['category'];
             const subcategory = row['Subcategory'] || row['subcategory'] || row['SubCategory'];
             const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
-            const imagePath = row['Image Path'] || row['image_path'] || row['ImagePath'];
+            // Support both legacy 'Image Path' and new multi-media columns
+            const imagePaths = [
+              row['Image 1'] || row['Image Path'] || row['image_path'] || row['ImagePath'] || '',
+              row['Image 2'] || '',
+              row['Image 3'] || ''
+            ].filter(Boolean);
+            const videoPaths = [
+              row['Video 1'] || '',
+              row['Video 2'] || ''
+            ].filter(Boolean);
             
             // Parse and use the validated price
             const price = parseFloat(pricePerMeter);
             
-            // Upload image if provided (parallel with other images in batch)
-            let imageUrl = '';
-            if (imagePath && uploadedImages) {
-              const imageName = imagePath.split('/').pop().split('\\').pop();
-              const imageFile = uploadedImages[imageName];
-              if (imageFile) {
-                const imageRef = storage.ref(`products/${profile.uid}/${Date.now()}_${crypto.randomUUID()}_${imageName}`);
-                await imageRef.put(imageFile);
-                imageUrl = await imageRef.getDownloadURL();
+            // Upload all images and collect URLs
+            const uploadMedia = async (paths) => {
+              const urls = [];
+              for (const filePath of paths) {
+                const fileName = filePath.split('/').pop().split('\\').pop();
+                const file = uploadedImages ? uploadedImages[fileName] : null;
+                if (file) {
+                  const ref = storage.ref(`products/${profile.uid}/${Date.now()}_${crypto.randomUUID()}_${fileName}`);
+                  await ref.put(file);
+                  urls.push(await ref.getDownloadURL());
+                }
               }
-            }
+              return urls;
+            };
+
+            const imageUrls = await uploadMedia(imagePaths);
+            const videoUrls = await uploadMedia(videoPaths);
             
             // Return product data for batch write
             return {
@@ -1104,7 +1119,9 @@ function initializeBulkImport() {
               category: subcategory, // Store subcategory in 'category' field for backward compatibility
               subcategory: subcategory, // Also store in dedicated subcategory field
               pricePerMeter: price,
-              imageUrl: imageUrl,
+              imageUrl: imageUrls[0] || '',
+              imageUrls: imageUrls,
+              videoUrls: videoUrls,
               createdAt: new Date().toISOString(),
               stock: 0,
               description: ''

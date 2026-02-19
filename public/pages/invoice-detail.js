@@ -9,6 +9,14 @@ import html2pdf from 'html2pdf.js';
 const DEFAULT_LOGO_WIDTH = 200;
 const DEFAULT_LOGO_HEIGHT = 80;
 
+/** Format item dimensions (stored in meters) as a cm string, e.g. " (120.0 cm × 240.0 cm)" */
+function formatItemDimensions(dimensions) {
+  if (dimensions && typeof dimensions.length === 'number' && typeof dimensions.width === 'number') {
+    return ` (${(dimensions.length * 100).toFixed(1)} cm × ${(dimensions.width * 100).toFixed(1)} cm)`;
+  }
+  return '';
+}
+
 // Default terms and conditions
 const DEFAULT_TERMS = [
   'Payment must be made within 30 days of invoice date.',
@@ -328,7 +336,7 @@ function renderPage1(invoice) {
           <div class="items-list">
             ${(invoice.items || []).map((item, index) => `
               <div class="item-row">
-                <span class="item-name">${escapeHtml(item.productName || 'N/A')}${item.dimensions && typeof item.dimensions.length === 'number' && typeof item.dimensions.width === 'number' ? ` (${(item.dimensions.length * 100).toFixed(1)} cm × ${(item.dimensions.width * 100).toFixed(1)} cm)` : ''}</span>
+                <span class="item-name">${escapeHtml(item.productName || 'N/A')}${formatItemDimensions(item.dimensions)}</span>
                 <span class="item-details">${item.quantity || 0} ${escapeHtml(item.unit || 'units')} × $${(item.pricePerUnit || 0).toFixed(2)}</span>
                 <span class="item-amount">$${(item.subtotal || 0).toFixed(2)}</span>
               </div>
@@ -538,7 +546,7 @@ function renderInvoiceHtml(invoice, lang) {
           <div class="items-list">
             ${(invoice.items || []).map((item) => `
               <div class="item-row">
-                <span class="item-name">${escapeHtml(item.productName || 'N/A')}${item.dimensions && typeof item.dimensions.length === 'number' && typeof item.dimensions.width === 'number' ? ` (${(item.dimensions.length * 100).toFixed(1)} cm × ${(item.dimensions.width * 100).toFixed(1)} cm)` : ''}</span>
+                <span class="item-name">${escapeHtml(item.productName || 'N/A')}${formatItemDimensions(item.dimensions)}</span>
                 <span class="item-details">${item.quantity || 0} ${escapeHtml(item.unit || 'units')} × $${(item.pricePerUnit || 0).toFixed(2)}</span>
                 <span class="item-amount">$${(item.subtotal || 0).toFixed(2)}</span>
               </div>

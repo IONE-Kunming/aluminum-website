@@ -14,7 +14,7 @@ export async function renderSellerOrders() {
       <div class="orders-page">
         <div class="page-header">
           <h1>${t('orders.manageCustomerOrders')}</h1>
-          <p>${t('orders.myOrders')}</p>
+          <p>${t('orders.trackAndManage')}</p>
         </div>
         <div class="empty-state">
           <i data-lucide="alert-circle" style="width: 64px; height: 64px; opacity: 0.3;"></i>
@@ -149,7 +149,7 @@ export async function renderSellerOrders() {
     <div class="orders-page">
       <div class="page-header">
         <h1>${t('orders.manageCustomerOrders')}</h1>
-        <p>${t('orders.myOrders')}</p>
+        <p>${t('orders.trackAndManage')}</p>
       </div>
 
       <!-- Summary Cards -->
