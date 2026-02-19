@@ -131,6 +131,27 @@ export async function renderInvoiceDetail() {
       // Clone the element to avoid modifying the original
       const clone = element.cloneNode(true);
       
+      // Replace SVG logo with a base64 data URL so html2canvas renders it correctly
+      const logoImg = clone.querySelector('.invoice-logo-img');
+      if (logoImg) {
+        try {
+          const response = await fetch(logoImg.src);
+          const blob = await response.blob();
+          const reader = new FileReader();
+          await new Promise((resolve) => {
+            reader.onload = () => {
+              logoImg.src = reader.result;
+              resolve();
+            };
+            reader.readAsDataURL(blob);
+          });
+        } catch (err) {
+          // If logo fetch fails (e.g. CORS or network error), hide it so it doesn't break layout
+          console.warn('Could not load logo for PDF export:', err);
+          logoImg.style.display = 'none';
+        }
+      }
+      
       // Create a temporary container
       const tempContainer = document.createElement('div');
       tempContainer.style.position = 'absolute';
@@ -148,6 +169,7 @@ export async function renderInvoiceDetail() {
           html2canvas: { 
             scale: 2,
             useCORS: true,
+            allowTaint: true,
             logging: false,
             backgroundColor: '#ffffff'
           },
@@ -155,7 +177,8 @@ export async function renderInvoiceDetail() {
             unit: 'in', 
             format: 'letter', 
             orientation: 'portrait'
-          }
+          },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
         
         await html2pdf().set(opt).from(clone).save();
@@ -303,9 +326,9 @@ function renderPage1(invoice) {
       <!-- Terms and Conditions Section -->
       <div class="invoice-terms-conditions">
         <h3 class="section-title">Terms and Conditions</h3>
-        <ol class="terms-list">
+        <ul class="terms-list">
           ${(invoice.termsAndConditions || DEFAULT_TERMS).map(term => `<li>${escapeHtml(term)}</li>`).join('')}
-        </ol>
+        </ul>
       </div>
       
       ${invoice.notes ? `

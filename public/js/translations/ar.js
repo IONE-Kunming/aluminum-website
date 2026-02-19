@@ -754,6 +754,12 @@ export default {
     invoiceDeleteFailed: 'فشل حذف الفاتورة'
   },
   
+  // رسائل الضيف
+  guest: {
+    wantToOrder: 'هل تريد طلب هذا المنتج؟',
+    signInPrompt: 'سجّل الدخول أو أنشئ حسابًا لإضافة المنتجات إلى سلة التسوق وإتمام الطلبات'
+  },
+
   // أسماء اللغات
   languages: {
     en: 'English',

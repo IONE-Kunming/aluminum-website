@@ -152,7 +152,7 @@ export async function renderSellerInvoices() {
       e.stopPropagation();
       const invoiceId = btn.dataset.invoiceId;
       const invoice = invoices.find(inv => inv.id === invoiceId);
-      showPaymentProofModal(invoiceId, invoice?.invoiceNumber || invoiceId);
+      showPaymentProofModal(invoiceId, invoice?.invoiceNumber || invoiceId, invoice);
     });
   });
   
@@ -165,7 +165,7 @@ export async function renderSellerInvoices() {
 }
 
 
-function showPaymentProofModal(invoiceId, invoiceNumber) {
+function showPaymentProofModal(invoiceId, invoiceNumber, invoice = {}) {
   // Remove existing modal if any
   const existing = document.getElementById('payment-proof-modal');
   if (existing) existing.remove();
@@ -232,8 +232,11 @@ function showPaymentProofModal(invoiceId, invoiceNumber) {
       const paymentProofUrl = await uploadTask.ref.getDownloadURL();
 
       await dataService.init();
+      const totalAmount = invoice.total || 0;
       await dataService.db.collection('invoices').doc(invoiceId).update({
         status: 'paid',
+        depositPaid: totalAmount,
+        remainingBalance: 0,
         paymentProofUrl,
         paymentProofUploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
         paidAt: firebase.firestore.FieldValue.serverTimestamp()

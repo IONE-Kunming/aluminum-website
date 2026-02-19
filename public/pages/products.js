@@ -328,8 +328,8 @@ async function loadProducts() {
       return;
     }
 
-    // Fetch all products from all sellers (limit: 2000 products)
-    allProducts = await dataService.getProducts({ limit: 2000 });
+    // Fetch only this seller's products
+    allProducts = await dataService.getProducts({ sellerId: user.uid, limit: 2000 });
     
     if (loadingEl) loadingEl.style.display = 'none';
     
