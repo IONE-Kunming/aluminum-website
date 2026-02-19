@@ -325,12 +325,25 @@ async function editProduct(product) {
   
   // Save button handler
   document.getElementById('save-edit-product').addEventListener('click', async () => {
+    const priceValue = parseFloat(document.getElementById('edit-product-price').value);
+    const stockValue = parseInt(document.getElementById('edit-product-stock').value);
+    
+    // Validate numeric inputs
+    if (isNaN(priceValue) || priceValue < 0) {
+      window.toast.error(t('admin.invalidPrice'));
+      return;
+    }
+    if (isNaN(stockValue) || stockValue < 0) {
+      window.toast.error(t('admin.invalidStock'));
+      return;
+    }
+    
     const updatedData = {
       name: document.getElementById('edit-product-name').value,
       category: document.getElementById('edit-product-category').value,
       description: document.getElementById('edit-product-description').value,
-      pricePerUnit: parseFloat(document.getElementById('edit-product-price').value),
-      stockQuantity: parseInt(document.getElementById('edit-product-stock').value),
+      pricePerUnit: priceValue,
+      stockQuantity: stockValue,
       unit: document.getElementById('edit-product-unit').value,
       isActive: document.getElementById('edit-product-isActive').checked
     };

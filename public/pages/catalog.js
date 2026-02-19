@@ -77,8 +77,24 @@ async function renderSellerProducts(sellerId, filterCategory, t) {
   const sellers = await dataService.getSellers();
   const seller = sellers.find(s => s.id === sellerId || s.uid === sellerId);
   
-  // Check if seller is inactive - don't show their products
-  if (seller && seller.isActive === false) {
+  // Check if seller exists and is inactive - don't show their products
+  if (!seller) {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="page-container">
+        <div class="empty-state">
+          <i data-lucide="store-x" style="width: 64px; height: 64px; opacity: 0.3; margin-bottom: 16px;"></i>
+          <h2>${t('catalog.sellerNotFound')}</h2>
+          <p>${t('catalog.sellerNotFoundDescription')}</p>
+          <button class="btn btn-primary" onclick="window.history.back()">${t('common.back')}</button>
+        </div>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+  
+  if (seller.isActive === false) {
     const app = document.getElementById('app');
     app.innerHTML = `
       <div class="page-container">

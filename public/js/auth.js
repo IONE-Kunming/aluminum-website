@@ -36,7 +36,9 @@ class AuthManager {
                 // Include the UID in the profile data for tracking
                 this.userProfile = { uid: user.uid, ...userDoc.data() };
               } else {
-                // User document doesn't exist in Firestore - set to null
+                // User document doesn't exist in Firestore
+                // This can happen for new users who haven't completed profile setup,
+                // or users whose profiles were deleted but Firebase Auth account remains
                 this.userProfile = null;
               }
             }

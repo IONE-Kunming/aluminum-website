@@ -225,7 +225,7 @@ async function editOrder(order) {
               <div style="padding: 12px; background: var(--background-secondary); border-radius: 8px;">
                 <p><strong>${t('order.buyer')}:</strong> ${escapeHtml(order.buyerName || order.buyerEmail || 'N/A')}</p>
                 <p><strong>${t('order.seller')}:</strong> ${escapeHtml(order.sellerName || order.sellerCompany || 'N/A')}</p>
-                <p><strong>${t('order.items')}:</strong> ${order.items?.length || 0} items</p>
+                <p><strong>${t('checkout.items')}:</strong> ${order.items?.length || 0} ${t('common.items')}</p>
                 <p><strong>${t('order.total')}:</strong> $${(order.total || 0).toFixed(2)}</p>
               </div>
             </div>

@@ -48,7 +48,8 @@ export default {
     clear: 'Clear',
     name: 'Name',
     email: 'Email',
-    notes: 'Notes'
+    notes: 'Notes',
+    items: 'items'
   },
   
   // Languages
@@ -371,6 +372,8 @@ export default {
     noSellersInCategory: 'No sellers found in this category',
     allMainCategories: 'Main Categories',
     allSubCategories: 'Sub Categories',
+    sellerNotFound: 'Seller Not Found',
+    sellerNotFoundDescription: 'The seller you are looking for could not be found',
     sellerInactive: 'Seller Unavailable',
     sellerInactiveDescription: 'This seller is currently inactive and not available for orders'
   },
@@ -696,6 +699,8 @@ export default {
     orderUpdateFailed: 'Failed to update order',
     activeStatus: 'Active',
     emailCannotBeChanged: 'Email cannot be changed',
+    invalidPrice: 'Invalid price value. Please enter a valid number',
+    invalidStock: 'Invalid stock value. Please enter a valid number',
     userDeleted: 'User deleted successfully',
     userDeleteFailed: 'Failed to delete user',
     userActivated: 'User activated successfully',
