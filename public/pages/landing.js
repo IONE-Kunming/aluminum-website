@@ -186,12 +186,16 @@ export function renderLandingPage() {
                   </div>
                 </div>
                 <div class="category-showcase-content">
-                  <h3 class="category-showcase-title">${t(`categoryNames.${category.name}`) || category.name}</h3>
+                  <h3 class="category-showcase-title">${(() => {
+                    const translated = t(`categoryNames.${category.name}`);
+                    return translated && translated !== `categoryNames.${category.name}` ? translated : category.name;
+                  })()}</h3>
                   <p class="category-showcase-count">${category.subcategories.length} ${t('landing.categories.subcategories')}</p>
                   <div class="category-showcase-subcategories">
-                    ${category.subcategories.slice(0, 4).map(sub => `
-                      <span class="subcategory-badge">${t(`categoryNames.${sub}`) || sub}</span>
-                    `).join('')}
+                    ${category.subcategories.slice(0, 4).map(sub => {
+                      const translated = t(`categoryNames.${sub}`);
+                      return `<span class="subcategory-badge">${translated && translated !== `categoryNames.${sub}` ? translated : sub}</span>`;
+                    }).join('')}
                     ${category.subcategories.length > 4 ? `<span class="subcategory-badge more">+${category.subcategories.length - 4} ${t('landing.categories.more')}</span>` : ''}
                   </div>
                   <button class="btn btn-secondary btn-sm category-explore-btn" data-nav="categories">

@@ -218,8 +218,8 @@ async function editUser(user) {
             </div>
             <div class="form-group">
               <label for="edit-email">${t('auth.email')}</label>
-              <input type="email" id="edit-email" value="${escapeHtml(user.email || '')}" disabled style="opacity: 0.6; cursor: not-allowed;" />
-              <small style="color: var(--text-secondary);">${t('admin.emailCannotBeChanged')}</small>
+              <input type="email" id="edit-email" value="${escapeHtml(user.email || '')}" required />
+              <small style="color: var(--text-secondary);">${t('admin.emailChangeWarning')}</small>
             </div>
             <div class="form-group">
               <label for="edit-role">${t('profile.role')}</label>
@@ -269,8 +269,19 @@ async function editUser(user) {
   
   // Save button handler
   document.getElementById('save-edit-user').addEventListener('click', async () => {
+    const newEmail = document.getElementById('edit-email').value.trim();
+    const oldEmail = user.email;
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      window.toast.error(t('admin.invalidEmail'));
+      return;
+    }
+    
     const updatedData = {
       displayName: document.getElementById('edit-displayName').value,
+      email: newEmail,
       role: document.getElementById('edit-role').value,
       companyName: document.getElementById('edit-companyName').value,
       phoneNumber: document.getElementById('edit-phoneNumber').value,
@@ -278,8 +289,32 @@ async function editUser(user) {
     };
     
     try {
+      // Check if email changed and if it's already in use
+      if (newEmail !== oldEmail) {
+        // Check if new email already exists
+        const usersSnapshot = await dataService.db.collection('users')
+          .where('email', '==', newEmail)
+          .get();
+        
+        if (!usersSnapshot.empty && usersSnapshot.docs[0].id !== user.id) {
+          window.toast.error(t('admin.emailAlreadyInUse'));
+          return;
+        }
+        
+        // Show warning about email change
+        if (!confirm(t('admin.confirmEmailChange', { email: newEmail }))) {
+          return;
+        }
+      }
+      
       await dataService.db.collection('users').doc(user.id).update(updatedData);
       window.toast.success(t('admin.userUpdated'));
+      
+      // If email changed, show additional info
+      if (newEmail !== oldEmail) {
+        window.toast.info(t('admin.emailChangeNotice'));
+      }
+      
       closeModal();
       await loadUsers();
     } catch (error) {
