@@ -203,7 +203,6 @@ function filterUsers() {
 }
 
 function viewUserDetails(user) {
-  const t = languageManager.t.bind(languageManager);
   const isActive = user.isActive !== false;
 
   const formatVal = (v) => escapeHtml(v || 'N/A');
