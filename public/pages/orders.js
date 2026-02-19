@@ -3,6 +3,7 @@ import languageManager from '../js/language.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import { escapeHtml, formatDate } from '../js/utils.js';
+import router from '../js/router.js';
 
 export async function renderOrders() {
   const t = languageManager.t.bind(languageManager);
