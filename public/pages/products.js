@@ -32,6 +32,10 @@ export async function renderProducts() {
             <i data-lucide="upload"></i>
             ${t('products.bulkImport')}
           </button>
+          <button class="btn btn-secondary" id="bulk-edit-btn">
+            <i data-lucide="layers"></i>
+            Bulk Edit
+          </button>
           <div id="bulk-actions-container" style="display: none; margin-left: auto; gap: 12px; align-items: center;">
             <span id="selected-count" style="font-size: 14px; color: #6b7280;">0 selected</span>
             <button class="btn btn-danger" id="bulk-delete-btn">
@@ -220,6 +224,55 @@ export async function renderProducts() {
         </div>
       </div>
 
+      <!-- Bulk Edit Modal -->
+      <div id="bulk-edit-modal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 550px;">
+          <div class="modal-header">
+            <h2><i data-lucide="layers"></i> Bulk Edit Products</h2>
+            <button class="modal-close" id="close-bulk-edit-modal"><i data-lucide="x"></i></button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Main Category *</label>
+              <select id="bulk-main-category" class="form-control">
+                <option value="">Select main category</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Subcategory</label>
+              <select id="bulk-subcategory" class="form-control" disabled>
+                <option value="">All subcategories</option>
+              </select>
+            </div>
+            <div id="bulk-product-count" style="margin-bottom: 16px; font-size: 14px; color: var(--text-secondary);"></div>
+            <hr style="border-color: var(--border-color); margin: 16px 0;" />
+            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">Leave fields empty to keep existing values unchanged:</p>
+            <div class="form-group">
+              <label>New Price (per meter)</label>
+              <input type="number" id="bulk-price" class="form-control" placeholder="Leave empty to keep current" step="0.01" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Stock Status</label>
+              <select id="bulk-stock" class="form-control">
+                <option value="">No change</option>
+                <option value="available">Available</option>
+                <option value="unavailable">Out of Stock</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="bulk-description" class="form-control" rows="3" placeholder="Leave empty to keep current"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" id="cancel-bulk-edit">Cancel</button>
+            <button class="btn btn-primary" id="submit-bulk-edit">
+              <i data-lucide="layers"></i> Apply to All Matching Products
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Products Loading State -->
       <div id="products-loading" style="display: flex; justify-content: center; padding: 40px;">
         <div class="spinner"></div>
@@ -254,6 +307,9 @@ export async function renderProducts() {
   
   // Initialize bulk import functionality
   initializeBulkImport();
+
+  // Initialize bulk edit functionality
+  initializeBulkEdit();
 }
 
 // Load products from Firestore
@@ -1268,4 +1324,137 @@ function initializeBulkSelection() {
       updateSelectionUI();
     });
   }
+}
+
+function getMatchingProducts(mainCat, subCat) {
+  return allProducts.filter(p => {
+    const productMain = p.mainCategory || getMainCategoryForSubcategory(p.category || p.subcategory || '');
+    const productSub = p.subcategory || p.category || '';
+    const mainMatch = productMain === mainCat || (p.category || '') === mainCat || (p.subcategory || '') === mainCat;
+    if (!mainMatch) return false;
+    if (!subCat) return true;
+    return productSub === subCat || p.category === subCat;
+  });
+}
+
+function initializeBulkEdit() {
+  const bulkEditBtn = document.getElementById('bulk-edit-btn');
+  const modal = document.getElementById('bulk-edit-modal');
+  const closeBtn = document.getElementById('close-bulk-edit-modal');
+  const cancelBtn = document.getElementById('cancel-bulk-edit');
+  const submitBtn = document.getElementById('submit-bulk-edit');
+  const mainCategorySelect = document.getElementById('bulk-main-category');
+  const subcategorySelect = document.getElementById('bulk-subcategory');
+  const countLabel = document.getElementById('bulk-product-count');
+
+  if (!bulkEditBtn || !modal) return;
+
+  const closeModal = () => {
+    modal.style.display = 'none';
+    document.getElementById('bulk-price').value = '';
+    document.getElementById('bulk-stock').value = '';
+    document.getElementById('bulk-description').value = '';
+  };
+
+  // Populate main categories
+  const mainCategories = getMainCategories();
+  mainCategorySelect.innerHTML = '<option value="">Select main category</option>' +
+    mainCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
+  const updateCount = () => {
+    const mainCat = mainCategorySelect.value;
+    const subCat = subcategorySelect.value;
+    if (!mainCat) {
+      countLabel.textContent = '';
+      return;
+    }
+    const matched = getMatchingProducts(mainCat, subCat);
+    countLabel.textContent = `${matched.length} product${matched.length !== 1 ? 's' : ''} found in ${subCat || mainCat}`;
+  };
+
+  mainCategorySelect.addEventListener('change', () => {
+    const mainCat = mainCategorySelect.value;
+    subcategorySelect.innerHTML = '<option value="">All subcategories</option>';
+    if (mainCat) {
+      const subs = getSubcategories(mainCat);
+      subs.forEach(sub => {
+        const opt = document.createElement('option');
+        opt.value = sub;
+        opt.textContent = sub;
+        subcategorySelect.appendChild(opt);
+      });
+      subcategorySelect.disabled = false;
+    } else {
+      subcategorySelect.disabled = true;
+    }
+    updateCount();
+  });
+
+  subcategorySelect.addEventListener('change', updateCount);
+
+  bulkEditBtn.addEventListener('click', () => {
+    modal.style.display = 'flex';
+    if (window.lucide) window.lucide.createIcons();
+    updateCount();
+  });
+
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+
+  submitBtn.addEventListener('click', async () => {
+    const mainCat = mainCategorySelect.value;
+    if (!mainCat) {
+      window.toast?.error('Please select a main category');
+      return;
+    }
+
+    const subCat = subcategorySelect.value;
+    const newPrice = document.getElementById('bulk-price').value;
+    const newStock = document.getElementById('bulk-stock').value;
+    const newDescription = document.getElementById('bulk-description').value.trim();
+
+    if (!newPrice && !newStock && !newDescription) {
+      window.toast?.error('Please fill in at least one field to update');
+      return;
+    }
+
+    const matched = getMatchingProducts(mainCat, subCat);
+
+    if (matched.length === 0) {
+      window.toast?.error('No matching products found');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = `Updating ${matched.length} products...`;
+
+    try {
+      await dataService.init();
+      const updates = {};
+      if (newPrice) updates.price = parseFloat(newPrice);
+      if (newStock) updates.stock = newStock;
+      if (newDescription) updates.description = newDescription;
+
+      // Use Firestore batch writes (max 500 per batch)
+      const BATCH_SIZE = 500;
+      for (let i = 0; i < matched.length; i += BATCH_SIZE) {
+        const batch = dataService.db.batch();
+        matched.slice(i, i + BATCH_SIZE).forEach(p => {
+          batch.update(dataService.db.collection('products').doc(p.id), updates);
+        });
+        await batch.commit();
+      }
+
+      window.toast?.success(`Updated ${matched.length} products successfully`);
+      closeModal();
+      await loadProducts();
+    } catch (error) {
+      console.error('Error bulk updating products:', error);
+      window.toast?.error('Failed to update products: ' + error.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i data-lucide="layers"></i> Apply to All Matching Products';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  });
 }

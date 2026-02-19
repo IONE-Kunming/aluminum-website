@@ -3,11 +3,64 @@ import authManager from '../js/auth.js';
 import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
 
+const COUNTRY_CODES = [
+  { flag: '🇦🇪', code: '+971', name: 'UAE' },
+  { flag: '🇸🇦', code: '+966', name: 'Saudi Arabia' },
+  { flag: '🇵🇰', code: '+92', name: 'Pakistan' },
+  { flag: '🇮🇳', code: '+91', name: 'India' },
+  { flag: '🇨🇳', code: '+86', name: 'China' },
+  { flag: '🇺🇸', code: '+1', name: 'USA' },
+  { flag: '🇬🇧', code: '+44', name: 'UK' },
+  { flag: '🇦🇺', code: '+61', name: 'Australia' },
+  { flag: '🇨🇦', code: '+1', name: 'Canada' },
+  { flag: '🇩🇪', code: '+49', name: 'Germany' },
+  { flag: '🇫🇷', code: '+33', name: 'France' },
+  { flag: '🇯🇵', code: '+81', name: 'Japan' },
+  { flag: '🇰🇷', code: '+82', name: 'South Korea' },
+  { flag: '🇧🇷', code: '+55', name: 'Brazil' },
+  { flag: '🇲🇽', code: '+52', name: 'Mexico' },
+  { flag: '🇪🇬', code: '+20', name: 'Egypt' },
+  { flag: '🇳🇬', code: '+234', name: 'Nigeria' },
+  { flag: '🇹🇷', code: '+90', name: 'Turkey' },
+  { flag: '🇷🇺', code: '+7', name: 'Russia' },
+  { flag: '🇮🇹', code: '+39', name: 'Italy' },
+  { flag: '🇪🇸', code: '+34', name: 'Spain' },
+  { flag: '🇳🇱', code: '+31', name: 'Netherlands' },
+  { flag: '🇸🇬', code: '+65', name: 'Singapore' },
+  { flag: '🇲🇾', code: '+60', name: 'Malaysia' },
+  { flag: '🇮🇩', code: '+62', name: 'Indonesia' },
+  { flag: '🇵🇭', code: '+63', name: 'Philippines' },
+  { flag: '🇹🇭', code: '+66', name: 'Thailand' },
+  { flag: '🇻🇳', code: '+84', name: 'Vietnam' },
+  { flag: '🇿🇦', code: '+27', name: 'South Africa' },
+  { flag: '🇦🇷', code: '+54', name: 'Argentina' },
+];
+
+function parsePhoneNumber(fullPhone) {
+  const defaultCode = COUNTRY_CODES[0].code; // UAE (+971) as default
+  if (!fullPhone || !fullPhone.startsWith('+')) return { countryCode: defaultCode, localNumber: fullPhone || '' };
+  // Sort by code length descending for longest-match-first
+  const sorted = [...COUNTRY_CODES].sort((a, b) => b.code.length - a.code.length);
+  for (const country of sorted) {
+    if (fullPhone.startsWith(country.code)) {
+      return { countryCode: country.code, localNumber: fullPhone.slice(country.code.length) };
+    }
+  }
+  return { countryCode: defaultCode, localNumber: fullPhone };
+}
+
 export function renderProfile() {
   const profile = authManager.getUserProfile();
   const user = authManager.getCurrentUser();
   const t = languageManager.t.bind(languageManager);
+  const { countryCode: savedCountryCode, localNumber: savedLocalNumber } = parsePhoneNumber(profile?.phoneNumber || '');
   
+  const countryCodeOptions = COUNTRY_CODES.map(c => {
+    const val = `${c.code}|${c.name}`;
+    const isSelected = c.code === savedCountryCode;
+    return `<option value="${val}" ${isSelected ? 'selected' : ''}>${c.flag} ${c.code} ${c.name}</option>`;
+  }).join('');
+
   const content = `
     <div class="profile-page">
       <div class="page-header">
@@ -46,16 +99,22 @@ export function renderProfile() {
           </div>
           <div class="form-group">
             <label>Phone Number</label>
-            <input 
-              type="tel" 
-              class="form-control" 
-              id="phoneNumber" 
-              value="${escapeHtml(profile?.phoneNumber || '')}" 
-              placeholder="+1234567890"
-              inputmode="numeric"
-              pattern="[0-9+\\-\\s()]+"
-            >
-            <small style="color: #6b7280; font-size: 12px;">Enter your phone number with country code (letters not allowed)</small>
+            <div class="phone-input-group" style="display: flex; gap: 8px; align-items: center;">
+              <select class="form-control" id="countryCode" style="width: 160px; flex-shrink: 0;">
+                ${countryCodeOptions}
+              </select>
+              <input 
+                type="tel" 
+                class="form-control" 
+                id="localPhone"
+                style="flex: 1;"
+                value="${escapeHtml(savedLocalNumber)}" 
+                placeholder="501234567"
+                inputmode="numeric"
+              >
+            </div>
+            <input type="hidden" id="phoneNumber" value="${escapeHtml(profile?.phoneNumber || '')}">
+            <small style="color: #6b7280; font-size: 12px;">Select country code and enter local number (digits only)</small>
           </div>
           <div class="form-group">
             <label>${t('profile.preferredLanguage')}</label>
@@ -94,38 +153,41 @@ function initProfileHandlers(profile, user) {
   const form = document.getElementById('profile-form');
   const displayNameInput = document.getElementById('displayName');
   const emailInput = document.getElementById('email');
-  const phoneInput = document.getElementById('phoneNumber');
+  const phoneHiddenInput = document.getElementById('phoneNumber');
+  const countryCodeSelect = document.getElementById('countryCode');
+  const localPhoneInput = document.getElementById('localPhone');
   const preferredLanguageSelect = document.getElementById('preferredLanguage');
   const saveBtn = document.getElementById('save-profile-btn');
   
   if (!form) return;
-  
-  // Prevent non-numeric characters in phone number (except +, -, space, parentheses)
-  phoneInput.addEventListener('input', (e) => {
-    const cursorPosition = e.target.selectionStart;
-    const oldValue = e.target.value;
-    const newValue = oldValue.replace(/[^0-9+\-\s()]/g, '');
-    
-    if (oldValue !== newValue) {
-      e.target.value = newValue;
-      // Restore cursor position
-      e.target.setSelectionRange(cursorPosition - 1, cursorPosition - 1);
-    }
-  });
-  
-  // Prevent pasting non-numeric content
-  phoneInput.addEventListener('paste', (e) => {
-    e.preventDefault();
-    const pastedText = (e.clipboardData || window.clipboardData).getData('text');
-    const cleanedText = pastedText.replace(/[^0-9+\-\s()]/g, '');
-    
-    // Insert cleaned text at cursor position
-    const start = phoneInput.selectionStart;
-    const end = phoneInput.selectionEnd;
-    const currentValue = phoneInput.value;
-    phoneInput.value = currentValue.substring(0, start) + cleanedText + currentValue.substring(end);
-    phoneInput.selectionStart = phoneInput.selectionEnd = start + cleanedText.length;
-  });
+
+  // Update hidden phone field when either dropdown or local phone changes
+  const updateFullPhone = () => {
+    const selectedVal = countryCodeSelect?.value || '+1|USA';
+    const cc = selectedVal.split('|')[0];
+    const local = (localPhoneInput?.value || '').replace(/\D/g, '');
+    phoneHiddenInput.value = local ? cc + local : '';
+  };
+
+  // Only allow digits in local phone input
+  if (localPhoneInput) {
+    localPhoneInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '');
+      updateFullPhone();
+    });
+    localPhoneInput.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+      const start = localPhoneInput.selectionStart;
+      const end = localPhoneInput.selectionEnd;
+      localPhoneInput.value = localPhoneInput.value.substring(0, start) + pasted + localPhoneInput.value.substring(end);
+      updateFullPhone();
+    });
+  }
+
+  if (countryCodeSelect) {
+    countryCodeSelect.addEventListener('change', updateFullPhone);
+  }
   
   // Handle form submission
   form.addEventListener('submit', async (e) => {
@@ -133,7 +195,7 @@ function initProfileHandlers(profile, user) {
     
     const newDisplayName = displayNameInput?.value.trim();
     const newEmail = emailInput?.value.trim();
-    const newPhone = phoneInput?.value.trim();
+    const newPhone = phoneHiddenInput?.value.trim();
     const newPreferredLanguage = preferredLanguageSelect?.value;
     
     // Check if anything changed
@@ -221,9 +283,9 @@ function initProfileHandlers(profile, user) {
 
 // Validate phone number format
 function isValidPhoneNumber(phone) {
-  // Basic validation: must start with + and contain at least 10 digits
-  const cleanPhone = phone.replace(/[^0-9+]/g, '');
-  return cleanPhone.startsWith('+') && cleanPhone.length >= 11 && cleanPhone.length <= 16;
+  // Lenient: must start with + and have at least 7 digits total
+  const digits = phone.replace(/\D/g, '');
+  return phone.startsWith('+') && digits.length >= 7;
 }
 
 function isValidEmail(email) {

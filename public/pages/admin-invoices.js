@@ -36,6 +36,8 @@ export async function renderAdminInvoices() {
         </div>
       </div>
       
+      <div id="accounting-summary"></div>
+      
       <div id="invoices-loading" class="loading-spinner">
         <i data-lucide="loader"></i> Loading invoices...
       </div>
@@ -75,9 +77,47 @@ async function loadInvoices() {
 function displayInvoices(invoices) {
   const container = document.getElementById('invoices-container');
   const loading = document.getElementById('invoices-loading');
+  const summaryEl = document.getElementById('accounting-summary');
   
   loading.style.display = 'none';
   container.style.display = 'block';
+
+  // Render accounting summary
+  if (summaryEl) {
+    const totalRevenue = allInvoices.reduce((s, inv) => s + (inv.total || 0), 0);
+    const totalCollected = allInvoices.reduce((s, inv) => s + (inv.depositPaid || 0), 0);
+    const totalOutstanding = allInvoices.reduce((s, inv) => s + (inv.remainingBalance || 0), 0);
+    const paidCount = allInvoices.filter(inv => inv.status === 'paid').length;
+    const unpaidCount = allInvoices.length - paidCount;
+    summaryEl.innerHTML = `
+      <div class="accounting-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Total Invoices</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${allInvoices.length}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Platform Revenue</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${totalRevenue.toFixed(2)}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Collected</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${totalCollected.toFixed(2)}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Outstanding</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${totalOutstanding.toFixed(2)}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Paid</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${paidCount}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Unpaid</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${unpaidCount}</p>
+        </div>
+      </div>
+    `;
+  }
   
   if (invoices.length === 0) {
     container.innerHTML = `
