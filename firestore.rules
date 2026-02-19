@@ -58,6 +58,8 @@ service cloud.firestore {
                      resource.data.buyerId == request.auth.uid;
       // Buyers can create orders
       allow create: if hasRole('buyer') && request.resource.data.buyerId == request.auth.uid;
+      // Buyers can update their own orders (e.g., checkout/payment of draft orders)
+      allow update: if hasRole('buyer') && resource.data.buyerId == request.auth.uid;
       // Sellers can read orders for their products
       allow read: if isAuthenticated() && 
                      hasRole('seller') && 
