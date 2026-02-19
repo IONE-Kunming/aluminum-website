@@ -4304,6 +4304,7 @@
   border-left: 6px solid #0066cc;
   margin-bottom: 32px;
   border-radius: 12px;
+  page-break-inside: avoid;
 }
 
 .invoice-logo {
@@ -4412,6 +4413,7 @@
   background: #f8f9fa;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
+  page-break-inside: avoid;
 }
 
 .invoice-party h3 {
@@ -4449,6 +4451,7 @@
   background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
   border-left: 6px solid #ffc107;
   border-radius: 12px;
+  page-break-inside: avoid;
 }
 
 .section-title {
@@ -4536,6 +4539,7 @@
   background: linear-gradient(135deg, #f0f7ff 0%, #e3f2fd 100%);
   border: 2px solid #0066cc;
   border-radius: 12px;
+  page-break-inside: avoid;
 }
 
 .totals-row {
@@ -4608,9 +4612,11 @@
   background: #fafafa;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
+  page-break-inside: avoid;
 }
 
-.invoice-terms-conditions ul {
+.invoice-terms-conditions ul,
+.invoice-terms-conditions ul.terms-list {
   list-style: none;
   padding: 0;
   margin: 16px 0 0;
@@ -4632,6 +4638,7 @@
   color: #0066cc;
   font-weight: bold;
   font-size: 1.2rem;
+  line-height: 1.4;
 }
 
 /* Invoice Footer */
@@ -4642,6 +4649,7 @@
   text-align: center;
   color: #666;
   font-size: 0.875rem;
+  page-break-inside: avoid;
 }
 
 /* Print Styles - Optimized for clean PDF output */
@@ -4672,25 +4680,32 @@
   .invoice-page {
     padding: 0.5in;
     margin: 0;
-    page-break-after: avoid;
     background: white;
     color: #1a1a1a;
   }
   
   /* Ensure colors print correctly */
   .invoice-header-section,
-  .invoice-parties,
+  .invoice-party,
   .invoice-payment-instructions,
   .invoice-order-summary,
   .invoice-totals-section,
   .invoice-payment-terms,
-  .invoice-terms-conditions {
+  .invoice-terms-conditions,
+  .payment-terms-box,
+  .totals-row.total-amount {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     color-adjust: exact;
   }
   
-  .item-row {
+  .item-row,
+  .invoice-party,
+  .invoice-header-section,
+  .invoice-payment-instructions,
+  .invoice-totals-section,
+  .payment-terms-box,
+  .invoice-footer {
     page-break-inside: avoid;
   }
   
@@ -4702,50 +4717,49 @@
 }
 
 .totals-row.total-amount {
-  font-size: 1.5rem;
+  font-size: 1.125rem;
   font-weight: 700;
   margin-top: var(--spacing-sm);
   padding-top: var(--spacing-md);
-  border-top: 2px solid var(--electric-blue);
+  border-top: 2px solid #0066cc;
   border-bottom: none;
-  background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(0, 128, 255, 0.1));
+  background: #f0f7ff;
   padding: var(--spacing-md);
-  margin: var(--spacing-sm) calc(-1 * var(--spacing-lg)) 0;
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  margin: var(--spacing-sm) 0 0;
+  border-radius: var(--radius-sm);
+  color: #1a1a1a;
 }
 
 .totals-row.total-amount span:last-child {
-  background: linear-gradient(135deg, var(--neon-cyan), var(--electric-blue));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0066cc;
+  font-size: 1.25rem;
 }
 
 /* Payment Terms Box */
 .payment-terms-box {
   margin-top: var(--spacing-lg);
   padding: var(--spacing-xl);
-  background: linear-gradient(135deg, rgba(0, 255, 255, 0.08) 0%, rgba(0, 128, 255, 0.05) 100%);
-  border: 2px solid var(--neon-cyan);
+  background: #f0f7ff;
+  border: 2px solid #0066cc;
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 102, 204, 0.1);
 }
 
 .payment-term-item {
   display: flex;
   justify-content: space-between;
   padding: var(--spacing-sm) 0;
-  color: var(--text-primary);
+  color: #1a1a1a;
 }
 
 .term-label {
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #555;
 }
 
 .term-value {
   font-weight: 700;
-  color: var(--electric-blue);
+  color: #0066cc;
 }
 
 .term-value.deposit-paid {

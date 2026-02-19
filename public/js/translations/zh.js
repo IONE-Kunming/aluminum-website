@@ -752,6 +752,12 @@ export default {
     invoiceDeleteFailed: '删除发票失败'
   },
   
+  // 访客提示
+  guest: {
+    wantToOrder: '想订购这个产品吗？',
+    signInPrompt: '登录或创建账户，将产品加入购物车并下单'
+  },
+
   // 语言名称
   languages: {
     en: 'English',

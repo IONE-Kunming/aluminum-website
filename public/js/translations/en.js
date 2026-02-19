@@ -793,6 +793,12 @@ export default {
     invoiceDeleteFailed: 'Failed to delete invoice'
   },
   
+  // Guest catalog prompts
+  guest: {
+    wantToOrder: 'Want to order this product?',
+    signInPrompt: 'Sign in or create an account to add products to your cart and place orders'
+  },
+
   // Language names
   languages: {
     en: 'English',
