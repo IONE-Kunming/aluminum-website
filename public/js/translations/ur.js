@@ -639,6 +639,14 @@ export default {
         satisfactionRate: 'اطمینان کی شرح'
       }
     },
+    categories: {
+      title: 'ہماری مصنوعات کی اقسام دریافت کریں',
+      subtitle: 'متعدد صنعتوں میں اعلیٰ معیار کی مصنوعات کے ہمارے جامع مجموعہ کو دیکھیں',
+      subcategories: 'ذیلی اقسام',
+      more: 'مزید',
+      exploreCategory: 'زمرہ دریافت کریں',
+      viewAllCategories: 'تمام زمرے دیکھیں'
+    },
     cta: {
       title: 'اپنی تجارت کو تبدیل کرنے کے لیے تیار ہیں؟',
       description: 'I ONE Construction پلیٹ فارم پر ہزاروں کامیاب تاجروں میں شامل ہوں',

@@ -624,6 +624,14 @@ export default {
         satisfactionRate: 'Satisfaction Rate'
       }
     },
+    categories: {
+      title: 'Explore Our Product Categories',
+      subtitle: 'Browse through our comprehensive collection of high-quality products across multiple industries',
+      subcategories: 'subcategories',
+      more: 'more',
+      exploreCategory: 'Explore Category',
+      viewAllCategories: 'View All Categories'
+    },
     cta: {
       title: 'Ready to Transform Your Trading?',
       description: 'Join thousands of successful traders on the I ONE Construction platform',

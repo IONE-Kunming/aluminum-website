@@ -174,8 +174,8 @@ export function renderLandingPage() {
       <section id="categories" class="categories-section">
         <div class="section-container">
           <div class="section-header">
-            <h2 class="section-title">Explore Our Product Categories</h2>
-            <p class="section-subtitle">Browse through our comprehensive collection of high-quality products across multiple industries</p>
+            <h2 class="section-title">${t('landing.categories.title')}</h2>
+            <p class="section-subtitle">${t('landing.categories.subtitle')}</p>
           </div>
           <div class="categories-showcase">
             ${Object.entries(CATEGORY_HIERARCHY).slice(0, MAX_LANDING_CATEGORIES).map(([key, category]) => `
@@ -186,16 +186,16 @@ export function renderLandingPage() {
                   </div>
                 </div>
                 <div class="category-showcase-content">
-                  <h3 class="category-showcase-title">${category.name}</h3>
-                  <p class="category-showcase-count">${category.subcategories.length} subcategories</p>
+                  <h3 class="category-showcase-title">${t(`categoryNames.${category.name}`) || category.name}</h3>
+                  <p class="category-showcase-count">${category.subcategories.length} ${t('landing.categories.subcategories')}</p>
                   <div class="category-showcase-subcategories">
                     ${category.subcategories.slice(0, 4).map(sub => `
-                      <span class="subcategory-badge">${sub}</span>
+                      <span class="subcategory-badge">${t(`categoryNames.${sub}`) || sub}</span>
                     `).join('')}
-                    ${category.subcategories.length > 4 ? `<span class="subcategory-badge more">+${category.subcategories.length - 4} more</span>` : ''}
+                    ${category.subcategories.length > 4 ? `<span class="subcategory-badge more">+${category.subcategories.length - 4} ${t('landing.categories.more')}</span>` : ''}
                   </div>
                   <button class="btn btn-secondary btn-sm category-explore-btn" data-nav="categories">
-                    Explore Category <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+                    ${t('landing.categories.exploreCategory')} <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
                   </button>
                 </div>
               </div>
@@ -203,7 +203,7 @@ export function renderLandingPage() {
           </div>
           <div style="text-align: center; margin-top: 48px;">
             <button class="btn btn-primary btn-lg" data-nav="categories">
-              View All Categories <i data-lucide="grid" style="width: 20px; height: 20px;"></i>
+              ${t('landing.categories.viewAllCategories')} <i data-lucide="grid" style="width: 20px; height: 20px;"></i>
             </button>
           </div>
         </div>

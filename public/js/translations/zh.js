@@ -639,6 +639,14 @@ export default {
         satisfactionRate: '满意度'
       }
     },
+    categories: {
+      title: '探索我们的产品类别',
+      subtitle: '浏览我们跨多个行业的全面高质量产品系列',
+      subcategories: '子类别',
+      more: '更多',
+      exploreCategory: '探索类别',
+      viewAllCategories: '查看所有类别'
+    },
     cta: {
       title: '准备好改变您的交易了吗？',
       description: '加入 I ONE Construction 平台上的数千名成功交易者',

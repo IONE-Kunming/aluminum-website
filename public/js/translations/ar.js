@@ -640,6 +640,14 @@ export default {
         satisfactionRate: 'معدل الرضا'
       }
     },
+    categories: {
+      title: 'استكشف فئات منتجاتنا',
+      subtitle: 'تصفح مجموعتنا الشاملة من المنتجات عالية الجودة عبر صناعات متعددة',
+      subcategories: 'فئات فرعية',
+      more: 'المزيد',
+      exploreCategory: 'استكشف الفئة',
+      viewAllCategories: 'عرض جميع الفئات'
+    },
     cta: {
       title: 'هل أنت مستعد لتحويل تداولك؟',
       description: 'انضم إلى آلاف التجار الناجحين على منصة I ONE Construction',
