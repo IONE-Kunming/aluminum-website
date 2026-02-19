@@ -895,6 +895,42 @@ class DataService {
     }
   }
 
+  // Process a partial or full payment on an existing order (deposit_paid → paid)
+  async processPartialPayment(orderId, amount, paymentMethod) {
+    await this.init();
+
+    try {
+      if (!this.db || !orderId) {
+        throw new Error('Invalid order ID');
+      }
+
+      const doc = await this.db.collection('orders').doc(orderId).get();
+      if (!doc.exists) {
+        throw new Error('Order not found');
+      }
+
+      const order = doc.data();
+      const newDepositAmount = (order.depositAmount || 0) + amount;
+      const newRemainingBalance = (order.total || 0) - newDepositAmount;
+      const isFullyPaid = newRemainingBalance <= 0.001; // floating-point tolerance
+
+      const updates = {
+        depositAmount: newDepositAmount,
+        remainingBalance: isFullyPaid ? 0 : newRemainingBalance,
+        paymentStatus: isFullyPaid ? 'paid' : 'deposit_paid',
+        paymentMethod: paymentMethod,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      await this.db.collection('orders').doc(orderId).update(updates);
+
+      return { success: true, fullyPaid: isFullyPaid };
+    } catch (error) {
+      console.error('Error processing partial payment:', error);
+      throw error;
+    }
+  }
+
   // Get a single order by ID
   async getOrderById(orderId) {
     await this.init();

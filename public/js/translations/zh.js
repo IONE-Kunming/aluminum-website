@@ -171,7 +171,17 @@ export default {
     orderStatusOutOfProduction: '已完成生产',
     orderStatusDeliveredToShipping: '已交付给运输公司',
     orderStatusReachedPort: '已到达港口',
-    orderStatusCollected: '已收货'
+    orderStatusCollected: '已收货',
+    depositPaid: '已付定金',
+    fullyPaid: '已付清',
+    payNow: '立即支付',
+    paymentAmount: '支付金额',
+    maximum: '最大金额',
+    enterAmount: '输入支付金额',
+    payNowSuccess: '支付成功！',
+    payNowFullyPaid: '订单已全额付清！',
+    invalidAmount: '请输入有效金额',
+    amountExceedsBalance: '金额不能超过剩余余额'
   },
   
   // 聊天

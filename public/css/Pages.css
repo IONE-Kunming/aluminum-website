@@ -5348,6 +5348,11 @@
   color: var(--success);
 }
 
+.status-badge.status-deposit-paid {
+  background: rgba(251, 191, 36, 0.2);
+  color: var(--warning);
+}
+
 .status-badge.status-overdue {
   background: rgba(239, 68, 68, 0.2);
   color: var(--error);

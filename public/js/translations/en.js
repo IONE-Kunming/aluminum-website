@@ -189,7 +189,17 @@ export default {
     paymentFailed: 'Payment failed. Please try again.',
     checkoutError: 'Failed to checkout order',
     orderNotFound: 'Order not found or already checked out',
-    viewDetails: 'View Details'
+    viewDetails: 'View Details',
+    depositPaid: 'Deposit Paid',
+    fullyPaid: 'Paid',
+    payNow: 'Pay Now',
+    paymentAmount: 'Payment Amount',
+    maximum: 'Maximum',
+    enterAmount: 'Enter amount to pay',
+    payNowSuccess: 'Payment successful!',
+    payNowFullyPaid: 'Order fully paid!',
+    invalidAmount: 'Please enter a valid amount',
+    amountExceedsBalance: 'Amount cannot exceed the remaining balance'
   },
   
   // Chats

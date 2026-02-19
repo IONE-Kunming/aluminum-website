@@ -171,7 +171,17 @@ export default {
     orderStatusOutOfProduction: 'خارج الإنتاج',
     orderStatusDeliveredToShipping: 'تم التسليم لشركة الشحن',
     orderStatusReachedPort: 'وصل إلى الميناء',
-    orderStatusCollected: 'تم الاستلام'
+    orderStatusCollected: 'تم الاستلام',
+    depositPaid: 'تم دفع العربون',
+    fullyPaid: 'مدفوع بالكامل',
+    payNow: 'ادفع الآن',
+    paymentAmount: 'مبلغ الدفع',
+    maximum: 'الحد الأقصى',
+    enterAmount: 'أدخل المبلغ للدفع',
+    payNowSuccess: 'تم الدفع بنجاح!',
+    payNowFullyPaid: 'تم سداد الطلب بالكامل!',
+    invalidAmount: 'الرجاء إدخال مبلغ صالح',
+    amountExceedsBalance: 'لا يمكن أن يتجاوز المبلغ الرصيد المتبقي'
   },
   
   // المحادثات

@@ -171,7 +171,17 @@ export default {
     orderStatusOutOfProduction: 'تیاری سے باہر',
     orderStatusDeliveredToShipping: 'شپنگ کمپنی کو بھیج دیا گیا',
     orderStatusReachedPort: 'بندرگاہ پر پہنچ گیا',
-    orderStatusCollected: 'وصول شدہ'
+    orderStatusCollected: 'وصول شدہ',
+    depositPaid: 'پیشگی رقم ادا ہوئی',
+    fullyPaid: 'مکمل ادا',
+    payNow: 'ابھی ادا کریں',
+    paymentAmount: 'ادائیگی کی رقم',
+    maximum: 'زیادہ سے زیادہ',
+    enterAmount: 'ادا کرنے کی رقم درج کریں',
+    payNowSuccess: 'ادائیگی کامیاب!',
+    payNowFullyPaid: 'آرڈر مکمل ادا ہو گیا!',
+    invalidAmount: 'براہ کرم ایک درست رقم درج کریں',
+    amountExceedsBalance: 'رقم باقی بیلنس سے زیادہ نہیں ہو سکتی'
   },
   
   // گفتگو

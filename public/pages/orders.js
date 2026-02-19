@@ -51,15 +51,24 @@ export async function renderOrders() {
     } else {
       ordersList.innerHTML = `
         <div class="orders-list">
-          ${orders.map(order => `
+          ${orders.map(order => {
+            const isDepositPaid = !isDraft && order.paymentStatus === 'deposit_paid';
+            const isFullyPaid = !isDraft && order.paymentStatus === 'paid';
+            const remainingBalance = order.remainingBalance || 0;
+            return `
             <div class="order-card card">
               <div class="order-header">
                 <div class="order-info">
                   <h3>${t('orders.orderNumber')} #${order.id && order.id.length >= 8 ? order.id.substring(0, 8).toUpperCase() : (order.id || 'N/A').toUpperCase()}</h3>
                   <span class="order-date">${formatDate(order.createdAt)}</span>
                 </div>
-                <div class="order-status">
+                <div class="order-status" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
                   <span class="status-badge status-${order.status}">${order.status === 'draft' ? 'Draft' : order.status}</span>
+                  ${!isDraft ? (() => {
+                    if (isFullyPaid) return `<span class="status-badge status-paid">${t('orders.fullyPaid') || 'Paid'}</span>`;
+                    if (isDepositPaid) return `<span class="status-badge status-deposit-paid">${t('orders.depositPaid') || 'Deposit Paid'}</span>`;
+                    return '';
+                  })() : ''}
                 </div>
               </div>
               
@@ -98,7 +107,7 @@ export async function renderOrders() {
                 </div>
                 <div class="order-summary-row">
                   <span>${t('checkout.remainingBalance')}:</span>
-                  <span class="text-warning">$${order.remainingBalance.toFixed(2)}</span>
+                  <span class="text-warning">$${remainingBalance.toFixed(2)}</span>
                 </div>
                 <div class="order-payment-method">
                   <span>${t('checkout.paymentMethod')}:</span>
@@ -107,6 +116,48 @@ export async function renderOrders() {
                 ` : ''}
               </div>
               
+              ${isDepositPaid ? `
+              <div class="pay-now-section" id="pay-now-section-${order.id}" style="display: none; margin-top: 16px; padding: 16px; background: var(--background-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
+                <h4 style="margin: 0 0 12px;">${t('orders.payNow') || 'Pay Now'}</h4>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                  <label style="flex-shrink: 0;">${t('orders.paymentAmount') || 'Payment Amount'}:</label>
+                  <div style="display: flex; flex: 1; gap: 8px;">
+                    <input type="number" class="form-control pay-now-amount-input" id="pay-now-amount-${order.id}"
+                      min="0.01" max="${remainingBalance.toFixed(2)}" step="0.01"
+                      placeholder="${t('orders.enterAmount') || 'Enter amount to pay'}"
+                      style="flex: 1;" />
+                    <button class="btn btn-secondary btn-sm pay-now-maximum-btn" data-order-id="${order.id}" data-max="${remainingBalance.toFixed(2)}" style="flex-shrink: 0;">
+                      ${t('orders.maximum') || 'Maximum'}
+                    </button>
+                  </div>
+                </div>
+                <div class="payment-methods" style="margin-bottom: 12px;">
+                  <label style="display: block; margin-bottom: 8px;">${t('checkout.paymentMethod')}:</label>
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <label class="pay-now-method-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                      <input type="radio" name="pay-now-method-${order.id}" value="alipay" style="margin: 0;" /> ${t('checkout.alipay') || 'Alipay'}
+                    </label>
+                    <label class="pay-now-method-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                      <input type="radio" name="pay-now-method-${order.id}" value="wechat" style="margin: 0;" /> ${t('checkout.wechat') || 'WeChat Pay'}
+                    </label>
+                    <label class="pay-now-method-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                      <input type="radio" name="pay-now-method-${order.id}" value="bank" style="margin: 0;" /> ${t('checkout.bankTransfer') || 'Bank Transfer'}
+                    </label>
+                    <label class="pay-now-method-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
+                      <input type="radio" name="pay-now-method-${order.id}" value="card" style="margin: 0;" /> ${t('checkout.cardPayment') || 'Card Payment'}
+                    </label>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 8px;">
+                  <button class="btn btn-secondary btn-sm pay-now-cancel-btn" data-order-id="${order.id}">${t('common.cancel') || 'Cancel'}</button>
+                  <button class="btn btn-primary btn-sm pay-now-confirm-btn" data-order-id="${order.id}" data-remaining="${remainingBalance.toFixed(2)}">
+                    <i data-lucide="check-circle"></i>
+                    ${t('orders.confirmPayment') || 'Confirm Payment'}
+                  </button>
+                </div>
+              </div>
+              ` : ''}
+              
               <div class="order-actions" style="margin-top: 16px; display: flex; gap: 12px; justify-content: flex-end;">
                 ${isDraft ? `
                   <button class="btn btn-primary checkout-draft-order-btn" data-order-id="${order.id}">
@@ -114,6 +165,12 @@ export async function renderOrders() {
                     ${t('orders.checkoutOrder') || 'Checkout Order'}
                   </button>
                 ` : `
+                  ${isDepositPaid ? `
+                    <button class="btn btn-primary pay-now-toggle-btn" data-order-id="${order.id}">
+                      <i data-lucide="credit-card"></i>
+                      ${t('orders.payNow') || 'Pay Now'}
+                    </button>
+                  ` : ''}
                   <button class="btn btn-secondary view-order-details-btn" data-order-id="${order.id}">
                     <i data-lucide="eye"></i>
                     ${t('orders.viewDetails') || 'View Details'}
@@ -121,7 +178,7 @@ export async function renderOrders() {
                 `}
               </div>
             </div>
-          `).join('')}
+          `}).join('')}
         </div>
       `;
     }
@@ -135,6 +192,83 @@ export async function renderOrders() {
         });
       });
     }
+    
+    // Pay Now toggle
+    document.querySelectorAll('.pay-now-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const orderId = btn.getAttribute('data-order-id');
+        const section = document.getElementById(`pay-now-section-${orderId}`);
+        if (section) {
+          section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+      });
+    });
+    
+    // Maximum button
+    document.querySelectorAll('.pay-now-maximum-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const orderId = btn.getAttribute('data-order-id');
+        const max = btn.getAttribute('data-max');
+        const input = document.getElementById(`pay-now-amount-${orderId}`);
+        if (input) input.value = max;
+      });
+    });
+    
+    // Cancel button
+    document.querySelectorAll('.pay-now-cancel-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const orderId = btn.getAttribute('data-order-id');
+        const section = document.getElementById(`pay-now-section-${orderId}`);
+        if (section) section.style.display = 'none';
+      });
+    });
+    
+    // Confirm payment button
+    document.querySelectorAll('.pay-now-confirm-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const orderId = btn.getAttribute('data-order-id');
+        const remaining = parseFloat(btn.getAttribute('data-remaining'));
+        const input = document.getElementById(`pay-now-amount-${orderId}`);
+        const amount = parseFloat(input?.value);
+        const selectedMethod = document.querySelector(`input[name="pay-now-method-${orderId}"]:checked`);
+        
+        if (!amount || amount <= 0) {
+          window.toast.error(t('orders.invalidAmount') || 'Please enter a valid amount');
+          return;
+        }
+        if (amount > remaining + 0.001) {
+          window.toast.error(t('orders.amountExceedsBalance') || 'Amount cannot exceed the remaining balance');
+          return;
+        }
+        if (!selectedMethod) {
+          window.toast.error(t('checkout.selectDepositAndPayment') || 'Please select a payment method');
+          return;
+        }
+        
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader"></i> ${t('checkout.processing') || 'Processing...'}`;
+        if (window.lucide) window.lucide.createIcons();
+        
+        try {
+          const result = await dataService.processPartialPayment(orderId, amount, selectedMethod.value);
+          const msg = result.fullyPaid
+            ? (t('orders.payNowFullyPaid') || 'Order fully paid!')
+            : (t('orders.payNowSuccess') || 'Payment successful!');
+          window.toast.success(msg);
+          
+          // Re-fetch and re-render the orders list
+          const updatedOrders = await dataService.getOrders({ buyerId: user.uid });
+          const updatedActive = updatedOrders.filter(o => o.status !== 'draft');
+          renderOrdersList(updatedActive, false);
+        } catch (error) {
+          console.error('Pay now error:', error);
+          window.toast.error(t('orders.paymentFailed') || 'Payment failed. Please try again.');
+          btn.disabled = false;
+          btn.innerHTML = `<i data-lucide="check-circle"></i> ${t('orders.confirmPayment') || 'Confirm Payment'}`;
+          if (window.lucide) window.lucide.createIcons();
+        }
+      });
+    });
     
     if (window.lucide) window.lucide.createIcons();
   };
