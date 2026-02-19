@@ -7,8 +7,7 @@ import router from '../js/router.js';
 
 export async function renderOrders() {
   const t = languageManager.t.bind(languageManager);
-  
-  // Get current user
+
   const user = authManager.getCurrentUser();
   if (!user) {
     const content = `
@@ -28,255 +27,181 @@ export async function renderOrders() {
     if (window.lucide) window.lucide.createIcons();
     return;
   }
-  
-  // Fetch all orders for this buyer (already sorted descending by dataService)
+
   const allOrders = await dataService.getOrders({ buyerId: user.uid });
-  
-  // Separate draft orders from other orders
-  const draftOrders = allOrders.filter(order => order.status === 'draft');
-  // Sort active orders descending by createdAt (newest first)
-  const activeOrders = allOrders
-    .filter(order => order.status !== 'draft')
+
+  const draftOrders = allOrders
+    .filter(o => o.status === 'draft')
     .sort((a, b) => {
-      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
-      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
-      return dateB - dateA;
+      const da = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+      const db = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+      return db - da;
     });
-  
-  const renderOrdersList = (orders, isDraft = false) => {
-    const ordersList = document.querySelector(isDraft ? '.draft-orders-list-container' : '.orders-list-container');
-    if (!ordersList) return;
-    
+
+  const activeOrders = allOrders
+    .filter(o => o.status !== 'draft')
+    .sort((a, b) => {
+      const da = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+      const db = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+      return db - da;
+    });
+
+  const { totalSpent, totalDeposit, totalRemaining } = activeOrders.reduce(
+    (acc, o) => ({
+      totalSpent: acc.totalSpent + (o.total || 0),
+      totalDeposit: acc.totalDeposit + (o.depositAmount || 0),
+      totalRemaining: acc.totalRemaining + (o.remainingBalance || 0),
+    }),
+    { totalSpent: 0, totalDeposit: 0, totalRemaining: 0 }
+  );
+
+  const PAGE_SIZE = 10;
+  let currentPage = 1;
+  let lastFiltered = activeOrders;
+
+  const renderDraftOrdersTable = (orders) => {
+    const container = document.querySelector('.draft-orders-list-container');
+    if (!container) return;
+
     if (orders.length === 0) {
-      ordersList.innerHTML = `
+      container.innerHTML = `
         <div class="empty-state">
           <i data-lucide="package" style="width: 64px; height: 64px; opacity: 0.3;"></i>
-          <h2>${isDraft ? (t('orders.noDraftOrders') || 'No draft orders') : t('orders.noOrders')}</h2>
-          <p>${isDraft ? (t('orders.draftOrdersWillAppear') || 'Draft orders will appear here when you add items to cart') : t('orders.ordersWillAppear')}</p>
+          <h2>${t('orders.noDraftOrders')}</h2>
         </div>
       `;
-    } else {
-      ordersList.innerHTML = `
-        <div class="orders-list">
-          ${orders.map(order => {
-            const isDepositPaid = !isDraft && order.paymentStatus === 'deposit_paid';
-            const isFullyPaid = !isDraft && order.paymentStatus === 'paid';
-            const remainingBalance = order.remainingBalance || 0;
-            return `
-            <div class="order-card card">
-              <div class="order-header">
-                <div class="order-info">
-                  <h3>${t('orders.orderNumber')} #${order.id && order.id.length >= 8 ? order.id.substring(0, 8).toUpperCase() : (order.id || 'N/A').toUpperCase()}</h3>
-                  <span class="order-date">${formatDate(order.createdAt)}</span>
-                </div>
-                <div class="order-status" style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
-                  <span class="status-badge status-${order.status}">${order.status === 'draft' ? 'Draft' : order.status}</span>
-                  ${!isDraft ? (() => {
-                    if (isFullyPaid) return `<span class="status-badge status-paid">${t('orders.fullyPaid') || 'Paid'}</span>`;
-                    if (isDepositPaid) return `<span class="status-badge status-deposit-paid">${t('orders.depositPaid') || 'Deposit Paid'}</span>`;
-                    return '';
-                  })() : ''}
-                </div>
-              </div>
-              
-              <div class="order-items">
-                ${order.items.map(item => `
-                  <div class="order-item">
-                    <div class="order-item-info">
-                      <h4>${escapeHtml(item.productName)}</h4>
-                      <p class="text-muted">${t('orders.seller')}: ${escapeHtml(item.seller)}</p>
-                    </div>
-                    <div class="order-item-details">
-                      <span>${item.quantity} ${escapeHtml(item.unit || 'units')}</span>
-                      <span class="order-item-price">$${item.subtotal.toFixed(2)}</span>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-              
-              <div class="order-summary">
-                <div class="order-summary-row">
-                  <span>${t('checkout.subtotal')}:</span>
-                  <span>$${order.subtotal.toFixed(2)}</span>
-                </div>
-                <div class="order-summary-row">
-                  <span>${t('checkout.tax')}:</span>
-                  <span>$${order.tax.toFixed(2)}</span>
-                </div>
-                <div class="order-summary-row">
-                  <span>${t('checkout.total')}:</span>
-                  <span class="order-total">$${order.total.toFixed(2)}</span>
-                </div>
-                ${!isDraft ? `
-                <div class="order-summary-row">
-                  <span>${t('checkout.depositAmountLabel')} (${order.depositPercentage}%):</span>
-                  <span class="text-success">$${order.depositAmount.toFixed(2)}</span>
-                </div>
-                <div class="order-summary-row">
-                  <span>${t('checkout.remainingBalance')}:</span>
-                  <span class="text-warning">$${remainingBalance.toFixed(2)}</span>
-                </div>
-                <div class="order-payment-method">
-                  <span>${t('checkout.paymentMethod')}:</span>
-                  <span class="payment-badge">${order.paymentMethod}</span>
-                </div>
-                ` : ''}
-              </div>
-              
-              ${isDepositPaid ? `
-              <div class="pay-now-section" id="pay-now-section-${order.id}" style="display: none; margin-top: 16px; padding: 16px; background: var(--background-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
-                <h4 style="margin: 0 0 12px;">${t('orders.payNow') || 'Pay Now'}</h4>
-                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                  <label style="flex-shrink: 0;">${t('orders.paymentAmount') || 'Payment Amount'}:</label>
-                  <div style="display: flex; flex: 1; gap: 8px;">
-                    <input type="number" class="form-control pay-now-amount-input" id="pay-now-amount-${order.id}"
-                      min="0.01" max="${remainingBalance.toFixed(2)}" step="0.01"
-                      placeholder="${t('orders.enterAmount') || 'Enter amount to pay'}"
-                      style="flex: 1;" />
-                    <button class="btn btn-secondary btn-sm pay-now-maximum-btn" data-order-id="${order.id}" data-max="${remainingBalance.toFixed(2)}" style="flex-shrink: 0;">
-                      ${t('orders.maximum') || 'Maximum'}
-                    </button>
-                  </div>
-                </div>
-                <div class="payment-methods" style="margin-bottom: 12px;">
-                  <label style="display: block; margin-bottom: 8px;">${t('checkout.paymentMethod')}:</label>
-                  <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    <label class="pay-now-method-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
-                      <input type="radio" name="pay-now-method-${order.id}" value="alipay" style="margin: 0;" /> ${t('checkout.alipay') || 'Alipay'}
-                    </label>
-                    <label class="pay-now-method-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
-                      <input type="radio" name="pay-now-method-${order.id}" value="wechat" style="margin: 0;" /> ${t('checkout.wechat') || 'WeChat Pay'}
-                    </label>
-                    <label class="pay-now-method-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
-                      <input type="radio" name="pay-now-method-${order.id}" value="bank" style="margin: 0;" /> ${t('checkout.bankTransfer') || 'Bank Transfer'}
-                    </label>
-                    <label class="pay-now-method-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px;">
-                      <input type="radio" name="pay-now-method-${order.id}" value="card" style="margin: 0;" /> ${t('checkout.cardPayment') || 'Card Payment'}
-                    </label>
-                  </div>
-                </div>
-                <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                  <button class="btn btn-secondary btn-sm pay-now-cancel-btn" data-order-id="${order.id}">${t('common.cancel') || 'Cancel'}</button>
-                  <button class="btn btn-primary btn-sm pay-now-confirm-btn" data-order-id="${order.id}" data-remaining="${remainingBalance.toFixed(2)}">
-                    <i data-lucide="check-circle"></i>
-                    ${t('orders.confirmPayment') || 'Confirm Payment'}
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="card" style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">${t('orders.orderNumber')}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">${t('orders.date') || 'Date'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">${t('orders.seller') || 'Seller'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px; text-align: right;">${t('orders.items') || 'Items'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px; text-align: right;">${t('checkout.total') || 'Total'}</th>
+              <th style="padding: 10px 12px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${orders.map(order => `
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; font-weight: 600; font-size: 14px;">#${order.id.substring(0, 8).toUpperCase()}</td>
+                <td style="padding: 12px; color: var(--text-secondary); font-size: 13px;">${formatDate(order.createdAt)}</td>
+                <td style="padding: 12px; font-size: 14px;">${escapeHtml(order.sellerName || 'N/A')}</td>
+                <td style="padding: 12px; text-align: right; font-size: 14px;">${order.items?.length || 0}</td>
+                <td style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600;">$${(order.total || 0).toFixed(2)}</td>
+                <td style="padding: 12px; text-align: right;">
+                  <button class="btn btn-primary btn-sm checkout-draft-btn" data-order-id="${order.id}">
+                    ${t('orders.checkoutOrder') || 'Checkout'}
                   </button>
-                </div>
-              </div>
-              ` : ''}
-              
-              <div class="order-actions" style="margin-top: 16px; display: flex; gap: 12px; justify-content: flex-end;">
-                ${isDraft ? `
-                  <button class="btn btn-primary checkout-draft-order-btn" data-order-id="${order.id}">
-                    <i data-lucide="credit-card"></i>
-                    ${t('orders.checkoutOrder') || 'Checkout Order'}
-                  </button>
-                ` : `
-                  ${isDepositPaid ? `
-                    <button class="btn btn-primary pay-now-toggle-btn" data-order-id="${order.id}">
-                      <i data-lucide="credit-card"></i>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    container.querySelectorAll('.checkout-draft-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        router.navigate(`/buyer/order-checkout?id=${btn.dataset.orderId}`);
+      });
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+  };
+
+  const renderActiveOrdersTable = (orders, page) => {
+    const container = document.querySelector('.orders-list-container');
+    if (!container) return;
+
+    const totalPages = Math.max(1, Math.ceil(orders.length / PAGE_SIZE));
+    page = Math.min(Math.max(1, page), totalPages);
+    const pageOrders = orders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+    if (orders.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="package" style="width: 64px; height: 64px; opacity: 0.3;"></i>
+          <h2>${t('orders.noOrders')}</h2>
+          <p>${t('orders.ordersWillAppear')}</p>
+        </div>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="card" style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 2px solid var(--border-color); text-align: left;">
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">${t('orders.orderNumber')}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">${t('orders.date') || 'Date'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px;">${t('orders.status') || 'Status'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px; text-align: right;">${t('checkout.total') || 'Total'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px; text-align: right;">${t('orders.amountPaid') || 'Deposit Paid'}</th>
+              <th style="padding: 10px 12px; font-weight: 600; color: var(--text-secondary); font-size: 13px; text-align: right;">${t('invoices.remainingBalance') || 'Remaining'}</th>
+              <th style="padding: 10px 12px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${pageOrders.map(order => `
+              <tr style="border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px; font-weight: 600; font-size: 14px;">#${order.id.substring(0, 8).toUpperCase()}</td>
+                <td style="padding: 12px; color: var(--text-secondary); font-size: 13px;">${formatDate(order.createdAt)}</td>
+                <td style="padding: 12px;"><span class="status-badge status-${order.status}">${escapeHtml(order.status)}</span></td>
+                <td style="padding: 12px; text-align: right; font-size: 14px; font-weight: 600;">$${(order.total || 0).toFixed(2)}</td>
+                <td style="padding: 12px; text-align: right; font-size: 14px; color: var(--success-color);">$${(order.depositAmount || 0).toFixed(2)}</td>
+                <td style="padding: 12px; text-align: right; font-size: 14px; color: var(--warning-color);">$${(order.remainingBalance || 0).toFixed(2)}</td>
+                <td style="padding: 12px; text-align: right; white-space: nowrap;">
+                  ${order.paymentStatus === 'deposit_paid' ? `
+                    <button class="btn btn-primary btn-sm pay-now-btn" data-order-id="${order.id}" style="margin-right: 6px;">
                       ${t('orders.payNow') || 'Pay Now'}
                     </button>
                   ` : ''}
-                  <button class="btn btn-secondary view-order-details-btn" data-order-id="${order.id}">
-                    <i data-lucide="eye"></i>
+                  <button class="btn btn-secondary btn-sm view-order-btn" data-order-id="${order.id}">
                     ${t('orders.viewDetails') || 'View Details'}
                   </button>
-                `}
-              </div>
-            </div>
-          `}).join('')}
-        </div>
-      `;
-    }
-    
-    // Add event listeners for checkout buttons
-    if (isDraft) {
-      document.querySelectorAll('.checkout-draft-order-btn').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const orderId = btn.getAttribute('data-order-id');
-          await handleCheckoutDraftOrder(orderId);
-        });
-      });
-    }
-    
-    // Pay Now toggle
-    document.querySelectorAll('.pay-now-toggle-btn').forEach(btn => {
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      ${totalPages > 1 ? `
+      <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; flex-wrap: wrap;">
+        <button class="btn btn-secondary btn-sm order-page-btn" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>&#8249; ${t('common.previous') || 'Previous'}</button>
+        <span style="font-size: 14px; color: var(--text-secondary);">${t('common.page') || 'Page'} ${page} ${t('common.of') || 'of'} ${totalPages}</span>
+        <button class="btn btn-secondary btn-sm order-page-btn" data-page="${page + 1}" ${page >= totalPages ? 'disabled' : ''}>${t('common.next') || 'Next'} &#8250;</button>
+      </div>
+      ` : ''}
+    `;
+
+    container.querySelectorAll('.pay-now-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const orderId = btn.getAttribute('data-order-id');
-        const section = document.getElementById(`pay-now-section-${orderId}`);
-        if (section) {
-          section.style.display = section.style.display === 'none' ? 'block' : 'none';
-        }
+        router.navigate(`/buyer/order-checkout?id=${btn.dataset.orderId}`);
       });
     });
-    
-    // Maximum button
-    document.querySelectorAll('.pay-now-maximum-btn').forEach(btn => {
+
+    container.querySelectorAll('.view-order-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const orderId = btn.getAttribute('data-order-id');
-        const max = btn.getAttribute('data-max');
-        const input = document.getElementById(`pay-now-amount-${orderId}`);
-        if (input) input.value = max;
+        router.navigate(`/buyer/order-detail?id=${btn.dataset.orderId}`);
       });
     });
-    
-    // Cancel button
-    document.querySelectorAll('.pay-now-cancel-btn').forEach(btn => {
+
+    container.querySelectorAll('.order-page-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const orderId = btn.getAttribute('data-order-id');
-        const section = document.getElementById(`pay-now-section-${orderId}`);
-        if (section) section.style.display = 'none';
+        currentPage = parseInt(btn.dataset.page);
+        renderActiveOrdersTable(lastFiltered, currentPage);
       });
     });
-    
-    // Confirm payment button
-    document.querySelectorAll('.pay-now-confirm-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const orderId = btn.getAttribute('data-order-id');
-        const remaining = parseFloat(btn.getAttribute('data-remaining'));
-        const input = document.getElementById(`pay-now-amount-${orderId}`);
-        const amount = parseFloat(input?.value);
-        const selectedMethod = document.querySelector(`input[name="pay-now-method-${orderId}"]:checked`);
-        
-        if (!amount || amount <= 0) {
-          window.toast.error(t('orders.invalidAmount') || 'Please enter a valid amount');
-          return;
-        }
-        if (amount > remaining + 0.001) {
-          window.toast.error(t('orders.amountExceedsBalance') || 'Amount cannot exceed the remaining balance');
-          return;
-        }
-        if (!selectedMethod) {
-          window.toast.error(t('checkout.selectDepositAndPayment') || 'Please select a payment method');
-          return;
-        }
-        
-        btn.disabled = true;
-        btn.innerHTML = `<i data-lucide="loader"></i> ${t('checkout.processing') || 'Processing...'}`;
-        if (window.lucide) window.lucide.createIcons();
-        
-        try {
-          const result = await dataService.processPartialPayment(orderId, amount, selectedMethod.value);
-          const msg = result.fullyPaid
-            ? (t('orders.payNowFullyPaid') || 'Order fully paid!')
-            : (t('orders.payNowSuccess') || 'Payment successful!');
-          window.toast.success(msg);
-          
-          // Re-fetch and re-render the orders list
-          const updatedOrders = await dataService.getOrders({ buyerId: user.uid });
-          const updatedActive = updatedOrders.filter(o => o.status !== 'draft');
-          renderOrdersList(updatedActive, false);
-        } catch (error) {
-          console.error('Pay now error:', error);
-          window.toast.error(t('orders.paymentFailed') || 'Payment failed. Please try again.');
-          btn.disabled = false;
-          btn.innerHTML = `<i data-lucide="check-circle"></i> ${t('orders.confirmPayment') || 'Confirm Payment'}`;
-          if (window.lucide) window.lucide.createIcons();
-        }
-      });
-    });
-    
+
     if (window.lucide) window.lucide.createIcons();
   };
 
@@ -286,37 +211,61 @@ export async function renderOrders() {
         <h1>${t('orders.myOrders')}</h1>
         <p>${t('orders.trackAndManage')}</p>
       </div>
-      
-      <!-- Draft Orders Section -->
-      ${draftOrders.length > 0 ? `
-      <div class="draft-orders-section" style="margin-bottom: 48px;">
-        <div class="section-header" style="display: flex; align-items: center; margin-bottom: 24px;">
-          <h2 style="margin: 0;">${t('orders.draftOrders') || 'Draft Orders'}</h2>
-          <span class="badge" style="margin-left: 12px; background: var(--warning-color); color: white; padding: 4px 12px; border-radius: 12px; font-size: 14px;">${draftOrders.length}</span>
+
+      <!-- Summary Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('orders.totalOrders')}</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${allOrders.length}</p>
         </div>
-        <p style="color: var(--text-secondary); margin-bottom: 24px;">
-          ${t('orders.draftOrdersDescription') || 'These are your draft orders waiting to be checked out. Each order is for a different seller and needs to be paid separately.'}
-        </p>
-        <div class="draft-orders-list-container">
-          <!-- Draft orders will be rendered here -->
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('orders.draftOrders')}</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${draftOrders.length}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('orders.activeOrders')}</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${activeOrders.length}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('orders.totalAmount')}</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${totalSpent.toFixed(2)}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('orders.amountPaid')}</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${totalDeposit.toFixed(2)}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('invoices.remainingBalance')}</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${totalRemaining.toFixed(2)}</p>
         </div>
       </div>
+
+      <!-- Draft Orders Section -->
+      ${draftOrders.length > 0 ? `
+      <div style="margin-bottom: 48px;">
+        <div style="display: flex; align-items: center; margin-bottom: 16px;">
+          <h2 style="margin: 0;">${t('orders.draftOrders')}</h2>
+          <span style="margin-left: 12px; background: var(--warning-color); color: white; padding: 4px 12px; border-radius: 12px; font-size: 14px;">${draftOrders.length}</span>
+        </div>
+        <p style="color: var(--text-secondary); margin-bottom: 24px;">${t('orders.draftOrdersDescription')}</p>
+        <div class="draft-orders-list-container"></div>
+      </div>
       ` : ''}
-      
+
       <!-- Active Orders Section -->
-      <div class="active-orders-section">
-        <h2 style="margin-bottom: 24px;">${t('orders.activeOrders') || 'Active Orders'}</h2>
-        
+      <div>
+        <h2 style="margin-bottom: 24px;">${t('orders.activeOrders')}</h2>
+
         <!-- Filter Section -->
         <div class="filter-section card" style="margin-bottom: 24px;">
-          <div class="filter-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="margin: 0;">${t('orders.filterOrders')}</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h3 style="margin: 0;">${t('orders.filterOrders') || 'Filter Orders'}</h3>
             <button class="btn btn-text btn-sm" id="resetFilters">
               <i data-lucide="x"></i>
               ${t('common.reset')}
             </button>
           </div>
-          <div class="filter-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
             <div class="form-group">
               <label>${t('orders.orderNumber')}</label>
               <input type="text" id="filterOrderNumber" class="form-control" placeholder="${t('common.search')}...">
@@ -332,88 +281,69 @@ export async function renderOrders() {
           </div>
         </div>
 
-        <div class="orders-list-container">
-          <!-- Orders will be rendered here -->
-        </div>
+        <div class="orders-list-container"></div>
       </div>
     </div>
   `;
 
   renderPageWithLayout(content, 'buyer');
   if (window.lucide) window.lucide.createIcons();
-  
-  // Handler for checkout draft order
-  const handleCheckoutDraftOrder = async (orderId) => {
-    try {
-      // Navigate to a single order checkout page
-      router.navigate(`/buyer/order-checkout?id=${orderId}`);
-    } catch (error) {
-      console.error('Error navigating to checkout:', error);
-      window.toast.error(t('orders.checkoutError') || 'Failed to checkout order');
-    }
-  };
-  
-  // Initial render
+
   if (draftOrders.length > 0) {
-    renderOrdersList(draftOrders, true);
+    renderDraftOrdersTable(draftOrders);
   }
-  renderOrdersList(activeOrders, false);
-  
-  // Filter function
+  renderActiveOrdersTable(activeOrders, 1);
+
   const applyFilters = () => {
-    const orderNumber = document.getElementById('filterOrderNumber')?.value.toLowerCase() || '';
+    const orderNumber = (document.getElementById('filterOrderNumber')?.value || '').toLowerCase();
     const dateFrom = document.getElementById('filterDateFrom')?.value || '';
     const dateTo = document.getElementById('filterDateTo')?.value || '';
-    
+
     let filtered = activeOrders;
-    
-    // Filter by order number
+
     if (orderNumber) {
-      filtered = filtered.filter(order => 
-        (order.id || '').toLowerCase().includes(orderNumber)
-      );
+      filtered = filtered.filter(o => (o.id || '').toLowerCase().includes(orderNumber));
     }
-    
-    // Filter by date range
     if (dateFrom) {
-      const fromDate = new Date(dateFrom);
-      fromDate.setHours(0, 0, 0, 0);
-      filtered = filtered.filter(order => {
-        const orderDate = order.createdAt?.toDate ? order.createdAt.toDate() : new Date(order.createdAt);
-        return orderDate >= fromDate;
+      const from = new Date(dateFrom);
+      from.setHours(0, 0, 0, 0);
+      filtered = filtered.filter(o => {
+        const d = o.createdAt?.toDate ? o.createdAt.toDate() : new Date(o.createdAt);
+        return d >= from;
       });
     }
-    
     if (dateTo) {
-      const toDate = new Date(dateTo);
-      toDate.setHours(23, 59, 59, 999);
-      filtered = filtered.filter(order => {
-        const orderDate = order.createdAt?.toDate ? order.createdAt.toDate() : new Date(order.createdAt);
-        return orderDate <= toDate;
+      const to = new Date(dateTo);
+      to.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(o => {
+        const d = o.createdAt?.toDate ? o.createdAt.toDate() : new Date(o.createdAt);
+        return d <= to;
       });
     }
-    
-    renderOrdersList(filtered, false);
+
+    lastFiltered = filtered;
+    currentPage = 1;
+    renderActiveOrdersTable(filtered, 1);
   };
-  
-  // Add event listeners for filters
+
   ['filterOrderNumber', 'filterDateFrom', 'filterDateTo'].forEach(id => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.addEventListener('input', applyFilters);
-      element.addEventListener('change', applyFilters);
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', applyFilters);
+      el.addEventListener('change', applyFilters);
     }
   });
-  
-  // Reset filters
-  const resetButton = document.getElementById('resetFilters');
-  if (resetButton) {
-    resetButton.addEventListener('click', () => {
+
+  const resetBtn = document.getElementById('resetFilters');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
       ['filterOrderNumber', 'filterDateFrom', 'filterDateTo'].forEach(id => {
-        const element = document.getElementById(id);
-        if (element) element.value = '';
+        const el = document.getElementById(id);
+        if (el) el.value = '';
       });
-      renderOrdersList(activeOrders);
+      lastFiltered = activeOrders;
+      currentPage = 1;
+      renderActiveOrdersTable(activeOrders, 1);
     });
   }
 }

@@ -46,7 +46,10 @@ export default {
     to: '到',
     clear: '清除',
     name: '名称',
-    email: '电子邮件'
+    email: '电子邮件',
+    confirmAction: '确认操作',
+    page: '页',
+    of: '共'
   },
   
   // 语言
@@ -181,7 +184,12 @@ export default {
     payNowSuccess: '支付成功！',
     payNowFullyPaid: '订单已全额付清！',
     invalidAmount: '请输入有效金额',
-    amountExceedsBalance: '金额不能超过剩余余额'
+    amountExceedsBalance: '金额不能超过剩余余额',
+    totalOrders: '总订单数',
+    totalAmount: '总金额',
+    amountPaid: '已付金额',
+    pendingReview: '待审核',
+    completedOrders: '已完成'
   },
   
   // 聊天
@@ -247,7 +255,17 @@ export default {
     markAsPaid: '标记为已支付',
     markAsPaidConfirm: '将此发票标记为已支付？',
     invoiceMarkedPaid: '发票已标记为已支付',
-    failedToUpdateStatus: '无法更新发票状态'
+    failedToUpdateStatus: '无法更新发票状态',
+    totalInvoices: '发票总数',
+    totalRevenue: '总收入',
+    totalAmount: '总金额',
+    amountPaid: '已付金额',
+    outstandingBalance: '未付余额',
+    amountCollected: '已收金额',
+    outstanding: '未付',
+    paidInvoices: '已付发票',
+    pendingInvoices: '待付发票',
+    dimensions: '尺寸'
   },
   
   // 通知

@@ -2,7 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
-import { escapeHtml } from '../js/utils.js';
+import { escapeHtml, showConfirm } from '../js/utils.js';
 import { 
   getSubcategories, 
   getMainCategories,
@@ -606,7 +606,7 @@ async function editProduct(productId) {
 
 // Delete product
 async function deleteProduct(productId) {
-  if (!confirm('Are you sure you want to delete this product?')) {
+  if (!await showConfirm('Are you sure you want to delete this product?')) {
     return;
   }
   
@@ -786,6 +786,10 @@ function initializeEditProduct() {
         if (window.toast) {
           window.toast.error('Please fill in all required fields with valid values');
         }
+        return;
+      }
+
+      if (!await showConfirm(`Are you sure you want to save changes for product "${modelNumber}"?`)) {
         return;
       }
       
@@ -1038,8 +1042,9 @@ function initializeBulkImport() {
     
     // Warn about duplicates in database and ask for confirmation
     if (duplicatesInDb.length > 0) {
-      const confirmed = confirm(
-        `Warning: ${duplicatesInDb.length} product(s) with the same Model Number already exist in your catalog:\n\n${duplicatesInDb.slice(0, 5).join('\n')}${duplicatesInDb.length > 5 ? `\n... and ${duplicatesInDb.length - 5} more` : ''}\n\nImporting will create duplicate products. Do you want to continue?`
+      const dupList = duplicatesInDb.slice(0, 5).join(', ') + (duplicatesInDb.length > 5 ? ` and ${duplicatesInDb.length - 5} more` : '');
+      const confirmed = await showConfirm(
+        `Warning: ${duplicatesInDb.length} product(s) already exist (${dupList}). Importing will create duplicates. Do you want to continue?`
       );
       
       if (!confirmed) {
@@ -1073,22 +1078,37 @@ function initializeBulkImport() {
             const mainCategory = row['Category'] || row['category'];
             const subcategory = row['Subcategory'] || row['subcategory'] || row['SubCategory'];
             const pricePerMeter = row['Price per Meter'] || row['price_per_meter'] || row['PricePerMeter'];
-            const imagePath = row['Image Path'] || row['image_path'] || row['ImagePath'];
+            // Support both legacy 'Image Path' and new multi-media columns
+            const imagePaths = [
+              row['Image 1'] || row['Image Path'] || row['image_path'] || row['ImagePath'] || '',
+              row['Image 2'] || '',
+              row['Image 3'] || ''
+            ].filter(Boolean);
+            const videoPaths = [
+              row['Video 1'] || '',
+              row['Video 2'] || ''
+            ].filter(Boolean);
             
             // Parse and use the validated price
             const price = parseFloat(pricePerMeter);
             
-            // Upload image if provided (parallel with other images in batch)
-            let imageUrl = '';
-            if (imagePath && uploadedImages) {
-              const imageName = imagePath.split('/').pop().split('\\').pop();
-              const imageFile = uploadedImages[imageName];
-              if (imageFile) {
-                const imageRef = storage.ref(`products/${profile.uid}/${Date.now()}_${crypto.randomUUID()}_${imageName}`);
-                await imageRef.put(imageFile);
-                imageUrl = await imageRef.getDownloadURL();
+            // Upload all images and collect URLs
+            const uploadMedia = async (paths) => {
+              const urls = [];
+              for (const filePath of paths) {
+                const fileName = filePath.split('/').pop().split('\\').pop();
+                const file = uploadedImages ? uploadedImages[fileName] : null;
+                if (file) {
+                  const ref = storage.ref(`products/${profile.uid}/${Date.now()}_${crypto.randomUUID()}_${fileName}`);
+                  await ref.put(file);
+                  urls.push(await ref.getDownloadURL());
+                }
               }
-            }
+              return urls;
+            };
+
+            const imageUrls = await uploadMedia(imagePaths);
+            const videoUrls = await uploadMedia(videoPaths);
             
             // Return product data for batch write
             return {
@@ -1099,7 +1119,9 @@ function initializeBulkImport() {
               category: subcategory, // Store subcategory in 'category' field for backward compatibility
               subcategory: subcategory, // Also store in dedicated subcategory field
               pricePerMeter: price,
-              imageUrl: imageUrl,
+              imageUrl: imageUrls[0] || '',
+              imageUrls: imageUrls,
+              videoUrls: videoUrls,
               createdAt: new Date().toISOString(),
               stock: 0,
               description: ''
@@ -1250,7 +1272,7 @@ function initializeBulkSelection() {
       }
       
       const count = selectedProducts.size;
-      if (!confirm(`Are you sure you want to delete ${count} product${count > 1 ? 's' : ''}?`)) {
+      if (!await showConfirm(`Are you sure you want to delete ${count} product${count > 1 ? 's' : ''}?`)) {
         return;
       }
       

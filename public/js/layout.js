@@ -44,7 +44,6 @@ export function renderLayout(content, userRole = null) {
     { path: '/admin/users', icon: 'users', label: t('nav.users') },
     { path: '/admin/products', icon: 'package', label: t('nav.products') },
     { path: '/admin/orders', icon: 'shopping-bag', label: t('nav.orders') },
-    { path: '/admin/sellers', icon: 'store', label: t('nav.sellers') },
     { path: '/admin/invoices', icon: 'file-text', label: t('nav.invoices') },
     { path: '/admin/support', icon: 'help-circle', label: t('nav.support') },
     { path: '/admin/profile', icon: 'user', label: t('nav.profile') },

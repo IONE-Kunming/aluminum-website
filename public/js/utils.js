@@ -72,6 +72,78 @@ export function debounce(func, wait) {
   };
 }
 
+/**
+ * Show a styled confirmation dialog for all users.
+ * @param {string} message - The question to ask the user.
+ * @param {string} [title] - Optional dialog title.
+ * @param {string} [confirmText] - Optional confirm button label.
+ * @param {string} [cancelText] - Optional cancel button label.
+ * @returns {Promise<boolean>} Resolves true if confirmed, false if cancelled.
+ */
+export function showConfirm(message, title, confirmText, cancelText) {
+  return new Promise((resolve) => {
+    const t = window._languageManager ? window._languageManager.t.bind(window._languageManager) : (k) => k;
+    const resolvedTitle = title || t('common.confirmAction') || 'Confirm Action';
+    const resolvedConfirm = confirmText || t('common.confirm') || 'Confirm';
+    const resolvedCancel = cancelText || t('common.cancel') || 'Cancel';
+
+    const existing = document.getElementById('app-confirm-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'app-confirm-modal';
+    modal.style.cssText = `
+      position: fixed; inset: 0; z-index: 99999;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    `;
+    modal.innerHTML = `
+      <div style="
+        background: var(--card-bg, #fff); border-radius: 12px;
+        padding: 28px 32px; max-width: 420px; width: 90%;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        animation: confirmFadeIn 0.15s ease;
+      ">
+        <h3 style="margin: 0 0 12px; font-size: 18px; color: var(--text-primary, #111);">
+          ${escapeHtml(resolvedTitle)}
+        </h3>
+        <p style="margin: 0 0 24px; font-size: 15px; color: var(--text-secondary, #555); line-height: 1.5;">
+          ${escapeHtml(message)}
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button id="confirm-modal-cancel" style="
+            padding: 9px 20px; border-radius: 8px; border: 1px solid var(--border-color, #ddd);
+            background: transparent; color: var(--text-primary, #111);
+            font-size: 14px; cursor: pointer; font-weight: 500;
+          ">${escapeHtml(resolvedCancel)}</button>
+          <button id="confirm-modal-ok" style="
+            padding: 9px 20px; border-radius: 8px; border: none;
+            background: var(--primary-color, #3b82f6); color: #fff;
+            font-size: 14px; cursor: pointer; font-weight: 600;
+          ">${escapeHtml(resolvedConfirm)}</button>
+        </div>
+      </div>
+      <style>
+        @keyframes confirmFadeIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+      </style>
+    `;
+    document.body.appendChild(modal);
+
+    const cleanup = (result) => { modal.remove(); resolve(result); };
+    document.getElementById('confirm-modal-ok').addEventListener('click', () => cleanup(true));
+    document.getElementById('confirm-modal-cancel').addEventListener('click', () => cleanup(false));
+    modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(false); });
+  });
+}
+
+/** Format item dimensions (stored in meters) as a cm string, e.g. " (120.0 cm × 240.0 cm)" */
+function formatDimensions(dimensions) {
+  if (dimensions && typeof dimensions.length === 'number' && typeof dimensions.width === 'number') {
+    return `${(dimensions.length * 100).toFixed(1)} × ${(dimensions.width * 100).toFixed(1)} cm`;
+  }
+  return '';
+}
+
 // Export invoice to CSV format
 export function exportInvoiceToCSV(invoice) {
   const rows = [];
@@ -117,10 +189,11 @@ export function exportInvoiceToCSV(invoice) {
   
   // Order items
   rows.push(['Order Items']);
-  rows.push(['Product Name', 'Quantity', 'Unit', 'Price per Unit', 'Subtotal']);
+  rows.push(['Product Name', 'Dimensions (cm)', 'Quantity', 'Unit', 'Price per Unit', 'Subtotal']);
   (invoice.items || []).forEach(item => {
     rows.push([
       item.productName || 'N/A',
+      formatDimensions(item.dimensions),
       item.quantity || 0,
       item.unit || 'units',
       `$${(item.pricePerUnit || 0).toFixed(2)}`,
@@ -256,7 +329,8 @@ export function exportInvoiceToTXT(invoice) {
   lines.push(String('Product Name').padEnd(30) + String('Qty').padEnd(10) + String('Unit').padEnd(10) + String('Price').padEnd(15) + 'Subtotal');
   lines.push('-'.repeat(80));
   (invoice.items || []).forEach(item => {
-    const name = (item.productName || 'N/A').substring(0, 28);
+    const dims = formatDimensions(item.dimensions);
+    const name = ((item.productName || 'N/A') + (dims ? ` (${dims})` : '')).substring(0, 28);
     const qty = String(item.quantity || 0);
     const unit = (item.unit || 'units').substring(0, 8);
     const price = `$${(item.pricePerUnit || 0).toFixed(2)}`;

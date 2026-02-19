@@ -2,7 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import languageManager from '../js/language.js';
-import { escapeHtml, formatDate } from '../js/utils.js';
+import { escapeHtml, formatDate, showConfirm } from '../js/utils.js';
 
 export async function renderAdminInvoices() {
   const t = languageManager.t.bind(languageManager);
@@ -218,7 +218,7 @@ function viewInvoice(invoice) {
 }
 
 async function deleteInvoice(invoice) {
-  if (!confirm(`Are you sure you want to delete invoice ${invoice.invoiceNumber}?`)) {
+  if (!await showConfirm(`Are you sure you want to delete invoice ${invoice.invoiceNumber}?`)) {
     return;
   }
   

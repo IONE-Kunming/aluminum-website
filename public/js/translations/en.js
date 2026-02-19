@@ -49,7 +49,10 @@ export default {
     name: 'Name',
     email: 'Email',
     notes: 'Notes',
-    items: 'items'
+    items: 'items',
+    confirmAction: 'Confirm Action',
+    page: 'Page',
+    of: 'of'
   },
   
   // Languages
@@ -199,7 +202,12 @@ export default {
     payNowSuccess: 'Payment successful!',
     payNowFullyPaid: 'Order fully paid!',
     invalidAmount: 'Please enter a valid amount',
-    amountExceedsBalance: 'Amount cannot exceed the remaining balance'
+    amountExceedsBalance: 'Amount cannot exceed the remaining balance',
+    totalOrders: 'Total Orders',
+    totalAmount: 'Total Amount',
+    amountPaid: 'Amount Paid',
+    pendingReview: 'Pending Review',
+    completedOrders: 'Completed'
   },
   
   // Chats
@@ -265,7 +273,17 @@ export default {
     markAsPaid: 'Mark as Paid',
     markAsPaidConfirm: 'Mark this invoice as paid?',
     invoiceMarkedPaid: 'Invoice marked as paid',
-    failedToUpdateStatus: 'Failed to update invoice status'
+    failedToUpdateStatus: 'Failed to update invoice status',
+    totalInvoices: 'Total Invoices',
+    totalRevenue: 'Total Revenue',
+    totalAmount: 'Total Amount',
+    amountPaid: 'Amount Paid',
+    outstandingBalance: 'Outstanding Balance',
+    amountCollected: 'Amount Collected',
+    outstanding: 'Outstanding',
+    paidInvoices: 'Paid Invoices',
+    pendingInvoices: 'Pending Invoices',
+    dimensions: 'Dimensions'
   },
   
   // Notifications

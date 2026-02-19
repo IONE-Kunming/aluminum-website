@@ -46,7 +46,10 @@ export default {
     to: 'تک',
     clear: 'صاف کریں',
     name: 'نام',
-    email: 'ای میل'
+    email: 'ای میل',
+    confirmAction: 'عمل کی تصدیق',
+    page: 'صفحہ',
+    of: 'میں سے'
   },
   
   // زبانیں
@@ -181,7 +184,12 @@ export default {
     payNowSuccess: 'ادائیگی کامیاب!',
     payNowFullyPaid: 'آرڈر مکمل ادا ہو گیا!',
     invalidAmount: 'براہ کرم ایک درست رقم درج کریں',
-    amountExceedsBalance: 'رقم باقی بیلنس سے زیادہ نہیں ہو سکتی'
+    amountExceedsBalance: 'رقم باقی بیلنس سے زیادہ نہیں ہو سکتی',
+    totalOrders: 'کل آرڈر',
+    totalAmount: 'کل رقم',
+    amountPaid: 'ادا شدہ رقم',
+    pendingReview: 'زیرِ جائزہ',
+    completedOrders: 'مکمل'
   },
   
   // گفتگو
@@ -247,7 +255,17 @@ export default {
     markAsPaid: 'ادا شدہ کے طور پر نشان زد کریں',
     markAsPaidConfirm: 'اس رسید کو ادا شدہ کے طور پر نشان زد کریں؟',
     invoiceMarkedPaid: 'رسید ادا شدہ کے طور پر نشان زد کر دی گئی',
-    failedToUpdateStatus: 'رسید کی حیثیت کو اپ ڈیٹ کرنے میں ناکام'
+    failedToUpdateStatus: 'رسید کی حیثیت کو اپ ڈیٹ کرنے میں ناکام',
+    totalInvoices: 'کل رسیدیں',
+    totalRevenue: 'کل آمدنی',
+    totalAmount: 'کل رقم',
+    amountPaid: 'ادا شدہ رقم',
+    outstandingBalance: 'باقی رقم',
+    amountCollected: 'وصول شدہ رقم',
+    outstanding: 'واجب الادا',
+    paidInvoices: 'ادا شدہ رسیدیں',
+    pendingInvoices: 'زیرِ التواء رسیدیں',
+    dimensions: 'جہات'
   },
   
   // اطلاعات

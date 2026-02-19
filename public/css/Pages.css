@@ -4346,6 +4346,42 @@
   height: 18px;
 }
 
+/* Sub-dropdown for PDF language selection */
+.dropdown-has-sub {
+  position: relative;
+}
+
+.dropdown-has-sub > .dropdown-submenu-arrow {
+  margin-left: auto;
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+}
+
+.dropdown-submenu {
+  position: absolute;
+  right: 100%;
+  top: 0;
+  min-width: 170px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: none;
+  z-index: 1001;
+}
+
+.dropdown-has-sub:hover .dropdown-submenu,
+.dropdown-has-sub.sub-open .dropdown-submenu {
+  display: block;
+}
+
+/* RTL: submenu appears on the other side */
+[dir="rtl"] .dropdown-submenu {
+  right: auto;
+  left: 100%;
+}
+
 /* Invoice Document Container */
 .invoice-document {
   background: white;

@@ -339,7 +339,8 @@ function initializeCheckout(cartItems, cartTotal) {
               quantity: quantity,
               unit: item.unit || 'units',
               pricePerUnit: pricePerUnit,
-              subtotal: pricePerUnit * quantity
+              subtotal: pricePerUnit * quantity,
+              ...(item.dimensions ? { dimensions: item.dimensions } : {})
             };
           }),
           subtotal: sellerSubtotal,

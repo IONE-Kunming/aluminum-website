@@ -287,8 +287,7 @@ function initializeOrderCheckout(order) {
         depositPercentage: selectedDeposit,
         depositAmount: depositAmount,
         remainingBalance: remainingBalance,
-        paymentMethod: selectedPayment,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        paymentMethod: selectedPayment
       });
       
       // Create invoice for the order
