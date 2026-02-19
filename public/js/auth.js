@@ -20,6 +20,25 @@ class AuthManager {
       this.auth = firebase.auth();
       this.db = firebase.firestore();
       
+      // Auto-detect and connect to emulators in development
+      // Check if running on localhost (development mode)
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        try {
+          // Try to connect to Auth emulator
+          this.auth.useEmulator('http://localhost:9099');
+          console.log('🔧 Connected to Auth Emulator');
+          
+          // Try to connect to Firestore emulator
+          this.db.useEmulator('localhost', 8080);
+          console.log('🔧 Connected to Firestore Emulator');
+          
+          console.log('✅ Running in emulator mode - test data available');
+        } catch (error) {
+          // Emulators not running, use production Firebase
+          console.log('📡 Emulators not detected, using production Firebase');
+        }
+      }
+      
       // Listen to auth state changes
       this.auth.onAuthStateChanged(async (user) => {
         const currentUserUid = user ? user.uid : null;

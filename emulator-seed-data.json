@@ -1,0 +1,139 @@
+{
+  "users": {
+    "admin123": {
+      "uid": "admin123",
+      "email": "admin@test.com",
+      "displayName": "Test Admin",
+      "role": "admin",
+      "companyName": "Admin Company",
+      "phoneNumber": "+1234567890",
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    "buyer123": {
+      "uid": "buyer123",
+      "email": "buyer@test.com",
+      "displayName": "Test Buyer",
+      "role": "buyer",
+      "companyName": "Buyer Company",
+      "phoneNumber": "+1234567891",
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    "seller123": {
+      "uid": "seller123",
+      "email": "seller@test.com",
+      "displayName": "Test Seller",
+      "role": "seller",
+      "companyName": "Seller Company",
+      "phoneNumber": "+1234567892",
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    "inactive-seller": {
+      "uid": "inactive-seller",
+      "email": "inactive@test.com",
+      "displayName": "Inactive Seller",
+      "role": "seller",
+      "companyName": "Inactive Company",
+      "phoneNumber": "+1234567893",
+      "isActive": false,
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    }
+  },
+  "products": {
+    "product1": {
+      "name": "Aluminum Gate",
+      "category": "Exterior Gates",
+      "subcategory": "Gates",
+      "description": "High quality aluminum gate for exterior use",
+      "pricePerUnit": 299.99,
+      "stockQuantity": 50,
+      "unit": "pieces",
+      "sellerId": "seller123",
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "imageUrl": "https://via.placeholder.com/300x200"
+    },
+    "product2": {
+      "name": "Steel Fence",
+      "category": "Fences",
+      "subcategory": "Fencing",
+      "description": "Durable steel fencing for residential use",
+      "pricePerUnit": 149.99,
+      "stockQuantity": 100,
+      "unit": "meters",
+      "sellerId": "seller123",
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "imageUrl": "https://via.placeholder.com/300x200"
+    },
+    "product3": {
+      "name": "Glass Balustrade",
+      "category": "Balustrades",
+      "description": "Modern glass balustrade system",
+      "pricePerUnit": 499.99,
+      "stockQuantity": 25,
+      "unit": "sets",
+      "sellerId": "inactive-seller",
+      "isActive": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "imageUrl": "https://via.placeholder.com/300x200"
+    },
+    "product4": {
+      "name": "Inactive Product",
+      "category": "Tools",
+      "description": "This product is inactive",
+      "pricePerUnit": 99.99,
+      "stockQuantity": 10,
+      "unit": "pieces",
+      "sellerId": "seller123",
+      "isActive": false,
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    }
+  },
+  "orders": {
+    "order1": {
+      "buyerId": "buyer123",
+      "buyerName": "Test Buyer",
+      "buyerEmail": "buyer@test.com",
+      "sellerId": "seller123",
+      "sellerName": "Test Seller",
+      "sellerCompany": "Seller Company",
+      "status": "pending",
+      "items": [
+        {
+          "productId": "product1",
+          "productName": "Aluminum Gate",
+          "quantity": 2,
+          "pricePerUnit": 299.99,
+          "total": 599.98
+        }
+      ],
+      "total": 599.98,
+      "notes": "",
+      "createdAt": "2024-01-15T00:00:00.000Z"
+    },
+    "order2": {
+      "buyerId": "buyer123",
+      "buyerName": "Test Buyer",
+      "buyerEmail": "buyer@test.com",
+      "sellerId": "seller123",
+      "sellerName": "Test Seller",
+      "sellerCompany": "Seller Company",
+      "status": "confirmed",
+      "items": [
+        {
+          "productId": "product2",
+          "productName": "Steel Fence",
+          "quantity": 10,
+          "pricePerUnit": 149.99,
+          "total": 1499.90
+        }
+      ],
+      "total": 1499.90,
+      "notes": "Please deliver within 2 weeks",
+      "createdAt": "2024-01-10T00:00:00.000Z"
+    }
+  }
+}
