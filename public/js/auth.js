@@ -20,6 +20,25 @@ class AuthManager {
       this.auth = firebase.auth();
       this.db = firebase.firestore();
       
+      // Auto-detect and connect to emulators in development
+      // Check if running on localhost (development mode)
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        try {
+          // Try to connect to Auth emulator
+          this.auth.useEmulator('http://localhost:9099');
+          console.log('🔧 Connected to Auth Emulator');
+          
+          // Try to connect to Firestore emulator
+          this.db.useEmulator('localhost', 8080);
+          console.log('🔧 Connected to Firestore Emulator');
+          
+          console.log('✅ Running in emulator mode - test data available');
+        } catch (error) {
+          // Emulators not running, use production Firebase
+          console.log('📡 Emulators not detected, using production Firebase');
+        }
+      }
+      
       // Listen to auth state changes
       this.auth.onAuthStateChanged(async (user) => {
         const currentUserUid = user ? user.uid : null;
@@ -31,9 +50,16 @@ class AuthManager {
             const userDoc = await this.db.collection('users').doc(user.uid).get();
             // Only update profile if this is still the current user
             // This prevents race conditions when multiple users log in simultaneously
-            if (this.user && this.user.uid === currentUserUid && userDoc.exists) {
-              // Include the UID in the profile data for tracking
-              this.userProfile = { uid: user.uid, ...userDoc.data() };
+            if (this.user && this.user.uid === currentUserUid) {
+              if (userDoc.exists) {
+                // Include the UID in the profile data for tracking
+                this.userProfile = { uid: user.uid, ...userDoc.data() };
+              } else {
+                // User document doesn't exist in Firestore
+                // This can happen for new users who haven't completed profile setup,
+                // or users whose profiles were deleted but Firebase Auth account remains
+                this.userProfile = null;
+              }
             }
           } catch (error) {
             console.error('Error fetching user profile:', error);

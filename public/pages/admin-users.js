@@ -197,8 +197,131 @@ function filterUsers() {
 
 async function editUser(user) {
   const t = languageManager.t.bind(languageManager);
-  // TODO: Implement edit user modal
-  window.toast.info(t('admin.editUserComingSoon'));
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2><i data-lucide="edit"></i> ${t('admin.editUser')}</h2>
+          <button class="modal-close" id="close-edit-modal">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="edit-user-form">
+            <div class="form-group">
+              <label for="edit-displayName">${t('profile.displayName')}</label>
+              <input type="text" id="edit-displayName" value="${escapeHtml(user.displayName || '')}" required />
+            </div>
+            <div class="form-group">
+              <label for="edit-email">${t('auth.email')}</label>
+              <input type="email" id="edit-email" value="${escapeHtml(user.email || '')}" required />
+              <small style="color: var(--text-secondary);">${t('admin.emailChangeWarning')}</small>
+            </div>
+            <div class="form-group">
+              <label for="edit-role">${t('profile.role')}</label>
+              <select id="edit-role" required>
+                <option value="buyer" ${user.role === 'buyer' ? 'selected' : ''}>Buyer</option>
+                <option value="seller" ${user.role === 'seller' ? 'selected' : ''}>Seller</option>
+                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit-companyName">${t('auth.companyName')}</label>
+              <input type="text" id="edit-companyName" value="${escapeHtml(user.companyName || '')}" />
+            </div>
+            <div class="form-group">
+              <label for="edit-phoneNumber">${t('profile.phone')}</label>
+              <input type="text" id="edit-phoneNumber" value="${escapeHtml(user.phoneNumber || '')}" />
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="edit-isActive" ${user.isActive !== false ? 'checked' : ''} />
+                ${t('admin.activeStatus')}
+              </label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancel-edit-user">${t('common.cancel')}</button>
+          <button class="btn btn-primary" id="save-edit-user">${t('common.save')}</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  if (window.lucide) window.lucide.createIcons();
+  
+  // Modal event listeners
+  const closeModal = () => {
+    modal.remove();
+  };
+  
+  document.getElementById('close-edit-modal').addEventListener('click', closeModal);
+  document.getElementById('cancel-edit-user').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  
+  // Save button handler
+  document.getElementById('save-edit-user').addEventListener('click', async () => {
+    const newEmail = document.getElementById('edit-email').value.trim();
+    const oldEmail = user.email;
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      window.toast.error(t('admin.invalidEmail'));
+      return;
+    }
+    
+    const updatedData = {
+      displayName: document.getElementById('edit-displayName').value,
+      email: newEmail,
+      role: document.getElementById('edit-role').value,
+      companyName: document.getElementById('edit-companyName').value,
+      phoneNumber: document.getElementById('edit-phoneNumber').value,
+      isActive: document.getElementById('edit-isActive').checked
+    };
+    
+    try {
+      // Check if email changed and if it's already in use
+      if (newEmail !== oldEmail) {
+        // Check if new email already exists
+        const usersSnapshot = await dataService.db.collection('users')
+          .where('email', '==', newEmail)
+          .get();
+        
+        if (!usersSnapshot.empty && usersSnapshot.docs[0].id !== user.id) {
+          window.toast.error(t('admin.emailAlreadyInUse'));
+          return;
+        }
+        
+        // Show warning about email change
+        if (!confirm(t('admin.confirmEmailChange', { email: newEmail }))) {
+          return;
+        }
+      }
+      
+      await dataService.db.collection('users').doc(user.id).update(updatedData);
+      window.toast.success(t('admin.userUpdated'));
+      
+      // If email changed, show additional info
+      if (newEmail !== oldEmail) {
+        window.toast.info(t('admin.emailChangeNotice'));
+      }
+      
+      closeModal();
+      await loadUsers();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      window.toast.error(t('admin.userUpdateFailed'));
+    }
+  });
 }
 
 async function deleteUser(user) {

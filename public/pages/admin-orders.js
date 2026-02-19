@@ -118,9 +118,13 @@ function displayOrders(orders) {
   
   // Setup action buttons
   orders.forEach(order => {
+    const editBtn = document.getElementById(`edit-order-${order.id}`);
     const viewBtn = document.getElementById(`view-order-${order.id}`);
     const deleteBtn = document.getElementById(`delete-order-${order.id}`);
     
+    if (editBtn) {
+      editBtn.addEventListener('click', () => editOrder(order));
+    }
     if (viewBtn) {
       viewBtn.addEventListener('click', () => viewOrder(order));
     }
@@ -143,6 +147,9 @@ function renderOrderRow(order) {
       <td><span class="status-badge ${statusClass}">${escapeHtml(order.status || 'pending')}</span></td>
       <td>${formatDate(order.createdAt)}</td>
       <td class="actions">
+        <button class="btn-icon" id="edit-order-${order.id}" title="Edit Order">
+          <i data-lucide="edit"></i>
+        </button>
         <button class="btn-icon" id="view-order-${order.id}" title="View Order">
           <i data-lucide="eye"></i>
         </button>
@@ -175,6 +182,94 @@ function filterOrders() {
   }
   
   displayOrders(filtered);
+}
+
+async function editOrder(order) {
+  const t = languageManager.t.bind(languageManager);
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2><i data-lucide="edit"></i> ${t('admin.editOrder')}</h2>
+          <button class="modal-close" id="close-edit-modal">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="edit-order-form">
+            <div class="form-group">
+              <label for="edit-order-id">${t('order.orderId')}</label>
+              <input type="text" id="edit-order-id" value="${escapeHtml(order.id)}" disabled style="opacity: 0.6; cursor: not-allowed;" />
+            </div>
+            <div class="form-group">
+              <label for="edit-order-status">${t('order.status')}</label>
+              <select id="edit-order-status" required>
+                <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
+                <option value="confirmed" ${order.status === 'confirmed' ? 'selected' : ''}>Confirmed</option>
+                <option value="processing" ${order.status === 'processing' ? 'selected' : ''}>Processing</option>
+                <option value="shipped" ${order.status === 'shipped' ? 'selected' : ''}>Shipped</option>
+                <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Delivered</option>
+                <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="edit-order-notes">${t('order.notes')}</label>
+              <textarea id="edit-order-notes" rows="3">${escapeHtml(order.notes || '')}</textarea>
+            </div>
+            <div class="form-group">
+              <label>${t('order.orderDetails')}</label>
+              <div style="padding: 12px; background: var(--background-secondary); border-radius: 8px;">
+                <p><strong>${t('order.buyer')}:</strong> ${escapeHtml(order.buyerName || order.buyerEmail || 'N/A')}</p>
+                <p><strong>${t('order.seller')}:</strong> ${escapeHtml(order.sellerName || order.sellerCompany || 'N/A')}</p>
+                <p><strong>${t('checkout.items')}:</strong> ${order.items?.length || 0} ${t('common.items')}</p>
+                <p><strong>${t('order.total')}:</strong> $${(order.total || 0).toFixed(2)}</p>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancel-edit-order">${t('common.cancel')}</button>
+          <button class="btn btn-primary" id="save-edit-order">${t('common.save')}</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  if (window.lucide) window.lucide.createIcons();
+  
+  // Modal event listeners
+  const closeModal = () => {
+    modal.remove();
+  };
+  
+  document.getElementById('close-edit-modal').addEventListener('click', closeModal);
+  document.getElementById('cancel-edit-order').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  
+  // Save button handler
+  document.getElementById('save-edit-order').addEventListener('click', async () => {
+    const updatedData = {
+      status: document.getElementById('edit-order-status').value,
+      notes: document.getElementById('edit-order-notes').value
+    };
+    
+    try {
+      await dataService.db.collection('orders').doc(order.id).update(updatedData);
+      window.toast.success(t('admin.orderUpdated'));
+      closeModal();
+      await loadOrders();
+    } catch (error) {
+      console.error('Error updating order:', error);
+      window.toast.error(t('admin.orderUpdateFailed'));
+    }
+  });
 }
 
 function viewOrder(order) {

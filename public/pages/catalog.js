@@ -72,13 +72,48 @@ export async function renderCatalog() {
 // Render products for a specific seller
 async function renderSellerProducts(sellerId, filterCategory, t) {
   const products = await dataService.getProducts({ sellerId, limit: 2000 });
+  // Filter to only show active products
+  const activeProducts = products.filter(p => p.isActive !== false);
   const sellers = await dataService.getSellers();
   const seller = sellers.find(s => s.id === sellerId || s.uid === sellerId);
   
+  // Check if seller exists and is inactive - don't show their products
+  if (!seller) {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="page-container">
+        <div class="empty-state">
+          <i data-lucide="store-x" style="width: 64px; height: 64px; opacity: 0.3; margin-bottom: 16px;"></i>
+          <h2>${t('catalog.sellerNotFound')}</h2>
+          <p>${t('catalog.sellerNotFoundDescription')}</p>
+          <button class="btn btn-primary" onclick="window.history.back()">${t('common.back')}</button>
+        </div>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+  
+  if (seller.isActive === false) {
+    const app = document.getElementById('app');
+    app.innerHTML = `
+      <div class="page-container">
+        <div class="empty-state">
+          <i data-lucide="store-x" style="width: 64px; height: 64px; opacity: 0.3; margin-bottom: 16px;"></i>
+          <h2>${t('catalog.sellerInactive')}</h2>
+          <p>${t('catalog.sellerInactiveDescription')}</p>
+          <button class="btn btn-primary" onclick="window.history.back()">${t('common.back')}</button>
+        </div>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+  
   // Filter products by category if provided
   const filteredProducts = filterCategory 
-    ? products.filter(p => p.category === filterCategory)
-    : products;
+    ? activeProducts.filter(p => p.category === filterCategory)
+    : activeProducts;
   
   const renderProducts = (productsToRender) => {
     const productsGrid = document.querySelector('.products-grid');
@@ -400,15 +435,17 @@ async function renderSellersForCategory(category, t) {
   // Get subcategories for the main category
   const subcategoriesForMain = mainCategory ? getSubcategories(mainCategory) : [];
   
-  // Filter products by category
-  const categoryProducts = allProducts.filter(p => p.category === category);
+  // Filter products by category and active status
+  const categoryProducts = allProducts.filter(p => 
+    p.category === category && p.isActive !== false
+  );
   
   // Get unique seller IDs from filtered products
   const sellerIds = new Set(categoryProducts.map(p => p.sellerId).filter(Boolean));
   
-  // Filter sellers who have products in this category
+  // Filter sellers who have products in this category AND are active
   const sellersInCategory = allSellers.filter(seller => 
-    sellerIds.has(seller.uid) || sellerIds.has(seller.id)
+    (sellerIds.has(seller.uid) || sellerIds.has(seller.id)) && seller.isActive !== false
   );
   
   // Group products by seller and category for display

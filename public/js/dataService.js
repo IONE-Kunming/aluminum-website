@@ -605,11 +605,12 @@ class DataService {
 
       const snapshot = await query.get();
       
-      // Extract unique categories
+      // Extract unique categories from active products only
       const categoriesSet = new Set();
       snapshot.docs.forEach(doc => {
         const data = doc.data();
-        if (data.category) {
+        // Only include categories from active products
+        if (data.category && data.isActive !== false) {
           categoriesSet.add(data.category);
         }
       });

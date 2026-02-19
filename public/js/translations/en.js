@@ -47,7 +47,9 @@ export default {
     to: 'To',
     clear: 'Clear',
     name: 'Name',
-    email: 'Email'
+    email: 'Email',
+    notes: 'Notes',
+    items: 'items'
   },
   
   // Languages
@@ -369,7 +371,11 @@ export default {
     sellersInCategory: 'Sellers in',
     noSellersInCategory: 'No sellers found in this category',
     allMainCategories: 'Main Categories',
-    allSubCategories: 'Sub Categories'
+    allSubCategories: 'Sub Categories',
+    sellerNotFound: 'Seller Not Found',
+    sellerNotFoundDescription: 'The seller you are looking for could not be found',
+    sellerInactive: 'Seller Unavailable',
+    sellerInactiveDescription: 'This seller is currently inactive and not available for orders'
   },
   
   // All Products Page
@@ -385,21 +391,39 @@ export default {
   
   // Category Names (for translating actual category values)
   categoryNames: {
+    // Main Categories
     'Construction': 'Construction',
+    'Apparel & Accessories': 'Apparel & Accessories',
+    'Automobiles & Motorcycles': 'Automobiles & Motorcycles',
+    'Business Services': 'Business Services',
+    'Chemicals': 'Chemicals',
+    'Computer Products & Office Electronics': 'Computer Products & Office Electronics',
+    'Consumer Electronics': 'Consumer Electronics',
+    'Electrical Equipment & Supplies': 'Electrical Equipment & Supplies',
+    'Electronics Components & Supplies': 'Electronics Components & Supplies',
+    'Energy': 'Energy',
+    'Environment': 'Environment',
+    'Food & Beverage': 'Food & Beverage',
+    'Furniture': 'Furniture',
+    'Gifts, Sports & Toys': 'Gifts, Sports & Toys',
+    'Hardware': 'Hardware',
+    'Health & Beauty': 'Health & Beauty',
+    'Home & Garden': 'Home & Garden',
+    'Home Appliances': 'Home Appliances',
+    'Industry Laser Equipment': 'Industry Laser Equipment',
+    'Lights & Lighting': 'Lights & Lighting',
+    'Luggage, Bags & Cases': 'Luggage, Bags & Cases',
+    'Machinery': 'Machinery',
+    'Measurement & Analysis Instruments': 'Measurement & Analysis Instruments',
+    'Metallurgy, Mineral & Energy': 'Metallurgy, Mineral & Energy',
+    'Packaging & Printing': 'Packaging & Printing',
+    'Security & Protection': 'Security & Protection',
+    'Shoes & Accessories': 'Shoes & Accessories',
+    'Textiles & Leather Products': 'Textiles & Leather Products',
+    'Transportation': 'Transportation',
+    // Construction Subcategories
     'Exterior Gates': 'Exterior Gates',
     'Fences': 'Fences',
-    'Aluminum': 'Aluminum',
-    'Steel': 'Steel',
-    'Glass': 'Glass',
-    'Wood': 'Wood',
-    'Concrete': 'Concrete',
-    'Tools': 'Tools',
-    'Equipment': 'Equipment',
-    'Hardware': 'Hardware',
-    'Electrical': 'Electrical',
-    'Plumbing': 'Plumbing',
-    'Paint': 'Paint',
-    // Common construction subcategories
     'Balustrades': 'Balustrades',
     'Barrier Systems': 'Barrier Systems',
     'Fencing': 'Fencing',
@@ -407,7 +431,47 @@ export default {
     'Gates': 'Gates',
     'Railings': 'Railings',
     'Screens': 'Screens',
-    'Partitions': 'Partitions'
+    'Partitions': 'Partitions',
+    'Aluminum': 'Aluminum',
+    'Steel': 'Steel',
+    'Glass': 'Glass',
+    'Concrete': 'Concrete',
+    'Tools': 'Tools',
+    'Equipment': 'Equipment',
+    'Electrical': 'Electrical',
+    'Plumbing': 'Plumbing',
+    'Paint': 'Paint',
+    'Wood': 'Wood',
+    // Apparel Subcategories
+    'Jewelry': 'Jewelry',
+    'Watches & Eyewear': 'Watches & Eyewear',
+    'Bags & Wallets': 'Bags & Wallets',
+    'Scarves & Shawls': 'Scarves & Shawls',
+    'Belts': 'Belts',
+    'Headwear': 'Headwear',
+    'Gloves': 'Gloves',
+    'Footwear Accessories': 'Footwear Accessories',
+    'Ties & Bow Ties': 'Ties & Bow Ties',
+    "Men's Clothing": "Men's Clothing",
+    "Women's Clothing": "Women's Clothing",
+    "Children's Clothing": "Children's Clothing",
+    'Activewear': 'Activewear',
+    'Formal Wear': 'Formal Wear',
+    'Traditional Wear': 'Traditional Wear',
+    // Automobiles Subcategories
+    'Engine Components': 'Engine Components',
+    'Transmission & Drivetrain': 'Transmission & Drivetrain',
+    'Suspension & Steering': 'Suspension & Steering',
+    'Brake Systems': 'Brake Systems',
+    'Electrical & Ignition': 'Electrical & Ignition',
+    'Exhaust & Emissions': 'Exhaust & Emissions',
+    'Cooling Systems': 'Cooling Systems',
+    'Body Parts': 'Body Parts',
+    'Interior Accessories': 'Interior Accessories',
+    'Exterior Accessories': 'Exterior Accessories',
+    'Performance Parts': 'Performance Parts',
+    'Motorcycle Parts': 'Motorcycle Parts',
+    'Tires & Wheels': 'Tires & Wheels'
   },
   
   // Sellers
@@ -618,6 +682,14 @@ export default {
         satisfactionRate: 'Satisfaction Rate'
       }
     },
+    categories: {
+      title: 'Explore Our Product Categories',
+      subtitle: 'Browse through our comprehensive collection of high-quality products across multiple industries',
+      subcategories: 'subcategories',
+      more: 'more',
+      exploreCategory: 'Explore Category',
+      viewAllCategories: 'View All Categories'
+    },
     cta: {
       title: 'Ready to Transform Your Trading?',
       description: 'Join thousands of successful traders on the I ONE Construction platform',
@@ -682,6 +754,23 @@ export default {
   
   // Admin
   admin: {
+    editUser: 'Edit User',
+    editProduct: 'Edit Product',
+    editOrder: 'Edit Order',
+    userUpdated: 'User updated successfully',
+    userUpdateFailed: 'Failed to update user',
+    productUpdated: 'Product updated successfully',
+    productUpdateFailed: 'Failed to update product',
+    orderUpdated: 'Order updated successfully',
+    orderUpdateFailed: 'Failed to update order',
+    activeStatus: 'Active',
+    emailCannotBeChanged: 'Email cannot be changed',
+    emailChangeWarning: 'Changing email will update the login email. User must sign in with the new email.',
+    invalidEmail: 'Please enter a valid email address',
+    emailAlreadyInUse: 'This email is already in use by another account',
+    emailChangeNotice: 'Email updated. User must sign in with the new email address.',
+    invalidPrice: 'Invalid price value. Please enter a valid number',
+    invalidStock: 'Invalid stock value. Please enter a valid number',
     userDeleted: 'User deleted successfully',
     userDeleteFailed: 'Failed to delete user',
     userActivated: 'User activated successfully',
