@@ -309,7 +309,7 @@ function renderPage1(invoice) {
           <div class="items-list">
             ${(invoice.items || []).map((item, index) => `
               <div class="item-row">
-                <span class="item-name">${escapeHtml(item.productName || 'N/A')}${item.dimensions ? ` (${(item.dimensions.length * 100).toFixed(1)} cm × ${(item.dimensions.width * 100).toFixed(1)} cm)` : ''}</span>
+                <span class="item-name">${escapeHtml(item.productName || 'N/A')}${item.dimensions && typeof item.dimensions.length === 'number' && typeof item.dimensions.width === 'number' ? ` (${(item.dimensions.length * 100).toFixed(1)} cm × ${(item.dimensions.width * 100).toFixed(1)} cm)` : ''}</span>
                 <span class="item-details">${item.quantity || 0} ${escapeHtml(item.unit || 'units')} × $${(item.pricePerUnit || 0).toFixed(2)}</span>
                 <span class="item-amount">$${(item.subtotal || 0).toFixed(2)}</span>
               </div>
@@ -519,7 +519,7 @@ function renderInvoiceHtml(invoice, lang) {
           <div class="items-list">
             ${(invoice.items || []).map((item) => `
               <div class="item-row">
-                <span class="item-name">${escapeHtml(item.productName || 'N/A')}${item.dimensions ? ` (${(item.dimensions.length * 100).toFixed(1)} cm × ${(item.dimensions.width * 100).toFixed(1)} cm)` : ''}</span>
+                <span class="item-name">${escapeHtml(item.productName || 'N/A')}${item.dimensions && typeof item.dimensions.length === 'number' && typeof item.dimensions.width === 'number' ? ` (${(item.dimensions.length * 100).toFixed(1)} cm × ${(item.dimensions.width * 100).toFixed(1)} cm)` : ''}</span>
                 <span class="item-details">${item.quantity || 0} ${escapeHtml(item.unit || 'units')} × $${(item.pricePerUnit || 0).toFixed(2)}</span>
                 <span class="item-amount">$${(item.subtotal || 0).toFixed(2)}</span>
               </div>

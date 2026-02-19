@@ -2,7 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import router from '../js/router.js';
 import cartManager from '../js/cart.js';
 import dataService from '../js/dataService.js';
-import { escapeHtml } from '../js/utils.js';
+import { escapeHtml, showConfirm } from '../js/utils.js';
 import languageManager from '../js/language.js';
 
 export async function renderCart() {
@@ -203,6 +203,10 @@ export async function renderCart() {
       e.stopPropagation();
       
       const itemId = btn.getAttribute('data-item-id');
+
+      if (!await showConfirm(t('cart.removeItem') + '?')) {
+        return;
+      }
       
       try {
         // Remove from cart
