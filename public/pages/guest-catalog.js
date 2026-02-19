@@ -296,8 +296,10 @@ async function renderGuestSubcategorySelection(mainCategory, t, app) {
 async function renderGuestProducts(category, t, app) {
   const allProducts = await dataService.getProducts({ limit: 2000 });
   
-  // Filter products by category
-  const categoryProducts = allProducts.filter(p => p.category === category);
+  // Filter products by category and active status
+  const categoryProducts = allProducts.filter(p => 
+    p.category === category && p.isActive !== false
+  );
   
   const renderProducts = (productsToRender) => {
     const productsGrid = document.querySelector('.products-grid');

@@ -41,11 +41,13 @@ export async function renderPublicCategories() {
   const t = languageManager.t.bind(languageManager);
   const app = document.getElementById('app');
   
-  // Get available categories (only those with products)
+  // Get available categories (only those with active products)
   const allProducts = await dataService.getProducts({ limit: 2000 });
+  // Filter to show only active products
+  const activeProducts = allProducts.filter(p => p.isActive !== false);
   const availableCategories = new Set();
   
-  allProducts.forEach(product => {
+  activeProducts.forEach(product => {
     if (product.category) {
       availableCategories.add(product.category);
     }

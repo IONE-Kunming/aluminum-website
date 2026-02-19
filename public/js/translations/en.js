@@ -370,7 +370,9 @@ export default {
     sellersInCategory: 'Sellers in',
     noSellersInCategory: 'No sellers found in this category',
     allMainCategories: 'Main Categories',
-    allSubCategories: 'Sub Categories'
+    allSubCategories: 'Sub Categories',
+    sellerInactive: 'Seller Unavailable',
+    sellerInactiveDescription: 'This seller is currently inactive and not available for orders'
   },
   
   // All Products Page
