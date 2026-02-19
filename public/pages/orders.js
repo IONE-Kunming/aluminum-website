@@ -29,12 +29,19 @@ export async function renderOrders() {
     return;
   }
   
-  // Fetch all orders for this buyer
+  // Fetch all orders for this buyer (already sorted descending by dataService)
   const allOrders = await dataService.getOrders({ buyerId: user.uid });
   
   // Separate draft orders from other orders
   const draftOrders = allOrders.filter(order => order.status === 'draft');
-  const activeOrders = allOrders.filter(order => order.status !== 'draft');
+  // Sort active orders descending by createdAt (newest first)
+  const activeOrders = allOrders
+    .filter(order => order.status !== 'draft')
+    .sort((a, b) => {
+      const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+      const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+      return dateB - dateA;
+    });
   
   const renderOrdersList = (orders, isDraft = false) => {
     const ordersList = document.querySelector(isDraft ? '.draft-orders-list-container' : '.orders-list-container');
@@ -315,18 +322,6 @@ export async function renderOrders() {
               <input type="text" id="filterOrderNumber" class="form-control" placeholder="${t('common.search')}...">
             </div>
             <div class="form-group">
-              <label>${t('orders.buyerName')}</label>
-              <input type="text" id="filterBuyerName" class="form-control" placeholder="${t('common.search')}...">
-            </div>
-            <div class="form-group">
-              <label>${t('orders.buyerCompany')}</label>
-              <input type="text" id="filterBuyerCompany" class="form-control" placeholder="${t('common.search')}...">
-            </div>
-            <div class="form-group">
-              <label>${t('orders.email')}</label>
-              <input type="text" id="filterEmail" class="form-control" placeholder="${t('common.search')}...">
-            </div>
-            <div class="form-group">
               <label>${t('common.from')}</label>
               <input type="date" id="filterDateFrom" class="form-control">
             </div>
@@ -367,9 +362,6 @@ export async function renderOrders() {
   // Filter function
   const applyFilters = () => {
     const orderNumber = document.getElementById('filterOrderNumber')?.value.toLowerCase() || '';
-    const buyerName = document.getElementById('filterBuyerName')?.value.toLowerCase() || '';
-    const buyerCompany = document.getElementById('filterBuyerCompany')?.value.toLowerCase() || '';
-    const email = document.getElementById('filterEmail')?.value.toLowerCase() || '';
     const dateFrom = document.getElementById('filterDateFrom')?.value || '';
     const dateTo = document.getElementById('filterDateTo')?.value || '';
     
@@ -379,27 +371,6 @@ export async function renderOrders() {
     if (orderNumber) {
       filtered = filtered.filter(order => 
         (order.id || '').toLowerCase().includes(orderNumber)
-      );
-    }
-    
-    // Filter by buyer name
-    if (buyerName) {
-      filtered = filtered.filter(order => 
-        (order.buyerName || '').toLowerCase().includes(buyerName)
-      );
-    }
-    
-    // Filter by buyer company
-    if (buyerCompany) {
-      filtered = filtered.filter(order => 
-        (order.buyerCompany || '').toLowerCase().includes(buyerCompany)
-      );
-    }
-    
-    // Filter by email
-    if (email) {
-      filtered = filtered.filter(order => 
-        (order.buyerEmail || '').toLowerCase().includes(email)
       );
     }
     
@@ -426,7 +397,7 @@ export async function renderOrders() {
   };
   
   // Add event listeners for filters
-  ['filterOrderNumber', 'filterBuyerName', 'filterBuyerCompany', 'filterEmail', 'filterDateFrom', 'filterDateTo'].forEach(id => {
+  ['filterOrderNumber', 'filterDateFrom', 'filterDateTo'].forEach(id => {
     const element = document.getElementById(id);
     if (element) {
       element.addEventListener('input', applyFilters);
@@ -438,11 +409,11 @@ export async function renderOrders() {
   const resetButton = document.getElementById('resetFilters');
   if (resetButton) {
     resetButton.addEventListener('click', () => {
-      ['filterOrderNumber', 'filterBuyerName', 'filterBuyerCompany', 'filterEmail', 'filterDateFrom', 'filterDateTo'].forEach(id => {
+      ['filterOrderNumber', 'filterDateFrom', 'filterDateTo'].forEach(id => {
         const element = document.getElementById(id);
         if (element) element.value = '';
       });
-      renderOrdersList(allOrders);
+      renderOrdersList(activeOrders);
     });
   }
 }
