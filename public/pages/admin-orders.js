@@ -2,7 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import languageManager from '../js/language.js';
-import { escapeHtml, formatDate } from '../js/utils.js';
+import { escapeHtml, formatDate, showConfirm } from '../js/utils.js';
 
 export async function renderAdminOrders() {
   const t = languageManager.t.bind(languageManager);
@@ -257,6 +257,11 @@ async function editOrder(order) {
       status: document.getElementById('edit-order-status').value,
       notes: document.getElementById('edit-order-notes').value
     };
+
+    const shortId = order.id ? order.id.substring(0, 8).toUpperCase() : order.id;
+    if (!await showConfirm(`Are you sure you want to save changes for order #${shortId}?`)) {
+      return;
+    }
     
     try {
       await dataService.db.collection('orders').doc(order.id).update(updatedData);
@@ -275,7 +280,8 @@ function viewOrder(order) {
 }
 
 async function deleteOrder(order) {
-  if (!confirm(`Are you sure you want to delete order ${order.id}?`)) {
+  const shortId = order.id ? order.id.substring(0, 8).toUpperCase() : order.id;
+  if (!await showConfirm(`Are you sure you want to delete order #${shortId}?`)) {
     return;
   }
   

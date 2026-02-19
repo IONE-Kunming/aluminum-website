@@ -2,7 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import languageManager from '../js/language.js';
-import { escapeHtml } from '../js/utils.js';
+import { escapeHtml, showConfirm } from '../js/utils.js';
 
 export async function renderAdminProducts() {
   const t = languageManager.t.bind(languageManager);
@@ -345,6 +345,10 @@ async function editProduct(product) {
       unit: document.getElementById('edit-product-unit').value,
       isActive: document.getElementById('edit-product-isActive').checked
     };
+
+    if (!await showConfirm(`Are you sure you want to save changes for product "${product.name}"?`)) {
+      return;
+    }
     
     try {
       await dataService.db.collection('products').doc(product.id).update(updatedData);
@@ -359,7 +363,7 @@ async function editProduct(product) {
 }
 
 async function deleteProduct(product) {
-  if (!confirm(`Are you sure you want to delete product "${product.name}"?`)) {
+  if (!await showConfirm(`Are you sure you want to delete product "${product.name}"?`)) {
     return;
   }
   
@@ -377,7 +381,10 @@ async function deleteProduct(product) {
 async function toggleProductStatus(product) {
   const newStatus = !(product.isActive !== false);
   const t = languageManager.t.bind(languageManager);
-  
+  const action = newStatus ? 'activate' : 'deactivate';
+  if (!await showConfirm(`Are you sure you want to ${action} product "${product.name}"?`)) {
+    return;
+  }
   try {
     await dataService.db.collection('products').doc(product.id).update({
       isActive: newStatus

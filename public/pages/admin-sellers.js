@@ -2,7 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import languageManager from '../js/language.js';
-import { escapeHtml } from '../js/utils.js';
+import { escapeHtml, showConfirm } from '../js/utils.js';
 
 export async function renderAdminSellers() {
   const t = languageManager.t.bind(languageManager);
@@ -217,7 +217,10 @@ function viewSeller(seller) {
 async function toggleSellerStatus(seller) {
   const newStatus = !(seller.isActive !== false);
   const t = languageManager.t.bind(languageManager);
-  
+  const action = newStatus ? 'activate' : 'deactivate';
+  if (!await showConfirm(`Are you sure you want to ${action} seller "${seller.companyName || seller.displayName}"?`)) {
+    return;
+  }
   try {
     await dataService.db.collection('users').doc(seller.id).update({
       isActive: newStatus
@@ -231,7 +234,7 @@ async function toggleSellerStatus(seller) {
 }
 
 async function deleteSeller(seller) {
-  if (!confirm(`Are you sure you want to delete seller ${seller.companyName || seller.displayName}?`)) {
+  if (!await showConfirm(`Are you sure you want to delete seller "${seller.companyName || seller.displayName}"?`)) {
     return;
   }
   

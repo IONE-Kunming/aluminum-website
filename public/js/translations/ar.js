@@ -46,7 +46,10 @@ export default {
     to: 'إلى',
     clear: 'مسح',
     name: 'الاسم',
-    email: 'البريد الإلكتروني'
+    email: 'البريد الإلكتروني',
+    confirmAction: 'تأكيد الإجراء',
+    page: 'صفحة',
+    of: 'من'
   },
   
   // اللغات
@@ -181,7 +184,12 @@ export default {
     payNowSuccess: 'تم الدفع بنجاح!',
     payNowFullyPaid: 'تم سداد الطلب بالكامل!',
     invalidAmount: 'الرجاء إدخال مبلغ صالح',
-    amountExceedsBalance: 'لا يمكن أن يتجاوز المبلغ الرصيد المتبقي'
+    amountExceedsBalance: 'لا يمكن أن يتجاوز المبلغ الرصيد المتبقي',
+    totalOrders: 'إجمالي الطلبات',
+    totalAmount: 'المبلغ الإجمالي',
+    amountPaid: 'المبلغ المدفوع',
+    pendingReview: 'قيد المراجعة',
+    completedOrders: 'مكتمل'
   },
   
   // المحادثات
@@ -247,7 +255,17 @@ export default {
     markAsPaid: 'تحديد كمدفوع',
     markAsPaidConfirm: 'هل تريد تحديد هذه الفاتورة كمدفوعة؟',
     invoiceMarkedPaid: 'تم تحديد الفاتورة كمدفوعة',
-    failedToUpdateStatus: 'فشل تحديث حالة الفاتورة'
+    failedToUpdateStatus: 'فشل تحديث حالة الفاتورة',
+    totalInvoices: 'إجمالي الفواتير',
+    totalRevenue: 'إجمالي الإيرادات',
+    totalAmount: 'المبلغ الإجمالي',
+    amountPaid: 'المبلغ المدفوع',
+    outstandingBalance: 'الرصيد المستحق',
+    amountCollected: 'المبلغ المحصّل',
+    outstanding: 'المستحق',
+    paidInvoices: 'الفواتير المدفوعة',
+    pendingInvoices: 'الفواتير المعلقة',
+    dimensions: 'الأبعاد'
   },
   
   // الإشعارات

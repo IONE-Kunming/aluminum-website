@@ -2,7 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
-import { escapeHtml } from '../js/utils.js';
+import { escapeHtml, showConfirm } from '../js/utils.js';
 import { 
   getSubcategories, 
   getMainCategories,
@@ -606,7 +606,7 @@ async function editProduct(productId) {
 
 // Delete product
 async function deleteProduct(productId) {
-  if (!confirm('Are you sure you want to delete this product?')) {
+  if (!await showConfirm('Are you sure you want to delete this product?')) {
     return;
   }
   
@@ -786,6 +786,10 @@ function initializeEditProduct() {
         if (window.toast) {
           window.toast.error('Please fill in all required fields with valid values');
         }
+        return;
+      }
+
+      if (!await showConfirm(`Are you sure you want to save changes for product "${modelNumber}"?`)) {
         return;
       }
       
@@ -1038,8 +1042,9 @@ function initializeBulkImport() {
     
     // Warn about duplicates in database and ask for confirmation
     if (duplicatesInDb.length > 0) {
-      const confirmed = confirm(
-        `Warning: ${duplicatesInDb.length} product(s) with the same Model Number already exist in your catalog:\n\n${duplicatesInDb.slice(0, 5).join('\n')}${duplicatesInDb.length > 5 ? `\n... and ${duplicatesInDb.length - 5} more` : ''}\n\nImporting will create duplicate products. Do you want to continue?`
+      const dupList = duplicatesInDb.slice(0, 5).join(', ') + (duplicatesInDb.length > 5 ? ` and ${duplicatesInDb.length - 5} more` : '');
+      const confirmed = await showConfirm(
+        `Warning: ${duplicatesInDb.length} product(s) already exist (${dupList}). Importing will create duplicates. Do you want to continue?`
       );
       
       if (!confirmed) {
@@ -1250,7 +1255,7 @@ function initializeBulkSelection() {
       }
       
       const count = selectedProducts.size;
-      if (!confirm(`Are you sure you want to delete ${count} product${count > 1 ? 's' : ''}?`)) {
+      if (!await showConfirm(`Are you sure you want to delete ${count} product${count > 1 ? 's' : ''}?`)) {
         return;
       }
       

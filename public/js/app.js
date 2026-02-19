@@ -25,6 +25,10 @@ window.lucide = {
 import router from './router.js';
 import authManager from './auth.js';
 import cartManager from './cart.js';
+import languageManager from './language.js';
+
+// Expose languageManager globally so utility functions (e.g., showConfirm) can access translations
+window._languageManager = languageManager;
 
 // Profile loading timeout in milliseconds
 const PROFILE_LOAD_TIMEOUT_MS = 8000;

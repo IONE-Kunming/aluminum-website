@@ -146,27 +146,27 @@ export async function renderSellerInvoices() {
       <!-- Accounting Summary -->
       <div class="accounting-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px;">
         <div class="summary-card card" style="padding: 20px; text-align: center;">
-          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Total Invoices</p>
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('invoices.totalInvoices') || 'Total Invoices'}</p>
           <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${invoices.length}</p>
         </div>
         <div class="summary-card card" style="padding: 20px; text-align: center;">
-          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Total Revenue</p>
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('invoices.totalRevenue') || 'Total Revenue'}</p>
           <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${totalRevenue.toFixed(2)}</p>
         </div>
         <div class="summary-card card" style="padding: 20px; text-align: center;">
-          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Amount Collected</p>
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('invoices.amountCollected') || 'Amount Collected'}</p>
           <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${totalCollected.toFixed(2)}</p>
         </div>
         <div class="summary-card card" style="padding: 20px; text-align: center;">
-          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Outstanding</p>
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('invoices.outstanding') || 'Outstanding'}</p>
           <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${totalOutstanding.toFixed(2)}</p>
         </div>
         <div class="summary-card card" style="padding: 20px; text-align: center;">
-          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Paid Invoices</p>
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('invoices.paidInvoices') || 'Paid Invoices'}</p>
           <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${paidCount}</p>
         </div>
         <div class="summary-card card" style="padding: 20px; text-align: center;">
-          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Pending Invoices</p>
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">${t('invoices.pendingInvoices') || 'Pending Invoices'}</p>
           <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${pendingCount}</p>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import languageManager from '../js/language.js';
-import { escapeHtml } from '../js/utils.js';
+import { escapeHtml, showConfirm } from '../js/utils.js';
 
 export async function renderAdminUsers() {
   const t = languageManager.t.bind(languageManager);
@@ -285,6 +285,10 @@ async function editUser(user) {
       phoneNumber: document.getElementById('edit-phoneNumber').value,
       isActive: document.getElementById('edit-isActive').checked
     };
+
+    if (!await showConfirm(`Are you sure you want to save changes for ${user.displayName || user.email}?`)) {
+      return;
+    }
     
     try {
       // Check if email changed and if it's already in use
@@ -300,7 +304,7 @@ async function editUser(user) {
         }
         
         // Show warning about email change
-        if (!confirm(t('admin.confirmEmailChange', { email: newEmail }))) {
+        if (!await showConfirm(t('admin.confirmEmailChange', { email: newEmail }))) {
           return;
         }
       }
@@ -323,7 +327,7 @@ async function editUser(user) {
 }
 
 async function deleteUser(user) {
-  if (!confirm(`Are you sure you want to delete user ${user.displayName || user.email}?`)) {
+  if (!await showConfirm(`Are you sure you want to delete user "${user.displayName || user.email}"?`)) {
     return;
   }
   
@@ -341,7 +345,10 @@ async function deleteUser(user) {
 async function toggleUserStatus(user) {
   const newStatus = !(user.isActive !== false);
   const t = languageManager.t.bind(languageManager);
-  
+  const action = newStatus ? 'activate' : 'deactivate';
+  if (!await showConfirm(`Are you sure you want to ${action} user "${user.displayName || user.email}"?`)) {
+    return;
+  }
   try {
     await dataService.db.collection('users').doc(user.id).update({
       isActive: newStatus

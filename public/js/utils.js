@@ -72,6 +72,70 @@ export function debounce(func, wait) {
   };
 }
 
+/**
+ * Show a styled confirmation dialog for all users.
+ * @param {string} message - The question to ask the user.
+ * @param {string} [title] - Optional dialog title.
+ * @param {string} [confirmText] - Optional confirm button label.
+ * @param {string} [cancelText] - Optional cancel button label.
+ * @returns {Promise<boolean>} Resolves true if confirmed, false if cancelled.
+ */
+export function showConfirm(message, title, confirmText, cancelText) {
+  return new Promise((resolve) => {
+    const t = window._languageManager ? window._languageManager.t.bind(window._languageManager) : (k) => k;
+    const resolvedTitle = title || t('common.confirmAction') || 'Confirm Action';
+    const resolvedConfirm = confirmText || t('common.confirm') || 'Confirm';
+    const resolvedCancel = cancelText || t('common.cancel') || 'Cancel';
+
+    const existing = document.getElementById('app-confirm-modal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'app-confirm-modal';
+    modal.style.cssText = `
+      position: fixed; inset: 0; z-index: 99999;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+    `;
+    modal.innerHTML = `
+      <div style="
+        background: var(--card-bg, #fff); border-radius: 12px;
+        padding: 28px 32px; max-width: 420px; width: 90%;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        animation: confirmFadeIn 0.15s ease;
+      ">
+        <h3 style="margin: 0 0 12px; font-size: 18px; color: var(--text-primary, #111);">
+          ${escapeHtml(resolvedTitle)}
+        </h3>
+        <p style="margin: 0 0 24px; font-size: 15px; color: var(--text-secondary, #555); line-height: 1.5;">
+          ${escapeHtml(message)}
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: flex-end;">
+          <button id="confirm-modal-cancel" style="
+            padding: 9px 20px; border-radius: 8px; border: 1px solid var(--border-color, #ddd);
+            background: transparent; color: var(--text-primary, #111);
+            font-size: 14px; cursor: pointer; font-weight: 500;
+          ">${escapeHtml(resolvedCancel)}</button>
+          <button id="confirm-modal-ok" style="
+            padding: 9px 20px; border-radius: 8px; border: none;
+            background: var(--primary-color, #3b82f6); color: #fff;
+            font-size: 14px; cursor: pointer; font-weight: 600;
+          ">${escapeHtml(resolvedConfirm)}</button>
+        </div>
+      </div>
+      <style>
+        @keyframes confirmFadeIn { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:scale(1); } }
+      </style>
+    `;
+    document.body.appendChild(modal);
+
+    const cleanup = (result) => { modal.remove(); resolve(result); };
+    document.getElementById('confirm-modal-ok').addEventListener('click', () => cleanup(true));
+    document.getElementById('confirm-modal-cancel').addEventListener('click', () => cleanup(false));
+    modal.addEventListener('click', (e) => { if (e.target === modal) cleanup(false); });
+  });
+}
+
 // Export invoice to CSV format
 export function exportInvoiceToCSV(invoice) {
   const rows = [];
