@@ -4,6 +4,10 @@ import dataService from '../js/dataService.js';
 import { escapeHtml, formatDate, exportInvoiceToCSV, exportInvoiceToTXT } from '../js/utils.js';
 import html2pdf from 'html2pdf.js';
 
+// Fallback dimensions for the logo canvas when natural dimensions are unavailable
+const DEFAULT_LOGO_WIDTH = 200;
+const DEFAULT_LOGO_HEIGHT = 80;
+
 // Default terms and conditions
 const DEFAULT_TERMS = [
   'Payment must be made within 30 days of invoice date.',
@@ -131,23 +135,28 @@ export async function renderInvoiceDetail() {
       // Clone the element to avoid modifying the original
       const clone = element.cloneNode(true);
       
-      // Replace SVG logo with a base64 data URL so html2canvas renders it correctly
+      // Convert SVG logo to PNG via canvas so html2canvas renders it correctly
       const logoImg = clone.querySelector('.invoice-logo-img');
       if (logoImg) {
         try {
-          const response = await fetch(logoImg.src);
-          const blob = await response.blob();
-          const reader = new FileReader();
-          await new Promise((resolve) => {
-            reader.onload = () => {
-              logoImg.src = reader.result;
-              resolve();
+          const pngDataUrl = await new Promise((resolve, reject) => {
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              canvas.width = img.naturalWidth || DEFAULT_LOGO_WIDTH;
+              canvas.height = img.naturalHeight || DEFAULT_LOGO_HEIGHT;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0);
+              resolve(canvas.toDataURL('image/png'));
             };
-            reader.readAsDataURL(blob);
+            img.onerror = reject;
+            img.src = logoImg.src;
           });
+          logoImg.src = pngDataUrl;
         } catch (err) {
-          // If logo fetch fails (e.g. CORS or network error), hide it so it doesn't break layout
-          console.warn('Could not load logo for PDF export:', err);
+          // If logo conversion fails, hide it so it doesn't break layout
+          console.warn('Could not convert logo for PDF export:', err);
           logoImg.style.display = 'none';
         }
       }
