@@ -37,7 +37,8 @@ const COUNTRY_CODES = [
 ];
 
 function parsePhoneNumber(fullPhone) {
-  if (!fullPhone || !fullPhone.startsWith('+')) return { countryCode: '+1', localNumber: fullPhone || '' };
+  const defaultCode = COUNTRY_CODES[0].code; // UAE (+971) as default
+  if (!fullPhone || !fullPhone.startsWith('+')) return { countryCode: defaultCode, localNumber: fullPhone || '' };
   // Sort by code length descending for longest-match-first
   const sorted = [...COUNTRY_CODES].sort((a, b) => b.code.length - a.code.length);
   for (const country of sorted) {
@@ -45,7 +46,7 @@ function parsePhoneNumber(fullPhone) {
       return { countryCode: country.code, localNumber: fullPhone.slice(country.code.length) };
     }
   }
-  return { countryCode: '+1', localNumber: fullPhone };
+  return { countryCode: defaultCode, localNumber: fullPhone };
 }
 
 export function renderProfile() {

@@ -224,7 +224,10 @@ function showPaymentProofModal(invoiceId, invoiceNumber) {
     submitBtn.disabled = true;
 
     try {
-      const storageRef = firebase.storage().ref(`payment-proofs/${invoiceId}_${Date.now()}.pdf`);
+      const user = authManager.getCurrentUser();
+      const uid = user?.uid || 'unknown';
+      const randomId = Math.random().toString(36).substring(2, 10);
+      const storageRef = firebase.storage().ref(`payment-proofs/${uid}/${invoiceId}_${Date.now()}_${randomId}.pdf`);
       const uploadTask = await storageRef.put(file);
       const paymentProofUrl = await uploadTask.ref.getDownloadURL();
 
