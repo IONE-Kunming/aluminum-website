@@ -202,53 +202,51 @@ async function editUser(user) {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.innerHTML = `
-    <div class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2><i data-lucide="edit"></i> ${t('admin.editUser')}</h2>
-          <button class="modal-close" id="close-edit-modal">
-            <i data-lucide="x"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form id="edit-user-form">
-            <div class="form-group">
-              <label for="edit-displayName">${t('profile.displayName')}</label>
-              <input type="text" id="edit-displayName" value="${escapeHtml(user.displayName || '')}" required />
-            </div>
-            <div class="form-group">
-              <label for="edit-email">${t('auth.email')}</label>
-              <input type="email" id="edit-email" value="${escapeHtml(user.email || '')}" required />
-              <small style="color: var(--text-secondary);">${t('admin.emailChangeWarning')}</small>
-            </div>
-            <div class="form-group">
-              <label for="edit-role">${t('profile.role')}</label>
-              <select id="edit-role" required>
-                <option value="buyer" ${user.role === 'buyer' ? 'selected' : ''}>Buyer</option>
-                <option value="seller" ${user.role === 'seller' ? 'selected' : ''}>Seller</option>
-                <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="edit-companyName">${t('auth.companyName')}</label>
-              <input type="text" id="edit-companyName" value="${escapeHtml(user.companyName || '')}" />
-            </div>
-            <div class="form-group">
-              <label for="edit-phoneNumber">${t('profile.phone')}</label>
-              <input type="text" id="edit-phoneNumber" value="${escapeHtml(user.phoneNumber || '')}" />
-            </div>
-            <div class="form-group">
-              <label>
-                <input type="checkbox" id="edit-isActive" ${user.isActive !== false ? 'checked' : ''} />
-                ${t('admin.activeStatus')}
-              </label>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" id="cancel-edit-user">${t('common.cancel')}</button>
-          <button class="btn btn-primary" id="save-edit-user">${t('common.save')}</button>
-        </div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2><i data-lucide="edit"></i> ${t('admin.editUser')}</h2>
+        <button class="modal-close" id="close-edit-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-user-form">
+          <div class="form-group">
+            <label for="edit-displayName">${t('profile.displayName')}</label>
+            <input type="text" id="edit-displayName" value="${escapeHtml(user.displayName || '')}" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-email">${t('auth.email')}</label>
+            <input type="email" id="edit-email" value="${escapeHtml(user.email || '')}" required />
+            <small style="color: var(--text-secondary);">${t('admin.emailChangeWarning')}</small>
+          </div>
+          <div class="form-group">
+            <label for="edit-role">${t('profile.role')}</label>
+            <select id="edit-role" required>
+              <option value="buyer" ${user.role === 'buyer' ? 'selected' : ''}>Buyer</option>
+              <option value="seller" ${user.role === 'seller' ? 'selected' : ''}>Seller</option>
+              <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-companyName">${t('auth.companyName')}</label>
+            <input type="text" id="edit-companyName" value="${escapeHtml(user.companyName || '')}" />
+          </div>
+          <div class="form-group">
+            <label for="edit-phoneNumber">${t('profile.phone')}</label>
+            <input type="text" id="edit-phoneNumber" value="${escapeHtml(user.phoneNumber || '')}" />
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="edit-isActive" ${user.isActive !== false ? 'checked' : ''} />
+              ${t('admin.activeStatus')}
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancel-edit-user">${t('common.cancel')}</button>
+        <button class="btn btn-primary" id="save-edit-user">${t('common.save')}</button>
       </div>
     </div>
   `;

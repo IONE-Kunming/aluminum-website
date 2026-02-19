@@ -254,57 +254,55 @@ async function editProduct(product) {
   const modal = document.createElement('div');
   modal.className = 'modal-overlay';
   modal.innerHTML = `
-    <div class="modal modal-large">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2><i data-lucide="edit"></i> ${t('admin.editProduct')}</h2>
-          <button class="modal-close" id="close-edit-modal">
-            <i data-lucide="x"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form id="edit-product-form">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h2><i data-lucide="edit"></i> ${t('admin.editProduct')}</h2>
+        <button class="modal-close" id="close-edit-modal">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-product-form">
+          <div class="form-group">
+            <label for="edit-product-name">${t('product.name')}</label>
+            <input type="text" id="edit-product-name" value="${escapeHtml(product.name || '')}" required />
+          </div>
+          <div class="form-group">
+            <label for="edit-product-category">${t('product.category')}</label>
+            <input type="text" id="edit-product-category" value="${escapeHtml(product.category || '')}" list="category-list" required />
+            <datalist id="category-list">
+              ${categories.map(cat => `<option value="${escapeHtml(cat)}">`).join('')}
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label for="edit-product-description">${t('product.description')}</label>
+            <textarea id="edit-product-description" rows="3">${escapeHtml(product.description || '')}</textarea>
+          </div>
+          <div class="form-row">
             <div class="form-group">
-              <label for="edit-product-name">${t('product.name')}</label>
-              <input type="text" id="edit-product-name" value="${escapeHtml(product.name || '')}" required />
-            </div>
-            <div class="form-group">
-              <label for="edit-product-category">${t('product.category')}</label>
-              <input type="text" id="edit-product-category" value="${escapeHtml(product.category || '')}" list="category-list" required />
-              <datalist id="category-list">
-                ${categories.map(cat => `<option value="${escapeHtml(cat)}">`).join('')}
-              </datalist>
-            </div>
-            <div class="form-group">
-              <label for="edit-product-description">${t('product.description')}</label>
-              <textarea id="edit-product-description" rows="3">${escapeHtml(product.description || '')}</textarea>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="edit-product-price">${t('product.price')}</label>
-                <input type="number" id="edit-product-price" value="${product.pricePerUnit || 0}" step="0.01" min="0" required />
-              </div>
-              <div class="form-group">
-                <label for="edit-product-stock">${t('product.stock')}</label>
-                <input type="number" id="edit-product-stock" value="${product.stockQuantity || 0}" min="0" required />
-              </div>
-              <div class="form-group">
-                <label for="edit-product-unit">${t('product.unit')}</label>
-                <input type="text" id="edit-product-unit" value="${escapeHtml(product.unit || 'units')}" required />
-              </div>
+              <label for="edit-product-price">${t('product.price')}</label>
+              <input type="number" id="edit-product-price" value="${product.pricePerUnit || 0}" step="0.01" min="0" required />
             </div>
             <div class="form-group">
-              <label>
-                <input type="checkbox" id="edit-product-isActive" ${product.isActive !== false ? 'checked' : ''} />
-                ${t('admin.activeStatus')}
-              </label>
+              <label for="edit-product-stock">${t('product.stock')}</label>
+              <input type="number" id="edit-product-stock" value="${product.stockQuantity || 0}" min="0" required />
             </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" id="cancel-edit-product">${t('common.cancel')}</button>
-          <button class="btn btn-primary" id="save-edit-product">${t('common.save')}</button>
-        </div>
+            <div class="form-group">
+              <label for="edit-product-unit">${t('product.unit')}</label>
+              <input type="text" id="edit-product-unit" value="${escapeHtml(product.unit || 'units')}" required />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="edit-product-isActive" ${product.isActive !== false ? 'checked' : ''} />
+              ${t('admin.activeStatus')}
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancel-edit-product">${t('common.cancel')}</button>
+        <button class="btn btn-primary" id="save-edit-product">${t('common.save')}</button>
       </div>
     </div>
   `;

@@ -1,66 +1,25 @@
 import router from '../js/router.js';
-import authManager from '../js/auth.js';
 import dataService from '../js/dataService.js';
 import languageManager from '../js/language.js';
 import { escapeHtml } from '../js/utils.js';
 
-// All available categories
-const CATEGORIES = [
-  'apparelAccessories',
-  'automobilesMotorcycles',
-  'businessServices',
-  'chemicals',
-  'computerProductsElectronics',
-  'constructionRealEstate',
-  'consumerElectronics',
-  'electricalEquipmentSupplies',
-  'electronicsComponentsSupplies',
-  'energy',
-  'environment',
-  'foodBeverage',
-  'furniture',
-  'giftsSportsToys',
-  'hardware',
-  'healthBeauty',
-  'homeGarden',
-  'homeAppliances',
-  'industryLaserEquipment',
-  'lightsLighting',
-  'luggageBagsCases',
-  'machinery',
-  'measurementAnalysisInstruments',
-  'metallurgyMineralEnergy',
-  'packagingPrinting',
-  'securityProtection',
-  'shoesAccessories',
-  'textilesLeatherProducts',
-  'transportation'
-];
+// Helper function to translate category names
+function translateCategory(category, t) {
+  if (!category) return '';
+  const translationKey = `categoryNames.${category}`;
+  const translated = t(translationKey);
+  return translated === translationKey ? category : translated;
+}
 
 export async function renderPublicCategories() {
   const t = languageManager.t.bind(languageManager);
   const app = document.getElementById('app');
-  
-  // Get available categories (only those with active products)
-  const allProducts = await dataService.getProducts({ limit: 2000 });
-  // Filter to show only active products
-  const activeProducts = allProducts.filter(p => p.isActive !== false);
-  const availableCategories = new Set();
-  
-  activeProducts.forEach(product => {
-    if (product.category) {
-      availableCategories.add(product.category);
-    }
-  });
-  
-  // Filter categories to show only those with products
-  const categoriesToShow = CATEGORIES.filter(cat => {
-    const translationKey = `categories.${cat}`;
-    const categoryName = t(translationKey);
-    // Check if any product has this category name
-    return availableCategories.has(categoryName) || availableCategories.has(cat);
-  });
-  
+
+  // Get available categories using the hierarchy system (same as authenticated catalog)
+  const hierarchyData = await dataService.getCategoriesHierarchy();
+  const { mainCategories, unmappedCategories } = hierarchyData;
+  const allCategories = [...mainCategories, ...unmappedCategories];
+
   app.innerHTML = `
     <div class="public-categories-page">
       <!-- Simple Header -->
@@ -84,7 +43,7 @@ export async function renderPublicCategories() {
           </p>
         </div>
         
-        ${categoriesToShow.length === 0 ? `
+        ${allCategories.length === 0 ? `
           <div class="empty-state">
             <i data-lucide="package-open" style="width: 64px; height: 64px; opacity: 0.3;"></i>
             <h2>${t('categories.noProductsInCategory')}</h2>
@@ -93,19 +52,15 @@ export async function renderPublicCategories() {
           </div>
         ` : `
           <div class="categories-grid">
-            ${categoriesToShow.map(cat => {
-              const translationKey = `categories.${cat}`;
-              const categoryName = t(translationKey);
-              return `
-                <div class="category-tile card" data-category="${escapeHtml(categoryName)}" style="cursor: pointer;">
-                  <div class="category-icon">
-                    <i data-lucide="package"></i>
-                  </div>
-                  <h3>${categoryName}</h3>
-                  <p style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">Browse products</p>
+            ${allCategories.map(cat => `
+              <div class="category-tile card" data-category="${escapeHtml(cat)}" style="cursor: pointer;">
+                <div class="category-icon">
+                  <i data-lucide="package"></i>
                 </div>
-              `;
-            }).join('')}
+                <h3>${escapeHtml(translateCategory(cat, t))}</h3>
+                <p style="margin-top: 8px; font-size: 14px; color: var(--text-muted);">Browse products</p>
+              </div>
+            `).join('')}
           </div>
         `}
         
@@ -120,14 +75,14 @@ export async function renderPublicCategories() {
       </div>
     </div>
   `;
-  
+
   if (window.lucide) window.lucide.createIcons();
-  
+
   // Add event listener for back button
   document.getElementById('back-to-landing')?.addEventListener('click', () => {
     router.navigate('/');
   });
-  
+
   // Add event listeners for navigation buttons
   app.querySelectorAll('[data-nav]').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -136,12 +91,11 @@ export async function renderPublicCategories() {
       router.navigate(`/${page}`);
     });
   });
-  
+
   // Add event listeners for category selection
   document.querySelectorAll('.category-tile').forEach(tile => {
-    tile.addEventListener('click', async () => {
+    tile.addEventListener('click', () => {
       const category = tile.dataset.category;
-      // Navigate directly to guest catalog to browse products
       router.navigate(`/guest/catalog?category=${encodeURIComponent(category)}`);
     });
   });
