@@ -181,10 +181,14 @@ export function exportInvoiceToCSV(invoice) {
   
   // Order items
   rows.push(['Order Items']);
-  rows.push(['Product Name', 'Quantity', 'Unit', 'Price per Unit', 'Subtotal']);
+  rows.push(['Product Name', 'Dimensions (cm)', 'Quantity', 'Unit', 'Price per Unit', 'Subtotal']);
   (invoice.items || []).forEach(item => {
+    const dims = item.dimensions && item.dimensions.length && item.dimensions.width
+      ? `${(item.dimensions.length * 100).toFixed(1)} × ${(item.dimensions.width * 100).toFixed(1)}`
+      : '';
     rows.push([
       item.productName || 'N/A',
+      dims,
       item.quantity || 0,
       item.unit || 'units',
       `$${(item.pricePerUnit || 0).toFixed(2)}`,
@@ -320,7 +324,10 @@ export function exportInvoiceToTXT(invoice) {
   lines.push(String('Product Name').padEnd(30) + String('Qty').padEnd(10) + String('Unit').padEnd(10) + String('Price').padEnd(15) + 'Subtotal');
   lines.push('-'.repeat(80));
   (invoice.items || []).forEach(item => {
-    const name = (item.productName || 'N/A').substring(0, 28);
+    const dims = item.dimensions && item.dimensions.length && item.dimensions.width
+      ? ` (${(item.dimensions.length * 100).toFixed(1)}cm × ${(item.dimensions.width * 100).toFixed(1)}cm)`
+      : '';
+    const name = ((item.productName || 'N/A') + dims).substring(0, 28);
     const qty = String(item.quantity || 0);
     const unit = (item.unit || 'units').substring(0, 8);
     const price = `$${(item.pricePerUnit || 0).toFixed(2)}`;

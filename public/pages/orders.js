@@ -46,9 +46,14 @@ export async function renderOrders() {
       return db - da;
     });
 
-  const totalSpent = activeOrders.reduce((s, o) => s + (o.total || 0), 0);
-  const totalDeposit = activeOrders.reduce((s, o) => s + (o.depositAmount || 0), 0);
-  const totalRemaining = activeOrders.reduce((s, o) => s + (o.remainingBalance || 0), 0);
+  const { totalSpent, totalDeposit, totalRemaining } = activeOrders.reduce(
+    (acc, o) => ({
+      totalSpent: acc.totalSpent + (o.total || 0),
+      totalDeposit: acc.totalDeposit + (o.depositAmount || 0),
+      totalRemaining: acc.totalRemaining + (o.remainingBalance || 0),
+    }),
+    { totalSpent: 0, totalDeposit: 0, totalRemaining: 0 }
+  );
 
   const PAGE_SIZE = 10;
   let currentPage = 1;

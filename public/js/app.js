@@ -69,7 +69,6 @@ const lazyPages = {
   adminUsers: () => import('../pages/admin-users.js').then(m => m.renderAdminUsers),
   adminProducts: () => import('../pages/admin-products.js').then(m => m.renderAdminProducts),
   adminOrders: () => import('../pages/admin-orders.js').then(m => m.renderAdminOrders),
-  adminSellers: () => import('../pages/admin-sellers.js').then(m => m.renderAdminSellers),
   adminInvoices: () => import('../pages/admin-invoices.js').then(m => m.renderAdminInvoices),
 };
 
@@ -289,7 +288,6 @@ async function initApp() {
   router.register('/admin/users', protectedRoute(lazyRoute(lazyPages.adminUsers), 'admin'));
   router.register('/admin/products', protectedRoute(lazyRoute(lazyPages.adminProducts), 'admin'));
   router.register('/admin/orders', protectedRoute(lazyRoute(lazyPages.adminOrders), 'admin'));
-  router.register('/admin/sellers', protectedRoute(lazyRoute(lazyPages.adminSellers), 'admin'));
   router.register('/admin/invoices', protectedRoute(lazyRoute(lazyPages.adminInvoices), 'admin'));
   router.register('/admin/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'admin'));
   router.register('/admin/support', protectedRoute(lazyRoute(lazyPages.support), 'admin'));

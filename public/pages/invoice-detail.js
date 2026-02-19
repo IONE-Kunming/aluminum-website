@@ -59,22 +59,29 @@ export async function renderInvoiceDetail() {
                 <i data-lucide="chevron-down"></i>
               </button>
               <div class="dropdown-menu" id="download-menu">
-                <button class="dropdown-item" data-format="pdf-en">
+                <div class="dropdown-item dropdown-has-sub" id="pdf-parent-item">
                   <i data-lucide="file-text"></i>
-                  PDF (English)
-                </button>
-                <button class="dropdown-item" data-format="pdf-zh">
-                  <i data-lucide="file-text"></i>
-                  PDF (中文)
-                </button>
-                <button class="dropdown-item" data-format="pdf-ar">
-                  <i data-lucide="file-text"></i>
-                  PDF (العربية)
-                </button>
-                <button class="dropdown-item" data-format="pdf-ur">
-                  <i data-lucide="file-text"></i>
-                  PDF (اردو)
-                </button>
+                  PDF Document
+                  <svg class="dropdown-submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                  <div class="dropdown-submenu" id="pdf-submenu">
+                    <button class="dropdown-item" data-format="pdf-en">
+                      <i data-lucide="file-text"></i>
+                      English
+                    </button>
+                    <button class="dropdown-item" data-format="pdf-zh">
+                      <i data-lucide="file-text"></i>
+                      中文
+                    </button>
+                    <button class="dropdown-item" data-format="pdf-ar">
+                      <i data-lucide="file-text"></i>
+                      العربية
+                    </button>
+                    <button class="dropdown-item" data-format="pdf-ur">
+                      <i data-lucide="file-text"></i>
+                      اردو
+                    </button>
+                  </div>
+                </div>
                 <button class="dropdown-item" data-format="csv">
                   <i data-lucide="table"></i>
                   CSV Spreadsheet
@@ -113,14 +120,26 @@ export async function renderInvoiceDetail() {
     // Close dropdown when clicking outside
     document.addEventListener('click', () => {
       downloadMenu.classList.remove('active');
+      const pdfParent = document.getElementById('pdf-parent-item');
+      if (pdfParent) pdfParent.classList.remove('sub-open');
     });
+
+    // Toggle sub-menu on click (touch-device fallback; hover handles desktop)
+    const pdfParentItem = document.getElementById('pdf-parent-item');
+    if (pdfParentItem) {
+      pdfParentItem.addEventListener('click', (e) => {
+        e.stopPropagation();
+        pdfParentItem.classList.toggle('sub-open');
+      });
+    }
     
-    // Handle format selection
-    document.querySelectorAll('#download-menu .dropdown-item').forEach(item => {
+    // Handle format selection — only fire on actual buttons with data-format
+    document.querySelectorAll('#download-menu button[data-format]').forEach(item => {
       item.addEventListener('click', async (e) => {
         e.stopPropagation();
         const format = item.getAttribute('data-format');
         downloadMenu.classList.remove('active');
+        if (pdfParentItem) pdfParentItem.classList.remove('sub-open');
         
         switch(format) {
           case 'pdf-en':

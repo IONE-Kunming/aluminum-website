@@ -54,11 +54,15 @@ export async function renderSellerOrders() {
     return db - da;
   });
 
-  const totalActive = allOrders.filter(o => o.status !== 'draft' && o.status !== 'collected' && o.status !== 'Collected').length;
-  const completedOrders = allOrders.filter(o => o.status === 'collected' || o.status === 'Collected').length;
-  const pendingReview = allOrders.filter(o =>
-    o.status === 'under review' || o.status === 'Under Review' || o.status === 'pending'
-  ).length;
+  const totalActive = allOrders.filter(o => {
+    const s = (o.status || '').toLowerCase();
+    return s !== 'draft' && s !== 'collected';
+  }).length;
+  const completedOrders = allOrders.filter(o => (o.status || '').toLowerCase() === 'collected').length;
+  const pendingReview = allOrders.filter(o => {
+    const s = (o.status || '').toLowerCase();
+    return s === 'under review' || s === 'pending';
+  }).length;
 
   const PAGE_SIZE = 10;
   let currentPage = 1;

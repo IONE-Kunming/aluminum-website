@@ -121,10 +121,14 @@ function displayUsers(users) {
   
   // Setup action buttons
   users.forEach(user => {
+    const viewBtn = document.getElementById(`view-user-${user.id}`);
     const editBtn = document.getElementById(`edit-user-${user.id}`);
     const deleteBtn = document.getElementById(`delete-user-${user.id}`);
     const toggleBtn = document.getElementById(`toggle-user-${user.id}`);
     
+    if (viewBtn) {
+      viewBtn.addEventListener('click', () => viewUserDetails(user));
+    }
     if (editBtn) {
       editBtn.addEventListener('click', () => editUser(user));
     }
@@ -151,6 +155,9 @@ function renderUserRow(user) {
       <td><span class="status-badge ${statusClass}">${statusText}</span></td>
       <td>${new Date(user.createdAt).toLocaleDateString()}</td>
       <td class="actions">
+        <button class="btn-icon" id="view-user-${user.id}" title="View Details">
+          <i data-lucide="eye"></i>
+        </button>
         <button class="btn-icon" id="edit-user-${user.id}" title="Edit User">
           <i data-lucide="edit"></i>
         </button>
@@ -193,6 +200,81 @@ function filterUsers() {
   }
   
   displayUsers(filtered);
+}
+
+function viewUserDetails(user) {
+  const t = languageManager.t.bind(languageManager);
+  const isActive = user.isActive !== false;
+
+  const formatVal = (v) => escapeHtml(v || 'N/A');
+  const formatDate = (v) => {
+    if (!v) return 'N/A';
+    try { return new Date(v).toLocaleString(); } catch { return String(v); }
+  };
+
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.id = 'view-user-modal';
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 560px;">
+      <div class="modal-header">
+        <h2><i data-lucide="user"></i> User Details</h2>
+        <button class="modal-close" id="close-view-user-modal"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Display Name</p>
+            <p style="font-weight: 600; margin: 0 0 16px;">${formatVal(user.displayName)}</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Email</p>
+            <p style="font-weight: 600; margin: 0 0 16px;">${formatVal(user.email)}</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Role</p>
+            <p style="margin: 0 0 16px;"><span class="badge badge-${user.role || 'buyer'}">${formatVal(user.role)}</span></p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Status</p>
+            <p style="margin: 0 0 16px;"><span class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? 'Active' : 'Inactive'}</span></p>
+          </div>
+          <div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Company</p>
+            <p style="font-weight: 600; margin: 0 0 16px;">${formatVal(user.companyName)}</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Phone</p>
+            <p style="font-weight: 600; margin: 0 0 16px;">${formatVal(user.phoneNumber)}</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">User ID</p>
+            <p style="font-weight: 600; font-size: 12px; word-break: break-all; margin: 0 0 16px;">${formatVal(user.id)}</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Joined</p>
+            <p style="font-weight: 600; margin: 0 0 16px;">${formatDate(user.createdAt)}</p>
+          </div>
+        </div>
+        ${user.address ? `
+        <hr style="border-color: var(--border-color); margin: 4px 0 16px;">
+        <p style="font-size: 13px; font-weight: 600; margin: 0 0 8px;">Address</p>
+        <p style="font-size: 14px; margin: 0;">${formatVal(user.address.street)}, ${formatVal(user.address.city)}, ${formatVal(user.address.country)}</p>
+        ` : ''}
+        ${user.bio ? `
+        <hr style="border-color: var(--border-color); margin: 16px 0 12px;">
+        <p style="font-size: 13px; font-weight: 600; margin: 0 0 8px;">Bio</p>
+        <p style="font-size: 14px; margin: 0; color: var(--text-secondary);">${formatVal(user.bio)}</p>
+        ` : ''}
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="close-view-user-btn">Close</button>
+        <button class="btn btn-primary" id="edit-from-view-btn">
+          <i data-lucide="edit"></i> Edit User
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  if (window.lucide) window.lucide.createIcons();
+
+  const closeModal = () => modal.remove();
+  document.getElementById('close-view-user-modal').addEventListener('click', closeModal);
+  document.getElementById('close-view-user-btn').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.getElementById('edit-from-view-btn').addEventListener('click', () => {
+    closeModal();
+    editUser(user);
+  });
 }
 
 async function editUser(user) {
