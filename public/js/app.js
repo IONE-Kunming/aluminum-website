@@ -7,6 +7,21 @@ import '../css/Layout.css';
 import '../css/Dashboard.css';
 import '../css/Pages.css';
 
+// Import Firebase from npm package and make it available globally
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
+
+// Make Firebase available globally for other modules
+window.firebase = firebase;
+
+// Import Lucide icons and make it available globally
+import { createIcons, icons } from 'lucide';
+window.lucide = { 
+  createIcons: () => createIcons({ icons })
+};
+
 import router from './router.js';
 import authManager from './auth.js';
 import cartManager from './cart.js';
