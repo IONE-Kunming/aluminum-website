@@ -18,16 +18,21 @@ export async function renderOrderCheckout() {
   // Fetch the order
   const order = await dataService.getOrderById(orderId);
   
-  if (!order || order.status !== 'draft') {
+  // Allow draft orders (initial checkout) and deposit_paid orders (remaining balance payment)
+  const isRemainingPayment = order && order.paymentStatus === 'deposit_paid' && (order.remainingBalance || 0) > 0;
+  
+  if (!order || (order.status !== 'draft' && !isRemainingPayment)) {
     window.toast.error(t('orders.orderNotFound') || 'Order not found or already checked out');
     router.navigate('/buyer/orders');
     return;
   }
   
+  const remainingBalance = order.remainingBalance || 0;
+  
   const content = `
     <div class="order-checkout-page">
       <div class="page-header">
-        <h1>${t('orders.checkoutOrder') || 'Checkout Order'}</h1>
+        <h1>${isRemainingPayment ? (t('orders.payRemainingBalance') || 'Pay Remaining Balance') : (t('orders.checkoutOrder') || 'Checkout Order')}</h1>
         <p>${t('orders.completePayment') || 'Complete payment for this order'}</p>
       </div>
 
@@ -62,10 +67,21 @@ export async function renderOrderCheckout() {
               <span>${t('checkout.total')}:</span>
               <span id="order-total">$${order.total.toFixed(2)}</span>
             </div>
+            ${isRemainingPayment ? `
+            <div class="checkout-total-row" style="margin-top: 8px;">
+              <span>${t('checkout.depositAmountLabel') || 'Deposit Paid'}:</span>
+              <span style="color: var(--success-color);">$${(order.depositAmount || 0).toFixed(2)}</span>
+            </div>
+            <div class="checkout-total-row total" style="color: var(--warning-color);">
+              <span>${t('checkout.remainingBalance') || 'Remaining Balance'}:</span>
+              <span>$${remainingBalance.toFixed(2)}</span>
+            </div>
+            ` : ''}
           </div>
         </div>
 
-        <!-- Deposit Selection -->
+        <!-- Deposit Selection (only for draft orders) -->
+        ${!isRemainingPayment ? `
         <div class="checkout-section card">
           <h2>${t('checkout.depositAmount')} <span class="required-badge">${t('checkout.required')}</span></h2>
           <p class="section-description">${t('checkout.selectDeposit')}</p>
@@ -119,6 +135,7 @@ export async function renderOrderCheckout() {
             </div>
           </div>
         </div>
+        ` : ''}
 
         <!-- Payment Method Selection -->
         <div class="checkout-section card">
@@ -199,6 +216,7 @@ export async function renderOrderCheckout() {
 
 function initializeOrderCheckout(order) {
   const t = languageManager.t.bind(languageManager);
+  const isRemainingPayment = order.paymentStatus === 'deposit_paid' && (order.remainingBalance || 0) > 0;
   const depositOptions = document.querySelectorAll('input[name="deposit"]');
   const paymentOptions = document.querySelectorAll('input[name="payment"]');
   const confirmBtn = document.getElementById('confirm-payment-btn');
@@ -207,31 +225,33 @@ function initializeOrderCheckout(order) {
   const depositAmountDisplay = document.getElementById('deposit-amount-display');
   const remainingBalanceDisplay = document.getElementById('remaining-balance-display');
   
-  let selectedDeposit = null;
+  let selectedDeposit = isRemainingPayment ? 100 : null;
   let selectedPayment = null;
   
   const orderTotal = order.total;
   
-  // Handle deposit selection
-  depositOptions.forEach(option => {
-    option.addEventListener('change', () => {
-      selectedDeposit = parseInt(option.value);
-      const depositAmount = orderTotal * (selectedDeposit / 100);
-      const remainingBalance = orderTotal - depositAmount;
-      
-      depositAmountDisplay.textContent = `$${depositAmount.toFixed(2)}`;
-      remainingBalanceDisplay.textContent = `$${remainingBalance.toFixed(2)}`;
-      depositSummary.style.display = 'block';
-      
-      // Highlight selected option
-      document.querySelectorAll('.deposit-option').forEach(opt => {
-        opt.classList.remove('selected');
+  // Handle deposit selection (only for draft orders)
+  if (!isRemainingPayment) {
+    depositOptions.forEach(option => {
+      option.addEventListener('change', () => {
+        selectedDeposit = parseInt(option.value);
+        const depositAmount = orderTotal * (selectedDeposit / 100);
+        const remainingBalance = orderTotal - depositAmount;
+        
+        depositAmountDisplay.textContent = `$${depositAmount.toFixed(2)}`;
+        remainingBalanceDisplay.textContent = `$${remainingBalance.toFixed(2)}`;
+        depositSummary.style.display = 'block';
+        
+        // Highlight selected option
+        document.querySelectorAll('.deposit-option').forEach(opt => {
+          opt.classList.remove('selected');
+        });
+        option.closest('.deposit-option').classList.add('selected');
+        
+        checkFormComplete();
       });
-      option.closest('.deposit-option').classList.add('selected');
-      
-      checkFormComplete();
     });
-  });
+  }
   
   // Handle payment method selection
   paymentOptions.forEach(option => {
@@ -252,6 +272,8 @@ function initializeOrderCheckout(order) {
   function checkFormComplete() {
     if (selectedDeposit && selectedPayment) {
       confirmBtn.disabled = false;
+    } else if (isRemainingPayment && selectedPayment) {
+      confirmBtn.disabled = false;
     } else {
       confirmBtn.disabled = true;
     }
@@ -264,8 +286,12 @@ function initializeOrderCheckout(order) {
   
   // Confirm payment
   confirmBtn.addEventListener('click', async () => {
-    if (!selectedDeposit || !selectedPayment) {
+    if (!isRemainingPayment && (!selectedDeposit || !selectedPayment)) {
       window.toast.warning(t('checkout.selectDepositAndPayment'));
+      return;
+    }
+    if (isRemainingPayment && !selectedPayment) {
+      window.toast.warning(t('checkout.selectPaymentMethod'));
       return;
     }
     
@@ -274,33 +300,39 @@ function initializeOrderCheckout(order) {
     if (window.lucide) window.lucide.createIcons();
     
     try {
-      // Simulate payment processing
-      await processPayment(selectedPayment, orderTotal, selectedDeposit);
-      
-      // Update order with deposit and payment info
-      const depositAmount = orderTotal * (selectedDeposit / 100);
-      const remainingBalance = orderTotal - depositAmount;
-      
-      await dataService.updateOrderStatus(order.id, {
-        status: 'pending',
-        paymentStatus: 'deposit_paid',
-        depositPercentage: selectedDeposit,
-        depositAmount: depositAmount,
-        remainingBalance: remainingBalance,
-        paymentMethod: selectedPayment
-      });
-      
-      // Create invoice for the order
-      try {
-        await dataService.createInvoice(order.id);
-        console.log('Invoice created for order:', order.id);
-      } catch (invoiceError) {
-        console.error('Error creating invoice:', invoiceError);
-        // Continue even if invoice creation fails
+      if (isRemainingPayment) {
+        // Process remaining balance payment
+        const remainingBalance = order.remainingBalance || 0;
+        await processPayment(selectedPayment, remainingBalance, 100);
+        await dataService.processPartialPayment(order.id, remainingBalance, selectedPayment);
+        
+        window.toast.success(t('orders.paymentSuccessful') || 'Payment successful! Remaining balance paid.');
+      } else {
+        // Process initial deposit payment
+        await processPayment(selectedPayment, orderTotal, selectedDeposit);
+        
+        const depositAmount = orderTotal * (selectedDeposit / 100);
+        const remainingBalance = orderTotal - depositAmount;
+        
+        await dataService.updateOrderStatus(order.id, {
+          status: 'pending',
+          paymentStatus: 'deposit_paid',
+          depositPercentage: selectedDeposit,
+          depositAmount: depositAmount,
+          remainingBalance: remainingBalance,
+          paymentMethod: selectedPayment
+        });
+        
+        // Create invoice for the order
+        try {
+          await dataService.createInvoice(order.id);
+          console.log('Invoice created for order:', order.id);
+        } catch (invoiceError) {
+          console.error('Error creating invoice:', invoiceError);
+        }
+        
+        window.toast.success(t('orders.paymentSuccessful') || 'Payment successful! Order confirmed.');
       }
-      
-      // Show success message
-      window.toast.success(t('orders.paymentSuccessful') || 'Payment successful! Order confirmed.');
       
       // Navigate back to orders
       setTimeout(() => {

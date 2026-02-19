@@ -49,8 +49,11 @@ export async function renderInvoiceDetail() {
     
     const isBuyer = invoice.buyerId === user.uid;
     
-    // Render page 1 content (single page invoice)
-    const page1Content = renderPage1(invoice);
+    // Track current display language
+    let currentLang = 'en';
+    
+    // Render initial content in English
+    const page1Content = renderInvoiceHtml(invoice, 'en');
     
     const content = `
       <div class="invoice-detail-page">
@@ -61,35 +64,29 @@ export async function renderInvoiceDetail() {
           </button>
           <div class="invoice-actions">
             <div class="dropdown-wrapper">
+              <button class="btn btn-secondary" id="lang-btn">
+                <i data-lucide="languages"></i>
+                <span id="lang-btn-label">English</span>
+                <i data-lucide="chevron-down"></i>
+              </button>
+              <div class="dropdown-menu" id="lang-menu">
+                <button class="dropdown-item" data-lang="en">English</button>
+                <button class="dropdown-item" data-lang="zh">中文</button>
+                <button class="dropdown-item" data-lang="ar">العربية</button>
+                <button class="dropdown-item" data-lang="ur">اردو</button>
+              </div>
+            </div>
+            <div class="dropdown-wrapper">
               <button class="btn btn-primary" id="download-btn">
                 <i data-lucide="download"></i>
                 Download
                 <i data-lucide="chevron-down"></i>
               </button>
               <div class="dropdown-menu" id="download-menu">
-                <div class="dropdown-item dropdown-has-sub" id="pdf-parent-item">
+                <button class="dropdown-item" data-format="pdf">
                   <i data-lucide="file-text"></i>
                   PDF Document
-                  <svg class="dropdown-submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                  <div class="dropdown-submenu" id="pdf-submenu">
-                    <button class="dropdown-item" data-format="pdf-en">
-                      <i data-lucide="file-text"></i>
-                      English
-                    </button>
-                    <button class="dropdown-item" data-format="pdf-zh">
-                      <i data-lucide="file-text"></i>
-                      中文
-                    </button>
-                    <button class="dropdown-item" data-format="pdf-ar">
-                      <i data-lucide="file-text"></i>
-                      العربية
-                    </button>
-                    <button class="dropdown-item" data-format="pdf-ur">
-                      <i data-lucide="file-text"></i>
-                      اردو
-                    </button>
-                  </div>
-                </div>
+                </button>
                 <button class="dropdown-item" data-format="csv">
                   <i data-lucide="table"></i>
                   CSV Spreadsheet
@@ -116,6 +113,34 @@ export async function renderInvoiceDetail() {
     renderPageWithLayout(content, isBuyer ? 'buyer' : (profile?.role === 'admin' ? 'admin' : 'seller'));
     if (window.lucide) window.lucide.createIcons();
     
+    const langLabels = { en: 'English', zh: '中文', ar: 'العربية', ur: 'اردو' };
+    
+    // Language switcher functionality
+    const langBtn = document.getElementById('lang-btn');
+    const langMenu = document.getElementById('lang-menu');
+    
+    langBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      langMenu.classList.toggle('active');
+      // Close the other dropdown
+      document.getElementById('download-menu').classList.remove('active');
+    });
+    
+    document.querySelectorAll('#lang-menu button[data-lang]').forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const lang = item.getAttribute('data-lang');
+        langMenu.classList.remove('active');
+        
+        // Update the displayed invoice to the selected language
+        currentLang = lang;
+        const invoiceDoc = document.getElementById('invoice-document');
+        invoiceDoc.innerHTML = renderInvoiceHtml(invoice, lang);
+        document.getElementById('lang-btn-label').textContent = langLabels[lang] || lang;
+        if (window.lucide) window.lucide.createIcons();
+      });
+    });
+    
     // Download dropdown functionality
     const downloadBtn = document.getElementById('download-btn');
     const downloadMenu = document.getElementById('download-menu');
@@ -123,44 +148,26 @@ export async function renderInvoiceDetail() {
     downloadBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       downloadMenu.classList.toggle('active');
+      // Close the other dropdown
+      langMenu.classList.remove('active');
     });
     
-    // Close dropdown when clicking outside
+    // Close dropdowns when clicking outside
     document.addEventListener('click', () => {
       downloadMenu.classList.remove('active');
-      const pdfParent = document.getElementById('pdf-parent-item');
-      if (pdfParent) pdfParent.classList.remove('sub-open');
+      langMenu.classList.remove('active');
     });
-
-    // Toggle sub-menu on click (touch-device fallback; hover handles desktop)
-    const pdfParentItem = document.getElementById('pdf-parent-item');
-    if (pdfParentItem) {
-      pdfParentItem.addEventListener('click', (e) => {
-        e.stopPropagation();
-        pdfParentItem.classList.toggle('sub-open');
-      });
-    }
     
-    // Handle format selection — only fire on actual buttons with data-format
+    // Handle format selection
     document.querySelectorAll('#download-menu button[data-format]').forEach(item => {
       item.addEventListener('click', async (e) => {
         e.stopPropagation();
         const format = item.getAttribute('data-format');
         downloadMenu.classList.remove('active');
-        if (pdfParentItem) pdfParentItem.classList.remove('sub-open');
         
         switch(format) {
-          case 'pdf-en':
-            await downloadPDF(invoice, 'en');
-            break;
-          case 'pdf-zh':
-            await downloadPDF(invoice, 'zh');
-            break;
-          case 'pdf-ar':
-            await downloadPDF(invoice, 'ar');
-            break;
-          case 'pdf-ur':
-            await downloadPDF(invoice, 'ur');
+          case 'pdf':
+            await downloadPDF(invoice, currentLang);
             break;
           case 'csv':
             exportInvoiceToCSV(invoice);
@@ -177,23 +184,16 @@ export async function renderInvoiceDetail() {
       window.print();
     });
     
-    // PDF download function
+    // PDF download function — captures the visible on-screen invoice
     async function downloadPDF(invoice, lang = 'en') {
       const invoiceNumber = invoice.invoiceNumber || 'export';
-      
-      // Render invoice HTML for the requested language
-      const htmlString = renderInvoiceHtml(invoice, lang);
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.top = '0';
-      tempContainer.style.width = '8.5in';
-      tempContainer.innerHTML = htmlString;
-      document.body.appendChild(tempContainer);
+      const invoiceDoc = document.getElementById('invoice-document');
       
       // Convert SVG logo to PNG via canvas so html2canvas renders it correctly
-      const logoImg = tempContainer.querySelector('.invoice-logo-img');
+      const logoImg = invoiceDoc.querySelector('.invoice-logo-img');
+      let originalLogoSrc = null;
       if (logoImg) {
+        originalLogoSrc = logoImg.src;
         try {
           const pngDataUrl = await new Promise((resolve, reject) => {
             const img = new Image();
@@ -211,7 +211,6 @@ export async function renderInvoiceDetail() {
           });
           logoImg.src = pngDataUrl;
         } catch (err) {
-          // If logo conversion fails, hide it so it doesn't break layout
           console.warn('Could not convert logo for PDF export:', err);
           logoImg.style.display = 'none';
         }
@@ -237,14 +236,17 @@ export async function renderInvoiceDetail() {
           pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
         };
         
-        await html2pdf().set(opt).from(tempContainer).save();
+        await html2pdf().set(opt).from(invoiceDoc).save();
         window.toast.success('PDF downloaded successfully');
       } catch (error) {
         console.error('Error generating PDF:', error);
         window.toast.error('Failed to generate PDF. Please try again.');
       } finally {
-        // Clean up
-        document.body.removeChild(tempContainer);
+        // Restore original SVG logo
+        if (logoImg && originalLogoSrc) {
+          logoImg.src = originalLogoSrc;
+          logoImg.style.display = '';
+        }
       }
     }
     
@@ -254,155 +256,8 @@ export async function renderInvoiceDetail() {
   }
 }
 
-function renderPage1(invoice) {
-  // Get base URL from Vite for proper logo path
-  const baseUrl = import.meta.env.BASE_URL || '/';
-  // Ensure proper path construction without breaking protocol prefixes
-  const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  const logoPath = `${cleanBase}/logo.svg`;
-  
-  return `
-    <div class="invoice-page page-1">
-      <!-- Header Section with Logo -->
-      <div class="invoice-header-section">
-        <div class="invoice-logo">
-          <img src="${logoPath}" alt="IONE Logo" class="invoice-logo-img">
-          <p class="invoice-company-name">${escapeHtml(invoice.sellerCompany || 'HK KANDIVAN I T C L')}</p>
-        </div>
-        <div class="invoice-info-header">
-          <div class="invoice-header-row">
-            <div class="invoice-header-item">
-              <span class="invoice-label">Date:</span>
-              <span class="invoice-value">${formatDate(invoice.createdAt)}</span>
-            </div>
-            <div class="invoice-header-item">
-              <span class="invoice-label">Invoice No.:</span>
-              <span class="invoice-value invoice-number">${escapeHtml(invoice.invoiceNumber)}</span>
-            </div>
-          </div>
-          <div class="invoice-status-badge status-${invoice.status}">${invoice.status.toUpperCase()}</div>
-        </div>
-      </div>
-      
-      <!-- Parties Section -->
-      <div class="invoice-parties">
-        <div class="invoice-party">
-          <h3>Seller</h3>
-          <div class="party-details">
-            <p class="party-name">${escapeHtml(invoice.sellerCompany || 'HK KANDIVAN I T C L')}</p>
-            ${invoice.sellerAddress && invoice.sellerAddress.street ? `
-              <p>${escapeHtml(invoice.sellerAddress.street)}</p>
-              <p>${escapeHtml(invoice.sellerAddress.city || 'Hua Qiang Bei, Shenzhen')}, ${escapeHtml(invoice.sellerAddress.state || 'Guandong')}</p>
-              <p>${escapeHtml(invoice.sellerAddress.country || 'China')}</p>
-            ` : `
-              <p>Hua Qiang Bei, Shenzhen, Guandong</p>
-            `}
-            <p>Phone Number: ${escapeHtml(invoice.sellerPhone || '008613332800284')}</p>
-            <p>Email: ${escapeHtml(invoice.sellerEmail || 'contactus@ione.live')}</p>
-          </div>
-        </div>
-        <div class="invoice-party">
-          <h3>Buyer</h3>
-          <div class="party-details">
-            <p class="party-name">${escapeHtml(invoice.buyerCompany || invoice.buyerName || 'N/A')}</p>
-            ${invoice.buyerAddress && invoice.buyerAddress.street ? `
-              <p>${escapeHtml(invoice.buyerAddress.street)}</p>
-              <p>${escapeHtml(invoice.buyerAddress.city || '')}, ${escapeHtml(invoice.buyerAddress.state || '')}</p>
-              ${invoice.buyerAddress.country ? `<p>${escapeHtml(invoice.buyerAddress.country)}</p>` : ''}
-            ` : ''}
-            ${invoice.buyerPhone ? `<p>Phone Number: ${escapeHtml(invoice.buyerPhone)}</p>` : ''}
-            <p>Email: ${escapeHtml(invoice.buyerEmail || 'N/A')}</p>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Payment Instructions Section -->
-      <div class="invoice-payment-instructions">
-        <h3 class="section-title">Payment Instructions</h3>
-        <div class="payment-instructions-content">
-          ${invoice.paymentInstructions ? `
-            <p><strong>Bank Name:</strong> ${escapeHtml(invoice.paymentInstructions.bankName || 'N/A')}</p>
-            <p><strong>Account Name:</strong> ${escapeHtml(invoice.paymentInstructions.accountName || 'N/A')}</p>
-            <p><strong>Account Number:</strong> ${escapeHtml(invoice.paymentInstructions.accountNumber || 'N/A')}</p>
-            <p><strong>SWIFT Code:</strong> ${escapeHtml(invoice.paymentInstructions.swiftCode || 'N/A')}</p>
-          ` : '<p>Payment instructions not available</p>'}
-        </div>
-      </div>
-      
-      <!-- Order Details and Payment Terms -->
-      <div class="invoice-order-summary">
-        <div class="order-items-summary">
-          <h3 class="section-title">Order Items</h3>
-          <div class="items-list">
-            ${(invoice.items || []).map((item, index) => `
-              <div class="item-row">
-                <span class="item-name">${escapeHtml(item.productName || 'N/A')}${formatItemDimensions(item.dimensions)}</span>
-                <span class="item-details">${item.quantity || 0} ${escapeHtml(item.unit || 'units')} × $${(item.pricePerUnit || 0).toFixed(2)}</span>
-                <span class="item-amount">$${(item.subtotal || 0).toFixed(2)}</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-        
-        <div class="invoice-totals-section">
-          <div class="totals-row">
-            <span>Subtotal:</span>
-            <span>$${(invoice.subtotal || 0).toFixed(2)}</span>
-          </div>
-          ${invoice.tax && invoice.tax > 0 ? `
-          <div class="totals-row">
-            <span>Tax (${invoice.taxRate || 10}%):</span>
-            <span>$${(invoice.tax || 0).toFixed(2)}</span>
-          </div>
-          ` : ''}
-          <div class="totals-row total-amount">
-            <span>Total Order Amount USD:</span>
-            <span>$${(invoice.total || 0).toFixed(2)}</span>
-          </div>
-        </div>
-        
-        <div class="payment-terms-box">
-          <div class="payment-term-item">
-            <span class="term-label">Payment Term:</span>
-            <span class="term-value">${escapeHtml(invoice.paymentTerms || 'N/A')}</span>
-          </div>
-          ${invoice.depositPaid && invoice.depositPaid > 0 ? `
-          <div class="payment-term-item">
-            <span class="term-label">Deposit Paid:</span>
-            <span class="term-value deposit-paid">$${(invoice.depositPaid || 0).toFixed(2)}</span>
-          </div>
-          <div class="payment-term-item">
-            <span class="term-label">Balance Due:</span>
-            <span class="term-value balance-due">$${(invoice.remainingBalance || 0).toFixed(2)}</span>
-          </div>
-          ` : ''}
-        </div>
-      </div>
-      
-      <!-- Terms and Conditions Section -->
-      <div class="invoice-terms-conditions">
-        <h3 class="section-title">Terms and Conditions</h3>
-        <ul class="terms-list">
-          ${(invoice.termsAndConditions || DEFAULT_TERMS).map(term => `<li>${escapeHtml(term)}</li>`).join('')}
-        </ul>
-      </div>
-      
-      ${invoice.notes ? `
-        <div class="invoice-notes">
-          <p><strong>Notes:</strong> ${escapeHtml(invoice.notes)}</p>
-        </div>
-      ` : ''}
-      
-      <!-- Footer -->
-      <div class="invoice-footer">
-        <p>For questions about this invoice, please contact: ${escapeHtml(invoice.sellerEmail || 'contactus@ione.live')}</p>
-        <p class="thank-you">Thank you for your business!</p>
-      </div>
-    </div>
-  `;
-}
 
-// Removed renderPage2 function - now using single-page design
+// Removed renderPage1 function - now using renderInvoiceHtml for all rendering
 
 function getInvoiceTranslations(lang) {
   const inv = languageManager.translations[lang]?.invoices || {};
