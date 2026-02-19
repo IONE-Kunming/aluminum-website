@@ -118,6 +118,26 @@ export async function renderInvoices() {
         <h1>${t('invoices.title') || 'Invoices'}</h1>
         <p>${t('invoices.subtitle') || 'View and download your invoices'}</p>
       </div>
+
+      <!-- Accounting Summary -->
+      <div class="accounting-summary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Total Invoices</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">${allInvoices.length}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Total Amount</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${allInvoices.reduce((s, inv) => s + (inv.total || 0), 0).toFixed(2)}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Amount Paid</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${allInvoices.reduce((s, inv) => s + (inv.depositPaid || 0), 0).toFixed(2)}</p>
+        </div>
+        <div class="summary-card card" style="padding: 20px; text-align: center;">
+          <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 8px 0; font-weight: 500;">Outstanding Balance</p>
+          <p style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0;">$${allInvoices.reduce((s, inv) => s + (inv.remainingBalance || 0), 0).toFixed(2)}</p>
+        </div>
+      </div>
       
       <!-- Filter Section -->
       <div class="filter-section card" style="margin-bottom: 24px;">
