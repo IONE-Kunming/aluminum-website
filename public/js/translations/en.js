@@ -695,6 +695,7 @@ export default {
     orderUpdated: 'Order updated successfully',
     orderUpdateFailed: 'Failed to update order',
     activeStatus: 'Active',
+    emailCannotBeChanged: 'Email cannot be changed',
     userDeleted: 'User deleted successfully',
     userDeleteFailed: 'Failed to delete user',
     userActivated: 'User activated successfully',

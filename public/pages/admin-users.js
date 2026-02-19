@@ -219,7 +219,7 @@ async function editUser(user) {
             <div class="form-group">
               <label for="edit-email">${t('auth.email')}</label>
               <input type="email" id="edit-email" value="${escapeHtml(user.email || '')}" disabled style="opacity: 0.6; cursor: not-allowed;" />
-              <small style="color: var(--text-secondary);">Email cannot be changed</small>
+              <small style="color: var(--text-secondary);">${t('admin.emailCannotBeChanged')}</small>
             </div>
             <div class="form-group">
               <label for="edit-role">${t('profile.role')}</label>
