@@ -191,6 +191,9 @@ class AuthManager {
   async signIn(email, password) {
     try {
       const result = await this.auth.signInWithEmailAndPassword(email, password);
+      // Set this.user immediately so waitForProfile() doesn't short-circuit
+      // before the onAuthStateChanged callback fires (race condition fix)
+      this.user = result.user;
       return { success: true, user: result.user };
     } catch (error) {
       return { success: false, error: error.message };
@@ -211,6 +214,9 @@ class AuthManager {
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
       const result = await this.auth.signInWithPopup(provider);
+      // Set this.user immediately so waitForProfile() doesn't short-circuit
+      // before the onAuthStateChanged callback fires (race condition fix)
+      this.user = result.user;
       return { success: true, user: result.user };
     } catch (error) {
       return { success: false, error: error.message };
