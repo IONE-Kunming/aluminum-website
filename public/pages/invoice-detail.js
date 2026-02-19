@@ -46,17 +46,30 @@ export async function renderInvoiceDetail() {
             Back
           </button>
           <div class="invoice-actions">
-            <button class="btn btn-secondary" id="download-pdf-btn">
-              <i data-lucide="file-text"></i>
-              Download PDF
-            </button>
-            <button class="btn btn-secondary" id="download-csv-btn">
-              <i data-lucide="table"></i>
-              Download CSV
-            </button>
-            <button class="btn btn-secondary" id="download-txt-btn">
-              <i data-lucide="file"></i>
-              Download TXT
+            <div class="dropdown-wrapper">
+              <button class="btn btn-primary" id="download-btn">
+                <i data-lucide="download"></i>
+                Download
+                <i data-lucide="chevron-down"></i>
+              </button>
+              <div class="dropdown-menu" id="download-menu">
+                <button class="dropdown-item" data-format="pdf">
+                  <i data-lucide="file-text"></i>
+                  PDF Document
+                </button>
+                <button class="dropdown-item" data-format="csv">
+                  <i data-lucide="table"></i>
+                  CSV Spreadsheet
+                </button>
+                <button class="dropdown-item" data-format="txt">
+                  <i data-lucide="file"></i>
+                  Text File
+                </button>
+              </div>
+            </div>
+            <button class="btn btn-secondary" id="print-btn">
+              <i data-lucide="printer"></i>
+              Print
             </button>
           </div>
         </div>
@@ -70,8 +83,48 @@ export async function renderInvoiceDetail() {
     renderPageWithLayout(content, isBuyer ? 'buyer' : 'seller');
     if (window.lucide) window.lucide.createIcons();
     
-    // PDF download button (uses html2pdf.js for proper export)
-    document.getElementById('download-pdf-btn').addEventListener('click', async () => {
+    // Download dropdown functionality
+    const downloadBtn = document.getElementById('download-btn');
+    const downloadMenu = document.getElementById('download-menu');
+    
+    downloadBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      downloadMenu.classList.toggle('active');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', () => {
+      downloadMenu.classList.remove('active');
+    });
+    
+    // Handle format selection
+    document.querySelectorAll('#download-menu .dropdown-item').forEach(item => {
+      item.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const format = item.getAttribute('data-format');
+        downloadMenu.classList.remove('active');
+        
+        switch(format) {
+          case 'pdf':
+            await downloadPDF(invoice);
+            break;
+          case 'csv':
+            exportInvoiceToCSV(invoice);
+            break;
+          case 'txt':
+            exportInvoiceToTXT(invoice);
+            break;
+        }
+      });
+    });
+    
+    // Print button
+    document.getElementById('print-btn').addEventListener('click', () => {
+      window.print();
+    });
+    
+    // PDF download function
+    async function downloadPDF(invoice) {
       const element = document.getElementById('invoice-document');
       const invoiceNumber = invoice.invoiceNumber || 'export';
       
@@ -89,7 +142,7 @@ export async function renderInvoiceDetail() {
       
       try {
         const opt = {
-          margin: 0.75,
+          margin: [0.5, 0.5, 0.5, 0.5],
           filename: `invoice-${invoiceNumber}.pdf`,
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { 
@@ -106,6 +159,7 @@ export async function renderInvoiceDetail() {
         };
         
         await html2pdf().set(opt).from(clone).save();
+        window.toast.success('PDF downloaded successfully');
       } catch (error) {
         console.error('Error generating PDF:', error);
         window.toast.error('Failed to generate PDF. Please try again.');
@@ -113,17 +167,7 @@ export async function renderInvoiceDetail() {
         // Clean up
         document.body.removeChild(tempContainer);
       }
-    });
-    
-    // CSV download button
-    document.getElementById('download-csv-btn').addEventListener('click', () => {
-      exportInvoiceToCSV(invoice);
-    });
-    
-    // TXT download button
-    document.getElementById('download-txt-btn').addEventListener('click', () => {
-      exportInvoiceToTXT(invoice);
-    });
+    }
     
   } catch (error) {
     console.error('Error loading invoice:', error);
