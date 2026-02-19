@@ -191,7 +191,7 @@ export async function renderOrders() {
 
     container.querySelectorAll('.view-order-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        router.navigate(`/buyer/order-detail?id=${btn.dataset.orderId}`);
+        router.navigate(`/order/detail?id=${btn.dataset.orderId}`);
       });
     });
 
