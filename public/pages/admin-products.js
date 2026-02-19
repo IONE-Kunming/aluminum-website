@@ -154,9 +154,13 @@ function displayProducts(products) {
   
   // Setup action buttons
   products.forEach(product => {
+    const editBtn = document.getElementById(`edit-product-${product.id}`);
     const deleteBtn = document.getElementById(`delete-product-${product.id}`);
     const toggleBtn = document.getElementById(`toggle-product-${product.id}`);
     
+    if (editBtn) {
+      editBtn.addEventListener('click', () => editProduct(product));
+    }
     if (deleteBtn) {
       deleteBtn.addEventListener('click', () => deleteProduct(product));
     }
@@ -188,6 +192,9 @@ function renderProductRow(product) {
       <td>${product.stockQuantity || 0} ${escapeHtml(product.unit || 'units')}</td>
       <td><span class="status-badge ${statusClass}">${statusText}</span></td>
       <td class="actions">
+        <button class="btn-icon" id="edit-product-${product.id}" title="Edit Product">
+          <i data-lucide="edit"></i>
+        </button>
         <button class="btn-icon" id="toggle-product-${product.id}" title="${isActive ? 'Deactivate' : 'Activate'} Product">
           <i data-lucide="${isActive ? 'eye-off' : 'eye'}"></i>
         </button>
@@ -232,6 +239,112 @@ function filterProducts() {
   }
   
   displayProducts(filtered);
+}
+
+async function editProduct(product) {
+  const t = languageManager.t.bind(languageManager);
+  
+  // Get categories for dropdown
+  const categories = Object.keys(allProducts.reduce((acc, p) => {
+    if (p.category) acc[p.category] = true;
+    return acc;
+  }, {})).sort();
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal modal-large">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2><i data-lucide="edit"></i> ${t('admin.editProduct')}</h2>
+          <button class="modal-close" id="close-edit-modal">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="edit-product-form">
+            <div class="form-group">
+              <label for="edit-product-name">${t('product.name')}</label>
+              <input type="text" id="edit-product-name" value="${escapeHtml(product.name || '')}" required />
+            </div>
+            <div class="form-group">
+              <label for="edit-product-category">${t('product.category')}</label>
+              <input type="text" id="edit-product-category" value="${escapeHtml(product.category || '')}" list="category-list" required />
+              <datalist id="category-list">
+                ${categories.map(cat => `<option value="${escapeHtml(cat)}">`).join('')}
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label for="edit-product-description">${t('product.description')}</label>
+              <textarea id="edit-product-description" rows="3">${escapeHtml(product.description || '')}</textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="edit-product-price">${t('product.price')}</label>
+                <input type="number" id="edit-product-price" value="${product.pricePerUnit || 0}" step="0.01" min="0" required />
+              </div>
+              <div class="form-group">
+                <label for="edit-product-stock">${t('product.stock')}</label>
+                <input type="number" id="edit-product-stock" value="${product.stockQuantity || 0}" min="0" required />
+              </div>
+              <div class="form-group">
+                <label for="edit-product-unit">${t('product.unit')}</label>
+                <input type="text" id="edit-product-unit" value="${escapeHtml(product.unit || 'units')}" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="edit-product-isActive" ${product.isActive !== false ? 'checked' : ''} />
+                ${t('admin.activeStatus')}
+              </label>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancel-edit-product">${t('common.cancel')}</button>
+          <button class="btn btn-primary" id="save-edit-product">${t('common.save')}</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  if (window.lucide) window.lucide.createIcons();
+  
+  // Modal event listeners
+  const closeModal = () => {
+    modal.remove();
+  };
+  
+  document.getElementById('close-edit-modal').addEventListener('click', closeModal);
+  document.getElementById('cancel-edit-product').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+  
+  // Save button handler
+  document.getElementById('save-edit-product').addEventListener('click', async () => {
+    const updatedData = {
+      name: document.getElementById('edit-product-name').value,
+      category: document.getElementById('edit-product-category').value,
+      description: document.getElementById('edit-product-description').value,
+      pricePerUnit: parseFloat(document.getElementById('edit-product-price').value),
+      stockQuantity: parseInt(document.getElementById('edit-product-stock').value),
+      unit: document.getElementById('edit-product-unit').value,
+      isActive: document.getElementById('edit-product-isActive').checked
+    };
+    
+    try {
+      await dataService.db.collection('products').doc(product.id).update(updatedData);
+      window.toast.success(t('admin.productUpdated'));
+      closeModal();
+      await loadProducts();
+    } catch (error) {
+      console.error('Error updating product:', error);
+      window.toast.error(t('admin.productUpdateFailed'));
+    }
+  });
 }
 
 async function deleteProduct(product) {

@@ -47,7 +47,8 @@ export default {
     to: 'To',
     clear: 'Clear',
     name: 'Name',
-    email: 'Email'
+    email: 'Email',
+    notes: 'Notes'
   },
   
   // Languages
@@ -682,6 +683,16 @@ export default {
   
   // Admin
   admin: {
+    editUser: 'Edit User',
+    editProduct: 'Edit Product',
+    editOrder: 'Edit Order',
+    userUpdated: 'User updated successfully',
+    userUpdateFailed: 'Failed to update user',
+    productUpdated: 'Product updated successfully',
+    productUpdateFailed: 'Failed to update product',
+    orderUpdated: 'Order updated successfully',
+    orderUpdateFailed: 'Failed to update order',
+    activeStatus: 'Active',
     userDeleted: 'User deleted successfully',
     userDeleteFailed: 'Failed to delete user',
     userActivated: 'User activated successfully',
