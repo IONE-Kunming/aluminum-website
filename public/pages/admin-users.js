@@ -38,6 +38,9 @@ export async function renderAdminUsers() {
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
           </select>
+          <button class="btn btn-secondary" id="import-profile-btn">
+            <i data-lucide="upload"></i> Import Profile
+          </button>
         </div>
       </div>
       
@@ -61,6 +64,7 @@ export async function renderAdminUsers() {
   document.getElementById('user-search').addEventListener('input', filterUsers);
   document.getElementById('role-filter').addEventListener('change', filterUsers);
   document.getElementById('status-filter').addEventListener('change', filterUsers);
+  document.getElementById('import-profile-btn').addEventListener('click', importUserProfile);
 }
 
 let allUsers = [];
@@ -125,6 +129,7 @@ function displayUsers(users) {
     const editBtn = document.getElementById(`edit-user-${user.id}`);
     const deleteBtn = document.getElementById(`delete-user-${user.id}`);
     const toggleBtn = document.getElementById(`toggle-user-${user.id}`);
+    const exportBtn = document.getElementById(`export-user-${user.id}`);
     
     if (viewBtn) {
       viewBtn.addEventListener('click', () => viewUserDetails(user));
@@ -137,6 +142,9 @@ function displayUsers(users) {
     }
     if (toggleBtn) {
       toggleBtn.addEventListener('click', () => toggleUserStatus(user));
+    }
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => exportUserProfile(user));
     }
   });
 }
@@ -166,6 +174,9 @@ function renderUserRow(user) {
         </button>
         <button class="btn-icon btn-danger" id="delete-user-${user.id}" title="Delete User">
           <i data-lucide="trash-2"></i>
+        </button>
+        <button class="btn-icon" id="export-user-${user.id}" title="Export Profile">
+          <i data-lucide="download"></i>
         </button>
       </td>
     </tr>
@@ -408,12 +419,65 @@ async function editUser(user) {
 }
 
 async function deleteUser(user) {
-  if (!await showConfirm(`Are you sure you want to delete user "${user.displayName || user.email}"?`)) {
+  const t = languageManager.t.bind(languageManager);
+
+  // Count related data to show in confirmation
+  let productCount = 0, orderCount = 0, invoiceCount = 0;
+  try {
+    const [productsSnap, ordersBuyerSnap, ordersSellerSnap, invoicesBuyerSnap, invoicesSellerSnap] = await Promise.all([
+      dataService.db.collection('products').where('sellerId', '==', user.id).get(),
+      dataService.db.collection('orders').where('buyerId', '==', user.id).get(),
+      dataService.db.collection('orders').where('sellerId', '==', user.id).get(),
+      dataService.db.collection('invoices').where('buyerId', '==', user.id).get(),
+      dataService.db.collection('invoices').where('sellerId', '==', user.id).get()
+    ]);
+    productCount = productsSnap.size;
+    orderCount = ordersBuyerSnap.size + ordersSellerSnap.size;
+    invoiceCount = invoicesBuyerSnap.size + invoicesSellerSnap.size;
+  } catch (e) {
+    console.error('Error counting related data:', e);
+  }
+
+  const userName = user.displayName || user.email;
+  const details = [
+    `User profile for "${userName}"`,
+    productCount > 0 ? `${productCount} product(s)` : null,
+    orderCount > 0 ? `${orderCount} order(s)` : null,
+    invoiceCount > 0 ? `${invoiceCount} invoice(s)` : null
+  ].filter(Boolean).join('\n• ');
+
+  if (!await showConfirm(`Are you sure you want to delete the following data?\n\n• ${details}\n\nThis action cannot be undone.`)) {
     return;
   }
-  
-  const t = languageManager.t.bind(languageManager);
+
   try {
+    // Delete related products
+    const productsSnap = await dataService.db.collection('products').where('sellerId', '==', user.id).get();
+    const productDeletes = productsSnap.docs.map(doc => doc.ref.delete());
+
+    // Delete related orders (buyer or seller)
+    const ordersBuyerSnap = await dataService.db.collection('orders').where('buyerId', '==', user.id).get();
+    const ordersSellerSnap = await dataService.db.collection('orders').where('sellerId', '==', user.id).get();
+    const orderDeletes = [
+      ...ordersBuyerSnap.docs.map(doc => doc.ref.delete()),
+      ...ordersSellerSnap.docs.map(doc => doc.ref.delete())
+    ];
+
+    // Delete related invoices (buyer or seller)
+    const invoicesBuyerSnap = await dataService.db.collection('invoices').where('buyerId', '==', user.id).get();
+    const invoicesSellerSnap = await dataService.db.collection('invoices').where('sellerId', '==', user.id).get();
+    const invoiceDeletes = [
+      ...invoicesBuyerSnap.docs.map(doc => doc.ref.delete()),
+      ...invoicesSellerSnap.docs.map(doc => doc.ref.delete())
+    ];
+
+    // Delete related conversations
+    const convoSnap = await dataService.db.collection('conversations').where('participants', 'array-contains', user.id).get();
+    const convoDeletes = convoSnap.docs.map(doc => doc.ref.delete());
+
+    await Promise.all([...productDeletes, ...orderDeletes, ...invoiceDeletes, ...convoDeletes]);
+
+    // Delete the user document
     await dataService.db.collection('users').doc(user.id).delete();
     window.toast.success(t('admin.userDeleted'));
     await loadUsers();
@@ -440,4 +504,113 @@ async function toggleUserStatus(user) {
     console.error('Error updating user status:', error);
     window.toast.error(t('admin.userStatusUpdateFailed'));
   }
+}
+
+function exportUserProfile(user) {
+  const data = JSON.stringify(user, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `user-profile-${user.id}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  window.toast.success('Profile exported successfully');
+}
+
+function importUserProfile() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.style.display = 'none';
+  document.body.appendChild(input);
+
+  input.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    document.body.removeChild(input);
+    if (!file) return;
+
+    let profileData;
+    try {
+      const text = await file.text();
+      profileData = JSON.parse(text);
+    } catch (err) {
+      window.toast.error('Invalid JSON file');
+      return;
+    }
+
+    // Show modal to pick target user
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-content" style="max-width: 500px;">
+        <div class="modal-header">
+          <h2><i data-lucide="upload"></i> Import Profile Data</h2>
+          <button class="modal-close" id="close-import-modal"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+          <p style="margin: 0 0 12px; color: var(--text-secondary);">
+            Imported fields: ${escapeHtml(Object.keys(profileData).join(', '))}
+          </p>
+          <div class="form-group">
+            <label for="import-target-select">Select existing user</label>
+            <select id="import-target-select">
+              <option value="">-- Choose a user --</option>
+              ${allUsers.map(u => `<option value="${escapeHtml(u.id)}">${escapeHtml(u.displayName || u.email || u.id)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="import-target-id">Or enter User ID manually</label>
+            <input type="text" id="import-target-id" placeholder="Paste user ID here..." />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="cancel-import-btn">Cancel</button>
+          <button class="btn btn-primary" id="apply-import-btn">
+            <i data-lucide="check"></i> Apply Import
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    if (window.lucide) window.lucide.createIcons();
+
+    const closeModal = () => modal.remove();
+    document.getElementById('close-import-modal').addEventListener('click', closeModal);
+    document.getElementById('cancel-import-btn').addEventListener('click', closeModal);
+    modal.addEventListener('click', (ev) => { if (ev.target === modal) closeModal(); });
+
+    document.getElementById('apply-import-btn').addEventListener('click', async () => {
+      const selectedId = document.getElementById('import-target-select').value;
+      const manualId = document.getElementById('import-target-id').value.trim();
+      const targetId = selectedId || manualId;
+
+      if (!targetId) {
+        window.toast.error('Please select a user or enter a User ID');
+        return;
+      }
+
+      // Strip id field from imported data to avoid overwriting doc id
+      const { id, ...updateData } = profileData;
+
+      if (!await showConfirm(`Apply imported profile data to user "${escapeHtml(targetId)}"?`)) {
+        return;
+      }
+
+      try {
+        await dataService.db.collection('users').doc(targetId).set(updateData, { merge: true });
+        window.toast.success('Profile imported successfully');
+        closeModal();
+        await loadUsers();
+      } catch (error) {
+        console.error('Error importing profile:', error);
+        window.toast.error('Failed to import profile');
+      }
+    });
+  });
+
+  input.click();
 }
