@@ -13,6 +13,8 @@ class DataService {
       categories: { data: null, timestamp: null, ttl: 300000 }, // 5 minutes TTL
       userProfiles: { data: new Map(), timestamp: null, ttl: 300000 }, // Cache user profiles for 5 minutes
     };
+    // Cursor cache for Firestore pagination (keyed by query fingerprint)
+    this._pageCursors = {};
   }
 
   // Initialize Firestore connection
@@ -123,6 +125,8 @@ class DataService {
           this.cache[key].data = null;
         }
       });
+      // Also reset pagination cursors
+      this._pageCursors = {};
       console.log('All caches invalidated');
     }
   }
@@ -501,6 +505,104 @@ class DataService {
     }
   }
 
+  // Get paginated products using Firestore cursors (scalable for 200K+ products)
+  async getProductsPaginated({ category = null, sellerId = null, pageSize = 12, page = 1 } = {}) {
+    await this.init();
+    if (!this.db) return { products: [], hasMore: false };
+
+    try {
+      let baseQuery = this.db.collection('products');
+      if (category) baseQuery = baseQuery.where('category', '==', category);
+      if (sellerId) baseQuery = baseQuery.where('sellerId', '==', sellerId);
+
+      const queryKey = `${category || ''}|${sellerId || ''}`;
+      if (!this._pageCursors[queryKey]) this._pageCursors[queryKey] = {};
+      const cursors = this._pageCursors[queryKey];
+
+      // Try ordering by createdAt (requires composite index for multi-field queries)
+      let orderedQuery;
+      try {
+        orderedQuery = baseQuery.orderBy('createdAt', 'desc');
+        // Test query to check if index exists
+        await orderedQuery.limit(1).get();
+      } catch {
+        // Index not available, use unordered query
+        orderedQuery = baseQuery;
+      }
+
+      let query = orderedQuery;
+
+      if (page > 1) {
+        if (cursors[page]) {
+          // Use cached cursor for this page
+          query = orderedQuery.startAfter(cursors[page]);
+        } else {
+          // Fetch documents to reach the start position for this page
+          const skipCount = (page - 1) * pageSize;
+          const skipSnapshot = await orderedQuery.limit(skipCount).get();
+          if (skipSnapshot.docs.length === skipCount) {
+            const lastDoc = skipSnapshot.docs[skipSnapshot.docs.length - 1];
+            cursors[page] = lastDoc;
+            query = orderedQuery.startAfter(lastDoc);
+          } else {
+            // Not enough documents for this page
+            return { products: [], hasMore: false };
+          }
+        }
+      }
+
+      // Fetch pageSize + 1 to determine if there are more pages
+      const snapshot = await query.limit(pageSize + 1).get();
+      const hasMore = snapshot.docs.length > pageSize;
+      const pageDocs = snapshot.docs.slice(0, pageSize);
+
+      // Cache cursor for the next page
+      if (pageDocs.length > 0) {
+        cursors[page + 1] = pageDocs[pageDocs.length - 1];
+      }
+
+      const products = pageDocs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      return { products, hasMore };
+    } catch (error) {
+      console.error('Error fetching paginated products:', error);
+      return { products: [], hasMore: false };
+    }
+  }
+
+  // Get total count of products matching filters (for pagination UI)
+  async getProductsCount({ category = null, sellerId = null } = {}) {
+    await this.init();
+    if (!this.db) return 0;
+
+    try {
+      let query = this.db.collection('products');
+      if (category) query = query.where('category', '==', category);
+      if (sellerId) query = query.where('sellerId', '==', sellerId);
+
+      // Try Firestore count() aggregation (Firebase v10+, most efficient)
+      try {
+        const countSnapshot = await query.count().get();
+        return countSnapshot.data().count;
+      } catch {
+        // Fallback: full query to count documents
+        const snapshot = await query.get();
+        return snapshot.size;
+      }
+    } catch (error) {
+      console.error('Error getting products count:', error);
+      return 0;
+    }
+  }
+
+  // Reset page cursors (call when data changes)
+  resetPagination() {
+    this._pageCursors = {};
+  }
+
   // Add a new product
   async addProduct(productData) {
     await this.init();
@@ -591,6 +693,12 @@ class DataService {
   async getCategories(sellerId = null) {
     await this.init();
 
+    // Use cached categories for unfiltered queries
+    if (!sellerId && this.cache.categories.data && this.cache.categories.timestamp &&
+        (Date.now() - this.cache.categories.timestamp < this.cache.categories.ttl)) {
+      return this.cache.categories.data;
+    }
+
     try {
       if (!this.db) {
         return [];
@@ -616,7 +724,15 @@ class DataService {
       });
       
       // Convert to array and sort alphabetically
-      return Array.from(categoriesSet).sort();
+      const result = Array.from(categoriesSet).sort();
+
+      // Cache result for unfiltered queries
+      if (!sellerId) {
+        this.cache.categories.data = result;
+        this.cache.categories.timestamp = Date.now();
+      }
+
+      return result;
     } catch (error) {
       console.error('Error fetching categories:', error);
       return [];

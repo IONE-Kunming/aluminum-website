@@ -76,11 +76,13 @@ const lazyPages = {
 function lazyRoute(pageLoader) {
   return async () => {
     try {
-      console.log('[lazyRoute] Starting to load page...');
+      // Show a lightweight loading state immediately for perceived performance
+      const mainContent = document.getElementById('main-content');
+      if (mainContent) {
+        mainContent.innerHTML = '<div class="page-loading"><div class="spinner"></div></div>';
+      }
       const renderFn = await pageLoader();
-      console.log('[lazyRoute] Page module loaded, render function:', typeof renderFn);
       await renderFn();
-      console.log('[lazyRoute] Page rendered successfully');
     } catch (error) {
       console.error('[lazyRoute] Error loading page:', error);
       console.error('[lazyRoute] Error stack:', error.stack);
@@ -171,7 +173,7 @@ function protectedRoute(handler, requireRole = null) {
     }
     
     console.log('[protectedRoute] Calling handler');
-    handler();
+    await handler();
   };
 }
 

@@ -59,7 +59,7 @@ export function renderLayout(content, userRole = null) {
   const avatarLetter = displayName.charAt(0).toUpperCase() || 'U';
   
   app.innerHTML = `
-    <div class="layout">
+    <div class="layout" data-role="${role}">
       <!-- Mobile Menu Button -->
       <button class="mobile-menu-btn" id="mobile-menu-btn">
         <i data-lucide="menu" id="menu-icon"></i>
@@ -357,6 +357,28 @@ async function initCartOverlay() {
 }
 
 // Helper function to render page with layout
+// Optimized: reuses existing sidebar if same role to avoid full re-render
 export function renderPageWithLayout(pageContent, userRole = null) {
+  const profile = authManager.getUserProfile();
+  const role = userRole || profile?.role || 'buyer';
+  const existingLayout = document.querySelector('.layout');
+  const mainContent = document.getElementById('main-content');
+
+  // If layout already exists with same role, only update the content area (fast path)
+  if (existingLayout && mainContent && existingLayout.dataset.role === role) {
+    mainContent.innerHTML = pageContent;
+
+    // Update active nav item
+    const currentPath = router.currentRoute;
+    document.querySelectorAll('.nav-item[data-path]').forEach(item => {
+      const path = item.getAttribute('data-path');
+      item.classList.toggle('active', path === currentPath);
+    });
+
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  // Full layout render (first time or role change)
   renderLayout(pageContent, userRole);
 }
