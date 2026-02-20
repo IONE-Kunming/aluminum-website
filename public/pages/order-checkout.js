@@ -342,7 +342,7 @@ function initializeOrderCheckout(order) {
     } catch (error) {
       console.error('Error processing payment:', error);
       const errorMsg = error?.code === 'permission-denied'
-        ? (t('orders.paymentPermissionDenied') || 'Payment failed: permission denied. Please ensure your account has the correct permissions.')
+        ? (t('orders.paymentPermissionDenied') || 'Payment failed: insufficient permissions. Contact support if this persists.')
         : (t('orders.paymentFailed') || 'Payment failed. Please try again.');
       window.toast.error(errorMsg);
       
