@@ -66,18 +66,33 @@ class DataService {
       }
       
       // Enable offline persistence for faster loading
+      // Configure cache size for optimal performance with large datasets
+      try {
+        this.db.settings({
+          cacheSizeBytes: window.firebase.firestore.CACHE_SIZE_UNLIMITED
+        });
+      } catch (settingsErr) {
+        // Settings may already be applied or not supported
+        console.warn('Firestore settings already applied or not supported:', settingsErr.message);
+      }
+
       try {
         await this.db.enablePersistence({ synchronizeTabs: true });
         console.log('Firestore persistence enabled - data will be cached locally');
       } catch (err) {
         if (err.code === 'failed-precondition') {
-          console.warn('Persistence failed: Multiple tabs open, persistence enabled in first tab only');
+          // Multiple tabs open - persistence works only in the first tab
+          // This is expected behavior, not an error
+          console.warn('Persistence: Multiple tabs open, persistence enabled in first tab only');
         } else if (err.code === 'unimplemented') {
           console.warn('Persistence not available in this browser');
         } else {
           console.warn('Error enabling persistence:', err);
         }
       }
+
+      // Setup online/offline monitoring for UX feedback
+      this._setupConnectivityMonitor();
       
       this.initialized = true;
       console.log('DataService initialized with Firestore');
@@ -107,6 +122,26 @@ class DataService {
         resolve();
       }, 5000);
     });
+  }
+
+  // Monitor online/offline status and show appropriate UX feedback
+  _setupConnectivityMonitor() {
+    this._isOnline = navigator.onLine;
+
+    window.addEventListener('online', () => {
+      this._isOnline = true;
+      if (window.toast) window.toast.success('Back online - syncing data');
+    });
+
+    window.addEventListener('offline', () => {
+      this._isOnline = false;
+      if (window.toast) window.toast.warning('You are offline - showing cached data');
+    });
+  }
+
+  // Check if the app is currently online
+  isOnline() {
+    return this._isOnline !== false;
   }
 
   // Invalidate cache for a specific key or all caches
