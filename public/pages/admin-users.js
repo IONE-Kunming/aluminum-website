@@ -17,35 +17,35 @@ export async function renderAdminUsers() {
   const content = `
     <div class="admin-users-page">
       <div class="page-header">
-        <h1><i data-lucide="users"></i> ${t('nav.users')} Management</h1>
-        <p>Manage all platform users (buyers, sellers, and admins)</p>
+        <h1><i data-lucide="users"></i> ${t('admin.usersManagement')}</h1>
+        <p>${t('admin.manageAllUsers')}</p>
       </div>
       
       <div class="admin-controls">
         <div class="search-box">
           <i data-lucide="search"></i>
-          <input type="text" id="user-search" placeholder="Search users by name or email..." />
+          <input type="text" id="user-search" placeholder="${t('admin.searchUsersPlaceholder')}" />
         </div>
         <div class="filter-controls">
           <select id="role-filter">
-            <option value="">All Roles</option>
-            <option value="buyer">Buyers</option>
-            <option value="seller">Sellers</option>
-            <option value="admin">Admins</option>
+            <option value="">${t('admin.allRoles')}</option>
+            <option value="buyer">${t('admin.buyers')}</option>
+            <option value="seller">${t('admin.sellers')}</option>
+            <option value="admin">${t('admin.admins')}</option>
           </select>
           <select id="status-filter">
-            <option value="">All Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
+            <option value="">${t('admin.allStatus')}</option>
+            <option value="active">${t('admin.active')}</option>
+            <option value="inactive">${t('admin.inactive')}</option>
           </select>
           <button class="btn btn-secondary" id="import-profile-btn">
-            <i data-lucide="upload"></i> Import Profile
+            <i data-lucide="upload"></i> ${t('admin.importProfile')}
           </button>
         </div>
       </div>
       
       <div id="users-loading" class="loading-spinner">
-        <i data-lucide="loader"></i> Loading users...
+        <i data-lucide="loader"></i> ${t('admin.loadingUsers')}
       </div>
       
       <div id="users-container" style="display: none;">
@@ -83,6 +83,7 @@ async function loadUsers() {
 }
 
 function displayUsers(users) {
+  const t = languageManager.t.bind(languageManager);
   const container = document.getElementById('users-container');
   const loading = document.getElementById('users-loading');
   
@@ -93,7 +94,7 @@ function displayUsers(users) {
     container.innerHTML = `
       <div class="empty-state">
         <i data-lucide="users"></i>
-        <p>No users found</p>
+        <p>${t('admin.noUsersFound')}</p>
       </div>
     `;
     if (window.lucide) window.lucide.createIcons();
@@ -105,13 +106,13 @@ function displayUsers(users) {
       <table class="data-table">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Email</th>
+            <th>${t('common.name')}</th>
+            <th>${t('common.email')}</th>
             <th>Role</th>
             <th>Company</th>
-            <th>Status</th>
-            <th>Created</th>
-            <th>Actions</th>
+            <th>${t('admin.status')}</th>
+            <th>${t('admin.createdColumn')}</th>
+            <th>${t('finances.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -150,9 +151,10 @@ function displayUsers(users) {
 }
 
 function renderUserRow(user) {
+  const t = languageManager.t.bind(languageManager);
   const isActive = user.isActive !== false;
   const statusClass = isActive ? 'status-active' : 'status-inactive';
-  const statusText = isActive ? 'Active' : 'Inactive';
+  const statusText = isActive ? t('admin.active') : t('admin.inactive');
   
   return `
     <tr>
@@ -163,19 +165,19 @@ function renderUserRow(user) {
       <td><span class="status-badge ${statusClass}">${statusText}</span></td>
       <td>${new Date(user.createdAt).toLocaleDateString()}</td>
       <td class="actions">
-        <button class="btn-icon" id="view-user-${user.id}" title="View Details">
+        <button class="btn-icon" id="view-user-${user.id}" title="${t('admin.viewDetails')}">
           <i data-lucide="eye"></i>
         </button>
-        <button class="btn-icon" id="edit-user-${user.id}" title="Edit User">
+        <button class="btn-icon" id="edit-user-${user.id}" title="${t('admin.editUser')}">
           <i data-lucide="edit"></i>
         </button>
-        <button class="btn-icon" id="toggle-user-${user.id}" title="${isActive ? 'Deactivate' : 'Activate'} User">
+        <button class="btn-icon" id="toggle-user-${user.id}" title="${isActive ? t('admin.deactivateUser') : t('admin.activateUser')}">
           <i data-lucide="${isActive ? 'user-x' : 'user-check'}"></i>
         </button>
-        <button class="btn-icon btn-danger" id="delete-user-${user.id}" title="Delete User">
+        <button class="btn-icon btn-danger" id="delete-user-${user.id}" title="${t('admin.deleteUser')}">
           <i data-lucide="trash-2"></i>
         </button>
-        <button class="btn-icon" id="export-user-${user.id}" title="Export Profile">
+        <button class="btn-icon" id="export-user-${user.id}" title="${t('admin.exportProfile')}">
           <i data-lucide="download"></i>
         </button>
       </td>
@@ -214,6 +216,7 @@ function filterUsers() {
 }
 
 function viewUserDetails(user) {
+  const t = languageManager.t.bind(languageManager);
   const isActive = user.isActive !== false;
 
   const formatVal = (v) => escapeHtml(v || 'N/A');
@@ -228,47 +231,47 @@ function viewUserDetails(user) {
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 560px;">
       <div class="modal-header">
-        <h2><i data-lucide="user"></i> User Details</h2>
+        <h2><i data-lucide="user"></i> ${t('admin.userDetails')}</h2>
         <button class="modal-close" id="close-view-user-modal"><i data-lucide="x"></i></button>
       </div>
       <div class="modal-body">
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
           <div>
-            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Display Name</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">${t('admin.displayName')}</p>
             <p style="font-weight: 600; margin: 0 0 16px;">${formatVal(user.displayName)}</p>
-            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Email</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">${t('common.email')}</p>
             <p style="font-weight: 600; margin: 0 0 16px;">${formatVal(user.email)}</p>
             <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Role</p>
             <p style="margin: 0 0 16px;"><span class="badge badge-${user.role || 'buyer'}">${formatVal(user.role)}</span></p>
             <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Status</p>
-            <p style="margin: 0 0 16px;"><span class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? 'Active' : 'Inactive'}</span></p>
+            <p style="margin: 0 0 16px;"><span class="status-badge ${isActive ? 'status-active' : 'status-inactive'}">${isActive ? t('admin.active') : t('admin.inactive')}</span></p>
           </div>
           <div>
             <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Company</p>
             <p style="font-weight: 600; margin: 0 0 16px;">${formatVal(user.companyName)}</p>
-            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Phone</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">${t('admin.phone')}</p>
             <p style="font-weight: 600; margin: 0 0 16px;">${formatVal(user.phoneNumber)}</p>
-            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">User ID</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">${t('admin.userId')}</p>
             <p style="font-weight: 600; font-size: 12px; word-break: break-all; margin: 0 0 16px;">${formatVal(user.id)}</p>
-            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">Joined</p>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px;">${t('admin.joined')}</p>
             <p style="font-weight: 600; margin: 0 0 16px;">${formatDate(user.createdAt)}</p>
           </div>
         </div>
         ${user.address ? `
         <hr style="border-color: var(--border-color); margin: 4px 0 16px;">
-        <p style="font-size: 13px; font-weight: 600; margin: 0 0 8px;">Address</p>
+        <p style="font-size: 13px; font-weight: 600; margin: 0 0 8px;">${t('admin.address')}</p>
         <p style="font-size: 14px; margin: 0;">${formatVal(user.address.street)}, ${formatVal(user.address.city)}, ${formatVal(user.address.country)}</p>
         ` : ''}
         ${user.bio ? `
         <hr style="border-color: var(--border-color); margin: 16px 0 12px;">
-        <p style="font-size: 13px; font-weight: 600; margin: 0 0 8px;">Bio</p>
+        <p style="font-size: 13px; font-weight: 600; margin: 0 0 8px;">${t('admin.bio')}</p>
         <p style="font-size: 14px; margin: 0; color: var(--text-secondary);">${formatVal(user.bio)}</p>
         ` : ''}
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="close-view-user-btn">Close</button>
+        <button class="btn btn-secondary" id="close-view-user-btn">${t('common.close')}</button>
         <button class="btn btn-primary" id="edit-from-view-btn">
-          <i data-lucide="edit"></i> Edit User
+          <i data-lucide="edit"></i> ${t('admin.editUser')}
         </button>
       </div>
     </div>
@@ -440,13 +443,13 @@ async function deleteUser(user) {
 
   const userName = user.displayName || user.email;
   const details = [
-    `User profile for "${userName}"`,
-    productCount > 0 ? `${productCount} product(s)` : null,
-    orderCount > 0 ? `${orderCount} order(s)` : null,
-    invoiceCount > 0 ? `${invoiceCount} invoice(s)` : null
+    `${t('admin.userProfileFor')} "${userName}"`,
+    productCount > 0 ? `${productCount} ${t('admin.products')}` : null,
+    orderCount > 0 ? `${orderCount} ${t('admin.orders')}` : null,
+    invoiceCount > 0 ? `${invoiceCount} ${t('admin.invoicesCount')}` : null
   ].filter(Boolean).join('\n• ');
 
-  if (!await showConfirm(`Are you sure you want to delete the following data?\n\n• ${details}\n\nThis action cannot be undone.`)) {
+  if (!await showConfirm(`${t('admin.confirmDeleteData')}\n\n• ${details}\n\n${t('admin.cannotBeUndone')}`)) {
     return;
   }
 
@@ -507,6 +510,7 @@ async function toggleUserStatus(user) {
 }
 
 function exportUserProfile(user) {
+  const t = languageManager.t.bind(languageManager);
   const data = JSON.stringify(user, null, 2);
   const blob = new Blob([data], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -517,10 +521,11 @@ function exportUserProfile(user) {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  window.toast.success('Profile exported successfully');
+  window.toast.success(t('admin.profileExported'));
 }
 
 function importUserProfile() {
+  const t = languageManager.t.bind(languageManager);
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.json';
@@ -537,7 +542,7 @@ function importUserProfile() {
       const text = await file.text();
       profileData = JSON.parse(text);
     } catch (err) {
-      window.toast.error('Invalid JSON file');
+      window.toast.error(t('admin.invalidJsonFile'));
       return;
     }
 
@@ -547,25 +552,25 @@ function importUserProfile() {
     modal.innerHTML = `
       <div class="modal-content" style="max-width: 540px;">
         <div class="modal-header">
-          <h2><i data-lucide="upload"></i> Import Profile Data</h2>
+          <h2><i data-lucide="upload"></i> ${t('admin.importProfileData')}</h2>
           <button class="modal-close" id="close-import-modal"><i data-lucide="x"></i></button>
         </div>
         <div class="modal-body">
           <p style="margin: 0 0 12px; color: var(--text-secondary);">
-            Imported fields: ${escapeHtml(Object.keys(profileData).slice(0, 20).join(', '))}${Object.keys(profileData).length > 20 ? '...' : ''}
+            ${t('admin.importedFields')} ${escapeHtml(Object.keys(profileData).slice(0, 20).join(', '))}${Object.keys(profileData).length > 20 ? '...' : ''}
           </p>
 
           <!-- Import mode toggle -->
           <div class="form-group" style="margin-bottom: 16px;">
-            <label style="font-weight: 600; margin-bottom: 8px; display: block;">Import to:</label>
+            <label style="font-weight: 600; margin-bottom: 8px; display: block;">${t('admin.importTo')}</label>
             <div style="display: flex; gap: 12px;">
               <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
                 <input type="radio" name="import-mode" value="existing" checked />
-                Existing User
+                ${t('admin.existingUser')}
               </label>
               <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
                 <input type="radio" name="import-mode" value="new" />
-                New User
+                ${t('admin.newUser')}
               </label>
             </div>
           </div>
@@ -573,9 +578,9 @@ function importUserProfile() {
           <!-- Existing user section -->
           <div id="import-existing-section">
             <div class="form-group">
-              <label for="import-target-select">Select user from list</label>
+              <label for="import-target-select">${t('admin.selectUserFromList')}</label>
               <select id="import-target-select" class="form-control">
-                <option value="">-- Choose a user --</option>
+                <option value="">${t('admin.chooseAUser')}</option>
                 ${allUsers.map(u => `<option value="${escapeHtml(u.id)}">${escapeHtml((u.displayName || 'No name') + ' (' + (u.email || u.id) + ')')}</option>`).join('')}
               </select>
             </div>
@@ -584,22 +589,22 @@ function importUserProfile() {
           <!-- New user section (hidden initially) -->
           <div id="import-new-section" style="display: none;">
             <div class="form-group">
-              <label for="import-new-email">Email (required for account creation)</label>
+              <label for="import-new-email">${t('admin.emailRequiredForAccount')}</label>
               <input type="email" id="import-new-email" class="form-control" value="${escapeHtml(profileData.email || '')}" placeholder="user@example.com" />
             </div>
             <div class="form-group">
-              <label for="import-new-password">Password (min 6 characters)</label>
-              <input type="password" id="import-new-password" class="form-control" placeholder="Enter password for the new account" />
+              <label for="import-new-password">${t('admin.passwordMin6')}</label>
+              <input type="password" id="import-new-password" class="form-control" placeholder="${t('admin.enterPasswordPlaceholder')}" />
             </div>
             <small style="color: var(--text-secondary); display: block; margin-top: -8px;">
-              A new Firebase account will be created with these credentials and the imported profile data will be applied.
+              ${t('admin.newAccountDescription')}
             </small>
           </div>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" id="cancel-import-btn">Cancel</button>
+          <button class="btn btn-secondary" id="cancel-import-btn">${t('common.cancel')}</button>
           <button class="btn btn-primary" id="apply-import-btn">
-            <i data-lucide="check"></i> Apply Import
+            <i data-lucide="check"></i> ${t('admin.applyImport')}
           </button>
         </div>
       </div>
@@ -641,7 +646,7 @@ function importUserProfile() {
         // --- Import to existing user ---
         const targetId = document.getElementById('import-target-select').value;
         if (!targetId) {
-          window.toast.error('Please select a user from the list');
+          window.toast.error(t('admin.pleaseSelectUser'));
           return;
         }
 
@@ -649,7 +654,7 @@ function importUserProfile() {
         const targetLabel = targetUser ? (targetUser.displayName || targetUser.email) : targetId;
 
         if (Object.keys(updateData).length === 0) {
-          window.toast.error('No valid profile fields found in the imported file');
+          window.toast.error(t('admin.noValidFields'));
           return;
         }
 
@@ -659,12 +664,12 @@ function importUserProfile() {
 
         try {
           await dataService.db.collection('users').doc(targetId).set(updateData, { merge: true });
-          window.toast.success('Profile imported successfully');
+          window.toast.success(t('admin.profileImported'));
           closeModal();
           await loadUsers();
         } catch (error) {
           console.error('Error importing profile:', error);
-          window.toast.error('Failed to import profile');
+          window.toast.error(t('admin.failedToImportProfile'));
         }
       } else {
         // --- Create new user and import data ---
@@ -672,16 +677,16 @@ function importUserProfile() {
         const newPassword = document.getElementById('import-new-password').value;
 
         if (!newEmail) {
-          window.toast.error('Email is required to create a new account');
+          window.toast.error(t('admin.emailRequiredForNewAccount'));
           return;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(newEmail)) {
-          window.toast.error('Please enter a valid email address');
+          window.toast.error(t('admin.pleaseEnterValidEmail'));
           return;
         }
         if (!newPassword || newPassword.length < 6) {
-          window.toast.error('Password must be at least 6 characters');
+          window.toast.error(t('admin.passwordMin6Error'));
           return;
         }
 
@@ -691,7 +696,7 @@ function importUserProfile() {
 
         const applyBtn = document.getElementById('apply-import-btn');
         applyBtn.disabled = true;
-        applyBtn.innerHTML = '<i data-lucide="loader"></i> Creating...';
+        applyBtn.innerHTML = '<i data-lucide="loader"></i> ' + t('admin.creating');
         if (window.lucide) window.lucide.createIcons();
 
         try {
@@ -723,7 +728,7 @@ function importUserProfile() {
 
           // Create the Firestore profile document with the new UID
           await dataService.db.collection('users').doc(newUid).set(updateData);
-          window.toast.success(`New account created for ${escapeHtml(newEmail)} and profile data imported`);
+          window.toast.success(t('admin.newAccountCreated', { email: escapeHtml(newEmail) }));
           closeModal();
           await loadUsers();
         } catch (error) {
@@ -735,13 +740,13 @@ function importUserProfile() {
           } catch (_) { /* already deleted */ }
 
           if (error.code === 'auth/email-already-in-use') {
-            window.toast.error('An account with this email already exists. Use "Existing User" mode instead.');
+            window.toast.error(t('admin.emailAlreadyExists'));
           } else {
-            window.toast.error('Failed to create account: ' + (error.message || 'Unknown error'));
+            window.toast.error(t('admin.failedToCreateAccount') + ': ' + (error.message || 'Unknown error'));
           }
         } finally {
           applyBtn.disabled = false;
-          applyBtn.innerHTML = '<i data-lucide="check"></i> Apply Import';
+          applyBtn.innerHTML = '<i data-lucide="check"></i> ' + t('admin.applyImport');
           if (window.lucide) window.lucide.createIcons();
         }
       }
