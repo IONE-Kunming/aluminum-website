@@ -143,32 +143,32 @@ export function renderProfile() {
 
       ${profile?.role === 'seller' ? `
       <div class="profile-section card" style="margin-top: 24px;">
-        <h3><i data-lucide="credit-card" style="width: 20px; height: 20px; vertical-align: middle;"></i> Payment Methods</h3>
-        <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">Complete your payment details to receive payments from IONE. All fields are required.</p>
+        <h3><i data-lucide="credit-card" style="width: 20px; height: 20px; vertical-align: middle;"></i> ${t('paymentMethods.title')}</h3>
+        <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">${t('paymentMethods.description')}</p>
         <form id="payment-methods-form">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
             <div class="form-group">
-              <label>Bank Name</label>
-              <input type="text" class="form-control" id="pm-bankName" value="${escapeHtml(profile?.paymentMethods?.bankName || '')}" placeholder="e.g. Industrial and Commercial Bank" required>
+              <label>${t('paymentMethods.bankName')}</label>
+              <input type="text" class="form-control" id="pm-bankName" value="${escapeHtml(profile?.paymentMethods?.bankName || '')}" placeholder="${t('paymentMethods.bankNamePlaceholder')}" required>
             </div>
             <div class="form-group">
-              <label>Account Holder Name</label>
-              <input type="text" class="form-control" id="pm-accountName" value="${escapeHtml(profile?.paymentMethods?.accountName || '')}" placeholder="Full name on account" required>
+              <label>${t('paymentMethods.accountHolderName')}</label>
+              <input type="text" class="form-control" id="pm-accountName" value="${escapeHtml(profile?.paymentMethods?.accountName || '')}" placeholder="${t('paymentMethods.accountHolderPlaceholder')}" required>
             </div>
             <div class="form-group">
-              <label>Account Number / IBAN</label>
-              <input type="text" class="form-control" id="pm-accountNumber" value="${escapeHtml(profile?.paymentMethods?.accountNumber || '')}" placeholder="Account number or IBAN" required>
+              <label>${t('paymentMethods.accountNumberIban')}</label>
+              <input type="text" class="form-control" id="pm-accountNumber" value="${escapeHtml(profile?.paymentMethods?.accountNumber || '')}" placeholder="${t('paymentMethods.accountNumberPlaceholder')}" required>
             </div>
             <div class="form-group">
-              <label>SWIFT / BIC Code</label>
-              <input type="text" class="form-control" id="pm-swiftCode" value="${escapeHtml(profile?.paymentMethods?.swiftCode || '')}" placeholder="e.g. ICBKCNBJ" required>
+              <label>${t('paymentMethods.swiftBicCode')}</label>
+              <input type="text" class="form-control" id="pm-swiftCode" value="${escapeHtml(profile?.paymentMethods?.swiftCode || '')}" placeholder="${t('paymentMethods.swiftPlaceholder')}" required>
             </div>
             <div class="form-group">
-              <label>Bank Branch / City</label>
-              <input type="text" class="form-control" id="pm-bankBranch" value="${escapeHtml(profile?.paymentMethods?.bankBranch || '')}" placeholder="e.g. Shenzhen Main Branch">
+              <label>${t('paymentMethods.bankBranchCity')}</label>
+              <input type="text" class="form-control" id="pm-bankBranch" value="${escapeHtml(profile?.paymentMethods?.bankBranch || '')}" placeholder="${t('paymentMethods.bankBranchPlaceholder')}">
             </div>
             <div class="form-group">
-              <label>Currency</label>
+              <label>${t('paymentMethods.currency')}</label>
               <select class="form-control" id="pm-currency">
                 <option value="USD" ${(profile?.paymentMethods?.currency || 'USD') === 'USD' ? 'selected' : ''}>USD - US Dollar</option>
                 <option value="CNY" ${profile?.paymentMethods?.currency === 'CNY' ? 'selected' : ''}>CNY - Chinese Yuan</option>
@@ -182,26 +182,26 @@ export function renderProfile() {
           </div>
 
           <div class="form-group" style="margin-top: 12px;">
-            <label>Additional Payment Notes</label>
-            <textarea class="form-control" id="pm-notes" rows="2" placeholder="Any additional payment instructions (optional)">${escapeHtml(profile?.paymentMethods?.notes || '')}</textarea>
+            <label>${t('paymentMethods.additionalNotes')}</label>
+            <textarea class="form-control" id="pm-notes" rows="2" placeholder="${t('paymentMethods.additionalNotesPlaceholder')}">${escapeHtml(profile?.paymentMethods?.notes || '')}</textarea>
           </div>
 
           ${profile?.paymentMethods?.bankName && profile?.paymentMethods?.accountNumber && profile?.paymentMethods?.swiftCode ? `
           <div style="padding: 12px 16px; background: #ecfdf5; border: 1px solid #86efac; border-radius: 8px; margin-top: 12px; display: flex; align-items: center; gap: 8px;">
             <i data-lucide="check-circle" style="width: 18px; height: 18px; color: #16a34a;"></i>
-            <span style="color: #15803d; font-size: 14px; font-weight: 500;">Payment details complete — you are eligible to receive payments.</span>
+            <span style="color: #15803d; font-size: 14px; font-weight: 500;">${t('paymentMethods.detailsComplete')}</span>
           </div>
           ` : `
           <div style="padding: 12px 16px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; margin-top: 12px; display: flex; align-items: center; gap: 8px;">
             <i data-lucide="alert-circle" style="width: 18px; height: 18px; color: #ea580c;"></i>
-            <span style="color: #c2410c; font-size: 14px; font-weight: 500;">Please complete your payment details to start receiving payments from IONE.</span>
+            <span style="color: #c2410c; font-size: 14px; font-weight: 500;">${t('paymentMethods.detailsIncomplete')}</span>
           </div>
           `}
 
           <div style="display: flex; gap: 12px; margin-top: 24px;">
             <button type="submit" class="btn btn-primary" id="save-payment-btn">
               <i data-lucide="save"></i>
-              Save Payment Details
+              ${t('paymentMethods.savePaymentDetails')}
             </button>
           </div>
         </form>
@@ -355,6 +355,7 @@ function initProfileHandlers(profile, user) {
 }
 
 function initPaymentMethodsHandlers(profile, user) {
+  const t = languageManager.t.bind(languageManager);
   const form = document.getElementById('payment-methods-form');
   const saveBtn = document.getElementById('save-payment-btn');
   if (!form || !saveBtn) return;
@@ -372,14 +373,14 @@ function initPaymentMethodsHandlers(profile, user) {
 
     if (!bankName || !accountName || !accountNumber || !swiftCode) {
       if (window.toast) {
-        window.toast.error('Bank Name, Account Name, Account Number, and SWIFT Code are required');
+        window.toast.error(t('paymentMethods.bankNameAccountRequired'));
       }
       return;
     }
 
     try {
       saveBtn.disabled = true;
-      saveBtn.innerHTML = '<i data-lucide="loader"></i> Saving...';
+      saveBtn.innerHTML = '<i data-lucide="loader"></i> ' + t('common.loading');
       if (window.lucide) window.lucide.createIcons();
 
       await dataService.init();
@@ -388,16 +389,16 @@ function initPaymentMethodsHandlers(profile, user) {
       }, { merge: true });
 
       if (window.toast) {
-        window.toast.success('Payment details saved successfully');
+        window.toast.success(t('paymentMethods.savedSuccess'));
       }
     } catch (error) {
       console.error('Error saving payment methods:', error);
       if (window.toast) {
-        window.toast.error('Failed to save payment details: ' + error.message);
+        window.toast.error(t('paymentMethods.savedError') + error.message);
       }
     } finally {
       saveBtn.disabled = false;
-      saveBtn.innerHTML = '<i data-lucide="save"></i> Save Payment Details';
+      saveBtn.innerHTML = '<i data-lucide="save"></i> ' + t('paymentMethods.savePaymentDetails');
       if (window.lucide) window.lucide.createIcons();
     }
   });
