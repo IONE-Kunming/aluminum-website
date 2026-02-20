@@ -1,5 +1,6 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
+import dataService from '../js/dataService.js';
 import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
 
@@ -139,6 +140,73 @@ export function renderProfile() {
           </div>
         </form>
       </div>
+
+      ${profile?.role === 'seller' ? `
+      <div class="profile-section card" style="margin-top: 24px;">
+        <h3><i data-lucide="credit-card" style="width: 20px; height: 20px; vertical-align: middle;"></i> ${t('paymentMethods.title')}</h3>
+        <p style="color: #6b7280; font-size: 14px; margin-bottom: 16px;">${t('paymentMethods.description')}</p>
+        <form id="payment-methods-form">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label>${t('paymentMethods.bankName')}</label>
+              <input type="text" class="form-control" id="pm-bankName" value="${escapeHtml(profile?.paymentMethods?.bankName || '')}" placeholder="${t('paymentMethods.bankNamePlaceholder')}" required>
+            </div>
+            <div class="form-group">
+              <label>${t('paymentMethods.accountHolderName')}</label>
+              <input type="text" class="form-control" id="pm-accountName" value="${escapeHtml(profile?.paymentMethods?.accountName || '')}" placeholder="${t('paymentMethods.accountHolderPlaceholder')}" required>
+            </div>
+            <div class="form-group">
+              <label>${t('paymentMethods.accountNumberIban')}</label>
+              <input type="text" class="form-control" id="pm-accountNumber" value="${escapeHtml(profile?.paymentMethods?.accountNumber || '')}" placeholder="${t('paymentMethods.accountNumberPlaceholder')}" required>
+            </div>
+            <div class="form-group">
+              <label>${t('paymentMethods.swiftBicCode')}</label>
+              <input type="text" class="form-control" id="pm-swiftCode" value="${escapeHtml(profile?.paymentMethods?.swiftCode || '')}" placeholder="${t('paymentMethods.swiftPlaceholder')}" required>
+            </div>
+            <div class="form-group">
+              <label>${t('paymentMethods.bankBranchCity')}</label>
+              <input type="text" class="form-control" id="pm-bankBranch" value="${escapeHtml(profile?.paymentMethods?.bankBranch || '')}" placeholder="${t('paymentMethods.bankBranchPlaceholder')}">
+            </div>
+            <div class="form-group">
+              <label>${t('paymentMethods.currency')}</label>
+              <select class="form-control" id="pm-currency">
+                <option value="USD" ${(profile?.paymentMethods?.currency || 'USD') === 'USD' ? 'selected' : ''}>USD - US Dollar</option>
+                <option value="CNY" ${profile?.paymentMethods?.currency === 'CNY' ? 'selected' : ''}>CNY - Chinese Yuan</option>
+                <option value="EUR" ${profile?.paymentMethods?.currency === 'EUR' ? 'selected' : ''}>EUR - Euro</option>
+                <option value="GBP" ${profile?.paymentMethods?.currency === 'GBP' ? 'selected' : ''}>GBP - British Pound</option>
+                <option value="AED" ${profile?.paymentMethods?.currency === 'AED' ? 'selected' : ''}>AED - UAE Dirham</option>
+                <option value="SAR" ${profile?.paymentMethods?.currency === 'SAR' ? 'selected' : ''}>SAR - Saudi Riyal</option>
+                <option value="PKR" ${profile?.paymentMethods?.currency === 'PKR' ? 'selected' : ''}>PKR - Pakistani Rupee</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 12px;">
+            <label>${t('paymentMethods.additionalNotes')}</label>
+            <textarea class="form-control" id="pm-notes" rows="2" placeholder="${t('paymentMethods.additionalNotesPlaceholder')}">${escapeHtml(profile?.paymentMethods?.notes || '')}</textarea>
+          </div>
+
+          ${profile?.paymentMethods?.bankName && profile?.paymentMethods?.accountNumber && profile?.paymentMethods?.swiftCode ? `
+          <div style="padding: 12px 16px; background: #ecfdf5; border: 1px solid #86efac; border-radius: 8px; margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="check-circle" style="width: 18px; height: 18px; color: #16a34a;"></i>
+            <span style="color: #15803d; font-size: 14px; font-weight: 500;">${t('paymentMethods.detailsComplete')}</span>
+          </div>
+          ` : `
+          <div style="padding: 12px 16px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="alert-circle" style="width: 18px; height: 18px; color: #ea580c;"></i>
+            <span style="color: #c2410c; font-size: 14px; font-weight: 500;">${t('paymentMethods.detailsIncomplete')}</span>
+          </div>
+          `}
+
+          <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <button type="submit" class="btn btn-primary" id="save-payment-btn">
+              <i data-lucide="save"></i>
+              ${t('paymentMethods.savePaymentDetails')}
+            </button>
+          </div>
+        </form>
+      </div>
+      ` : ''}
     </div>
   `;
 
@@ -147,6 +215,11 @@ export function renderProfile() {
   
   // Initialize profile form handlers
   initProfileHandlers(profile, user);
+
+  // Initialize payment methods form handlers (seller only)
+  if (profile?.role === 'seller') {
+    initPaymentMethodsHandlers(profile, user);
+  }
 }
 
 function initProfileHandlers(profile, user) {
@@ -276,6 +349,56 @@ function initProfileHandlers(profile, user) {
     } finally {
       saveBtn.disabled = false;
       saveBtn.innerHTML = '<i data-lucide="save"></i> Save Changes';
+      if (window.lucide) window.lucide.createIcons();
+    }
+  });
+}
+
+function initPaymentMethodsHandlers(profile, user) {
+  const t = languageManager.t.bind(languageManager);
+  const form = document.getElementById('payment-methods-form');
+  const saveBtn = document.getElementById('save-payment-btn');
+  if (!form || !saveBtn) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const bankName = document.getElementById('pm-bankName')?.value.trim() || '';
+    const accountName = document.getElementById('pm-accountName')?.value.trim() || '';
+    const accountNumber = document.getElementById('pm-accountNumber')?.value.trim() || '';
+    const swiftCode = document.getElementById('pm-swiftCode')?.value.trim() || '';
+    const bankBranch = document.getElementById('pm-bankBranch')?.value.trim() || '';
+    const currency = document.getElementById('pm-currency')?.value || 'USD';
+    const notes = document.getElementById('pm-notes')?.value.trim() || '';
+
+    if (!bankName || !accountName || !accountNumber || !swiftCode) {
+      if (window.toast) {
+        window.toast.error(t('paymentMethods.bankNameAccountRequired'));
+      }
+      return;
+    }
+
+    try {
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i data-lucide="loader"></i> ' + t('common.loading');
+      if (window.lucide) window.lucide.createIcons();
+
+      await dataService.init();
+      await dataService.db.collection('users').doc(user.uid).set({
+        paymentMethods: { bankName, accountName, accountNumber, swiftCode, bankBranch, currency, notes }
+      }, { merge: true });
+
+      if (window.toast) {
+        window.toast.success(t('paymentMethods.savedSuccess'));
+      }
+    } catch (error) {
+      console.error('Error saving payment methods:', error);
+      if (window.toast) {
+        window.toast.error(t('paymentMethods.savedError') + error.message);
+      }
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i data-lucide="save"></i> ' + t('paymentMethods.savePaymentDetails');
       if (window.lucide) window.lucide.createIcons();
     }
   });

@@ -72,6 +72,12 @@ const lazyPages = {
   adminOrders: () => import('../pages/admin-orders.js').then(m => m.renderAdminOrders),
   adminInvoices: () => import('../pages/admin-invoices.js').then(m => m.renderAdminInvoices),
   chat: () => import('../pages/chat.js').then(m => m.renderChat),
+  financesDashboard: () => import('../pages/finances-dashboard.js').then(m => m.renderFinancesDashboard),
+  financesTransactions: () => import('../pages/finances-transactions.js').then(m => m.renderFinancesTransactions),
+  financesAccounts: () => import('../pages/finances-accounts.js').then(m => m.renderFinancesAccounts),
+  financesReports: () => import('../pages/finances-reports.js').then(m => m.renderFinancesReports),
+  financesTax: () => import('../pages/finances-tax.js').then(m => m.renderFinancesTax),
+  financesReconciliation: () => import('../pages/finances-reconciliation.js').then(m => m.renderFinancesReconciliation),
 };
 
 // Helper to create lazy route handler
@@ -275,6 +281,12 @@ async function initApp() {
   router.register('/buyer/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'buyer'));
   router.register('/buyer/profile', protectedRoute(lazyRoute(lazyPages.profile), 'buyer'));
   router.register('/buyer/chats', protectedRoute(lazyRoute(lazyPages.chat), 'buyer'));
+  router.register('/buyer/finances', protectedRoute(lazyRoute(lazyPages.financesDashboard), 'buyer'));
+  router.register('/buyer/finances/transactions', protectedRoute(lazyRoute(lazyPages.financesTransactions), 'buyer'));
+  router.register('/buyer/finances/accounts', protectedRoute(lazyRoute(lazyPages.financesAccounts), 'buyer'));
+  router.register('/buyer/finances/reports', protectedRoute(lazyRoute(lazyPages.financesReports), 'buyer'));
+  router.register('/buyer/finances/tax', protectedRoute(lazyRoute(lazyPages.financesTax), 'buyer'));
+  router.register('/buyer/finances/reconciliation', protectedRoute(lazyRoute(lazyPages.financesReconciliation), 'buyer'));
   
   // Register seller routes (lazy loaded)
   router.register('/seller/dashboard', protectedRoute(lazyRoute(lazyPages.sellerDashboard), 'seller'));
@@ -287,6 +299,12 @@ async function initApp() {
   router.register('/seller/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'seller'));
   router.register('/seller/profile', protectedRoute(lazyRoute(lazyPages.profile), 'seller'));
   router.register('/seller/chats', protectedRoute(lazyRoute(lazyPages.chat), 'seller'));
+  router.register('/seller/finances', protectedRoute(lazyRoute(lazyPages.financesDashboard), 'seller'));
+  router.register('/seller/finances/transactions', protectedRoute(lazyRoute(lazyPages.financesTransactions), 'seller'));
+  router.register('/seller/finances/accounts', protectedRoute(lazyRoute(lazyPages.financesAccounts), 'seller'));
+  router.register('/seller/finances/reports', protectedRoute(lazyRoute(lazyPages.financesReports), 'seller'));
+  router.register('/seller/finances/tax', protectedRoute(lazyRoute(lazyPages.financesTax), 'seller'));
+  router.register('/seller/finances/reconciliation', protectedRoute(lazyRoute(lazyPages.financesReconciliation), 'seller'));
   
   // Register shared routes (accessible by both buyer and seller)
   router.register('/order/detail', protectedRoute(lazyRoute(lazyPages.orderDetail)));
@@ -300,6 +318,12 @@ async function initApp() {
   router.register('/admin/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'admin'));
   router.register('/admin/support', protectedRoute(lazyRoute(lazyPages.support), 'admin'));
   router.register('/admin/profile', protectedRoute(lazyRoute(lazyPages.profile), 'admin'));
+  router.register('/admin/finances', protectedRoute(lazyRoute(lazyPages.financesDashboard), 'admin'));
+  router.register('/admin/finances/transactions', protectedRoute(lazyRoute(lazyPages.financesTransactions), 'admin'));
+  router.register('/admin/finances/accounts', protectedRoute(lazyRoute(lazyPages.financesAccounts), 'admin'));
+  router.register('/admin/finances/reports', protectedRoute(lazyRoute(lazyPages.financesReports), 'admin'));
+  router.register('/admin/finances/tax', protectedRoute(lazyRoute(lazyPages.financesTax), 'admin'));
+  router.register('/admin/finances/reconciliation', protectedRoute(lazyRoute(lazyPages.financesReconciliation), 'admin'));
   
   // Fallback route
   router.register('*', renderLandingPage);

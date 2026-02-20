@@ -4421,7 +4421,7 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 32px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  background: #ffffff;
   border-left: 6px solid #0066cc;
   margin-bottom: 32px;
   border-radius: 12px;
@@ -4531,7 +4531,7 @@
 
 .invoice-party {
   padding: 24px;
-  background: #f8f9fa;
+  background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
   page-break-inside: avoid;
@@ -4569,7 +4569,7 @@
 .invoice-payment-instructions {
   margin-bottom: 32px;
   padding: 24px;
-  background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+  background: #ffffff;
   border-left: 6px solid #ffc107;
   border-radius: 12px;
   page-break-inside: avoid;
@@ -4623,7 +4623,7 @@
   grid-template-columns: 2fr 1.5fr auto;
   gap: 16px;
   padding: 16px 20px;
-  background: #f8f9fa;
+  background: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   align-items: center;
@@ -4657,7 +4657,7 @@
 .invoice-totals-section {
   margin: 24px 0;
   padding: 24px;
-  background: linear-gradient(135deg, #f0f7ff 0%, #e3f2fd 100%);
+  background: #ffffff;
   border: 2px solid #0066cc;
   border-radius: 12px;
   page-break-inside: avoid;
@@ -4704,7 +4704,7 @@
 .invoice-payment-terms {
   margin-bottom: 32px;
   padding: 24px;
-  background: #f0f7ff;
+  background: #ffffff;
   border-radius: 12px;
   border: 1px solid #90caf9;
 }
@@ -4730,7 +4730,7 @@
 .invoice-terms-conditions {
   margin-top: 32px;
   padding: 24px;
-  background: #fafafa;
+  background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
   page-break-inside: avoid;
@@ -4844,7 +4844,7 @@
   padding-top: var(--spacing-md);
   border-top: 2px solid #0066cc;
   border-bottom: none;
-  background: #f0f7ff;
+  background: #ffffff;
   padding: var(--spacing-md);
   margin: var(--spacing-sm) 0 0;
   border-radius: var(--radius-sm);
@@ -4860,7 +4860,7 @@
 .payment-terms-box {
   margin-top: var(--spacing-lg);
   padding: var(--spacing-xl);
-  background: #f0f7ff;
+  background: #ffffff;
   border: 2px solid #0066cc;
   border-radius: var(--radius-lg);
   box-shadow: 0 4px 16px rgba(0, 102, 204, 0.1);

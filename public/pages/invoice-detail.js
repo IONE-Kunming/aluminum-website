@@ -17,14 +17,45 @@ function formatItemDimensions(dimensions) {
   return '';
 }
 
-// Default terms and conditions
-const DEFAULT_TERMS = [
-  'Payment must be made within 30 days of invoice date.',
-  'Late payments may incur additional charges.',
-  'All prices are in USD unless otherwise specified.',
-  'Products are non-refundable once delivered.',
-  'Buyer is responsible for any import duties and taxes.'
-];
+// Default terms and conditions per language
+const DEFAULT_TERMS_BY_LANG = {
+  en: [
+    'Payment must be made within 30 days of invoice date.',
+    'Late payments may incur additional charges.',
+    'All prices are in USD unless otherwise specified.',
+    'Products are non-refundable once delivered.',
+    'Buyer is responsible for any import duties and taxes.',
+    'Seller retains ownership until full payment is received.',
+    'Disputes must be resolved through arbitration in the seller\'s jurisdiction.'
+  ],
+  zh: [
+    '付款必须在发票日期后30天内完成。',
+    '逾期付款可能会产生额外费用。',
+    '除另有说明外，所有价格均以美元计价。',
+    '产品一经交付，不可退款。',
+    '买方负责任何进口关税和税费。',
+    '在全额付款之前，卖方保留所有权。',
+    '争议必须通过卖方所在司法管辖区的仲裁解决。'
+  ],
+  ar: [
+    'يجب إتمام الدفع خلال 30 يومًا من تاريخ الفاتورة.',
+    'قد تترتب رسوم إضافية على المدفوعات المتأخرة.',
+    'جميع الأسعار بالدولار الأمريكي ما لم يُذكر خلاف ذلك.',
+    'المنتجات غير قابلة للاسترداد بعد التسليم.',
+    'المشتري مسؤول عن أي رسوم جمركية وضرائب استيراد.',
+    'يحتفظ البائع بالملكية حتى استلام الدفعة الكاملة.',
+    'يجب حل النزاعات من خلال التحكيم في نطاق اختصاص البائع.'
+  ],
+  ur: [
+    'ادائیگی رسید کی تاریخ سے 30 دنوں کے اندر کی جانی چاہیے۔',
+    'تاخیر سے ادائیگی پر اضافی چارجز لگ سکتے ہیں۔',
+    'تمام قیمتیں امریکی ڈالر میں ہیں جب تک کہ دوسری صورت میں بیان نہ کیا گیا ہو۔',
+    'مصنوعات ڈیلیوری کے بعد ناقابل واپسی ہیں۔',
+    'خریدار کسی بھی درآمدی ڈیوٹی اور ٹیکس کا ذمہ دار ہے۔',
+    'مکمل ادائیگی موصول ہونے تک بائع ملکیت برقرار رکھتا ہے۔',
+    'تنازعات کو بائع کے دائرہ اختیار میں ثالثی کے ذریعے حل کیا جانا چاہیے۔'
+  ]
+};
 
 export async function renderInvoiceDetail() {
   // Get invoice ID from URL
@@ -273,7 +304,8 @@ function getInvoiceTranslations(lang) {
       depositPaid: 'Deposit Paid', balanceDue: 'Balance Due',
       termsAndConditions: 'Terms and Conditions', notes: 'Notes',
       forQuestions: 'For questions about this invoice, please contact:',
-      thankYou: 'Thank you for your business!'
+      thankYou: 'Thank you for your business!',
+      phoneNumber: 'Phone Number', emailLabel: 'Email'
     },
     zh: {
       seller: '卖家', buyer: '买家', date: '日期', invoiceNo: '发票号',
@@ -286,7 +318,8 @@ function getInvoiceTranslations(lang) {
       depositPaid: '已支付订金', balanceDue: '应付余额',
       termsAndConditions: '条款和条件', notes: '备注',
       forQuestions: '如有关于此发票的问题，请联系：',
-      thankYou: '感谢您的惠顾！'
+      thankYou: '感谢您的惠顾！',
+      phoneNumber: '电话号码', emailLabel: '电子邮件'
     },
     ar: {
       seller: 'البائع', buyer: 'المشتري', date: 'التاريخ', invoiceNo: 'رقم الفاتورة',
@@ -299,7 +332,8 @@ function getInvoiceTranslations(lang) {
       depositPaid: 'العربون المدفوع', balanceDue: 'الرصيد المستحق',
       termsAndConditions: 'الشروط والأحكام', notes: 'ملاحظات',
       forQuestions: 'لأي استفسارات حول هذه الفاتورة، يرجى التواصل:',
-      thankYou: 'شكراً لتعاملكم معنا!'
+      thankYou: 'شكراً لتعاملكم معنا!',
+      phoneNumber: 'رقم الهاتف', emailLabel: 'البريد الإلكتروني'
     },
     ur: {
       seller: 'فروخت کنندہ', buyer: 'خریدار', date: 'تاریخ', invoiceNo: 'رسید نمبر',
@@ -312,7 +346,8 @@ function getInvoiceTranslations(lang) {
       depositPaid: 'جمع ادا شدہ', balanceDue: 'واجب الادا رقم',
       termsAndConditions: 'شرائط و ضوابط', notes: 'نوٹس',
       forQuestions: 'اس رسید کے بارے میں سوالات کے لیے، براہ کرم رابطہ کریں:',
-      thankYou: 'آپ کے کاروبار کا شکریہ!'
+      thankYou: 'آپ کے کاروبار کا شکریہ!',
+      phoneNumber: 'فون نمبر', emailLabel: 'ای میل'
     }
   };
   // Merge base strings with any available invoice translation keys
@@ -362,8 +397,8 @@ function renderInvoiceHtml(invoice, lang) {
             ` : `
               <p>Hua Qiang Bei, Shenzhen, Guandong</p>
             `}
-            <p>Phone Number: ${escapeHtml(invoice.sellerPhone || '008613332800284')}</p>
-            <p>Email: ${escapeHtml(invoice.sellerEmail || 'contactus@ione.live')}</p>
+            <p>${t.phoneNumber}: ${escapeHtml(invoice.sellerPhone || '008613332800284')}</p>
+            <p>${t.emailLabel}: ${escapeHtml(invoice.sellerEmail || 'contactus@ione.live')}</p>
           </div>
         </div>
         <div class="invoice-party">
@@ -375,8 +410,8 @@ function renderInvoiceHtml(invoice, lang) {
               <p>${escapeHtml(invoice.buyerAddress.city || '')}, ${escapeHtml(invoice.buyerAddress.state || '')}</p>
               ${invoice.buyerAddress.country ? `<p>${escapeHtml(invoice.buyerAddress.country)}</p>` : ''}
             ` : ''}
-            ${invoice.buyerPhone ? `<p>Phone Number: ${escapeHtml(invoice.buyerPhone)}</p>` : ''}
-            <p>Email: ${escapeHtml(invoice.buyerEmail || 'N/A')}</p>
+            ${invoice.buyerPhone ? `<p>${t.phoneNumber}: ${escapeHtml(invoice.buyerPhone)}</p>` : ''}
+            <p>${t.emailLabel}: ${escapeHtml(invoice.buyerEmail || 'N/A')}</p>
           </div>
         </div>
       </div>
@@ -448,7 +483,7 @@ function renderInvoiceHtml(invoice, lang) {
       <div class="invoice-terms-conditions">
         <h3 class="section-title">${t.termsAndConditions}</h3>
         <ul class="terms-list">
-          ${(invoice.termsAndConditions || DEFAULT_TERMS).map(term => `<li>${escapeHtml(term)}</li>`).join('')}
+          ${(invoice.termsAndConditions || DEFAULT_TERMS_BY_LANG[lang] || DEFAULT_TERMS_BY_LANG.en).map(term => `<li>${escapeHtml(term)}</li>`).join('')}
         </ul>
       </div>
       
