@@ -180,7 +180,7 @@ export async function renderProductDetail() {
               </button>
             </form>
             ${product.sellerId ? `
-              <button class="btn btn-outline btn-large" id="chat-with-seller-btn" style="margin-top: 12px; width: 100%;">
+              <button class="btn btn-outline btn-large product-chat-btn" id="chat-with-seller-btn">
                 <i data-lucide="message-circle"></i>
                 ${t('sellers.chatWithSeller')}
               </button>
@@ -203,7 +203,7 @@ export async function renderProductDetail() {
 
   // Chat with seller button
   const chatBtn = document.getElementById('chat-with-seller-btn');
-  if (chatBtn && product.sellerId) {
+  if (chatBtn && product.sellerId && product.sellerId.trim() !== '') {
     chatBtn.addEventListener('click', async () => {
       const currentUser = authManager.getCurrentUser();
       if (!currentUser?.uid) return;

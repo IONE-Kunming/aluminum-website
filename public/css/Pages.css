@@ -2846,6 +2846,12 @@
   padding: var(--spacing-lg);
 }
 
+.product-chat-btn {
+  margin-top: var(--spacing-md);
+  width: 100%;
+  justify-content: center;
+}
+
 .product-description h2,
 .product-details h2,
 .product-order-form h2 {
