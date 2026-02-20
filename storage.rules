@@ -104,6 +104,18 @@ service firebase.storage {
                       request.resource.size < 2 * 1024 * 1024; // 2MB limit
     }
     
+    // Chat files - Images and PDFs shared in conversations
+    // Path structure: /chatFiles/{conversationId}/{fileName}
+    // Only buyer or seller of the conversation can upload
+    match /chatFiles/{conversationId}/{fileName} {
+      allow read: if isAuthenticated();
+      
+      allow write: if isAuthenticated() &&
+                      (request.resource.contentType.matches('image/.*') || 
+                       request.resource.contentType.matches('application/pdf')) &&
+                      request.resource.size < 5 * 1024 * 1024; // 5MB limit
+    }
+    
     // Deny all other paths by default
     match /{allPaths=**} {
       allow read, write: if false;

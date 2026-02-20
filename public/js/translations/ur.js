@@ -12,6 +12,7 @@ export default {
     profile: 'پروفائل',
     products: 'میری مصنوعات',
     branches: 'شاخیں',
+    chats: 'گفتگو',
     signOut: 'سائن آؤٹ'
   },
   
@@ -212,7 +213,17 @@ export default {
     original: 'اصل',
     translated: 'ترجمہ شدہ',
     buyer: 'خریدار',
-    seller: 'فروخت کنندہ'
+    seller: 'فروخت کنندہ',
+    uploading: 'اپ لوڈ ہو رہا ہے...',
+    uploadFailed: 'اپ لوڈ ناکام',
+    invalidFileType: 'فائل کی قسم غلط ہے',
+    fileTooLarge: 'فائل بہت بڑی ہے (زیادہ سے زیادہ 5MB)',
+    imageOnly: 'صرف JPG, PNG, WEBP تصاویر کی اجازت ہے',
+    pdfOnly: 'صرف PDF فائلوں کی اجازت ہے',
+    viewPdf: 'PDF دیکھیں',
+    loadingMessages: 'پیغامات لوڈ ہو رہے ہیں...',
+    noMessages: 'ابھی تک کوئی پیغام نہیں۔ سلام کہیں!',
+    product: 'مصنوعات'
   },
   
   // رسیدیں

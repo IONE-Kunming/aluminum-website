@@ -1,0 +1,22 @@
+{
+  "rules": {
+    "conversations": {
+      "$conversationId": {
+        ".read": "auth != null && (data.child('buyerId').val() === auth.uid || data.child('sellerId').val() === auth.uid)",
+        ".write": "auth != null && (!data.exists() || data.child('buyerId').val() === auth.uid || data.child('sellerId').val() === auth.uid)"
+      }
+    },
+    "messages": {
+      "$conversationId": {
+        ".read": "auth != null && root.child('conversations').child($conversationId).child('buyerId').val() === auth.uid || root.child('conversations').child($conversationId).child('sellerId').val() === auth.uid",
+        ".write": "auth != null && (root.child('conversations').child($conversationId).child('buyerId').val() === auth.uid || root.child('conversations').child($conversationId).child('sellerId').val() === auth.uid)"
+      }
+    },
+    "userConversations": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null"
+      }
+    }
+  }
+}

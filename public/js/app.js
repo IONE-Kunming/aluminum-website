@@ -12,6 +12,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import 'firebase/compat/storage';
+import 'firebase/compat/database';
 
 // Make Firebase available globally for other modules
 window.firebase = firebase;
@@ -70,6 +71,7 @@ const lazyPages = {
   adminProducts: () => import('../pages/admin-products.js').then(m => m.renderAdminProducts),
   adminOrders: () => import('../pages/admin-orders.js').then(m => m.renderAdminOrders),
   adminInvoices: () => import('../pages/admin-invoices.js').then(m => m.renderAdminInvoices),
+  chat: () => import('../pages/chat.js').then(m => m.renderChat),
 };
 
 // Helper to create lazy route handler
@@ -272,6 +274,7 @@ async function initApp() {
   router.register('/buyer/support', protectedRoute(lazyRoute(lazyPages.support), 'buyer'));
   router.register('/buyer/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'buyer'));
   router.register('/buyer/profile', protectedRoute(lazyRoute(lazyPages.profile), 'buyer'));
+  router.register('/buyer/chats', protectedRoute(lazyRoute(lazyPages.chat), 'buyer'));
   
   // Register seller routes (lazy loaded)
   router.register('/seller/dashboard', protectedRoute(lazyRoute(lazyPages.sellerDashboard), 'seller'));
@@ -283,6 +286,7 @@ async function initApp() {
   router.register('/seller/support', protectedRoute(lazyRoute(lazyPages.support), 'seller'));
   router.register('/seller/notifications', protectedRoute(lazyRoute(lazyPages.notifications), 'seller'));
   router.register('/seller/profile', protectedRoute(lazyRoute(lazyPages.profile), 'seller'));
+  router.register('/seller/chats', protectedRoute(lazyRoute(lazyPages.chat), 'seller'));
   
   // Register shared routes (accessible by both buyer and seller)
   router.register('/order/detail', protectedRoute(lazyRoute(lazyPages.orderDetail)));
