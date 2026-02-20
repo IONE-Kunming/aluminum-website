@@ -248,6 +248,7 @@ class ChatService {
       const senderName = await this.getUserDisplayName(senderId);
       await firestore.collection('notifications').add({
         userId: recipientId,
+        senderId: senderId,
         type: 'chat',
         title: senderName,
         message: messageText,
