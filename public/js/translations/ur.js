@@ -12,6 +12,7 @@ export default {
     profile: 'پروفائل',
     products: 'میری مصنوعات',
     branches: 'شاخیں',
+    users: 'صارفین',
     chats: 'گفتگو',
     signOut: 'سائن آؤٹ'
   },
@@ -51,14 +52,6 @@ export default {
     confirmAction: 'عمل کی تصدیق',
     page: 'صفحہ',
     of: 'میں سے'
-  },
-  
-  // زبانیں
-  languages: {
-    en: 'English',
-    zh: '中文 (Chinese)',
-    ar: 'العربية (Arabic)',
-    ur: 'اردو (Urdu)'
   },
   
   // مصنوعات

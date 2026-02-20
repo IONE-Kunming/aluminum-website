@@ -12,6 +12,7 @@ export default {
     profile: 'الملف الشخصي',
     products: 'منتجاتي',
     branches: 'الفروع',
+    users: 'المستخدمون',
     chats: 'المحادثات',
     signOut: 'تسجيل الخروج'
   },
@@ -51,14 +52,6 @@ export default {
     confirmAction: 'تأكيد الإجراء',
     page: 'صفحة',
     of: 'من'
-  },
-  
-  // اللغات
-  languages: {
-    en: 'English',
-    zh: '中文 (Chinese)',
-    ar: 'العربية (Arabic)',
-    ur: 'اردو (Urdu)'
   },
   
   // المنتجات

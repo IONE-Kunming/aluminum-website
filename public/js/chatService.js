@@ -326,11 +326,11 @@ class ChatService {
     try {
       const doc = await window.firebase.firestore().collection('users').doc(uid).get();
       const data = doc.data();
-      const name = data?.displayName || data?.firstName || 'User';
+      const name = data?.displayName || data?.firstName || uid.substring(0, 8);
       this._nameCache.set(uid, name);
       return name;
     } catch {
-      return 'User';
+      return uid.substring(0, 8);
     }
   }
 }

@@ -12,6 +12,7 @@ export default {
     profile: '个人资料',
     products: '我的产品',
     branches: '分支机构',
+    users: '用户',
     chats: '聊天',
     signOut: '退出'
   },
@@ -51,14 +52,6 @@ export default {
     confirmAction: '确认操作',
     page: '页',
     of: '共'
-  },
-  
-  // 语言
-  languages: {
-    en: 'English',
-    zh: '中文 (Chinese)',
-    ar: 'العربية (Arabic)',
-    ur: 'اردو (Urdu)'
   },
   
   // 产品

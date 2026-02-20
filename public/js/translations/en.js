@@ -56,14 +56,6 @@ export default {
     of: 'of'
   },
   
-  // Languages
-  languages: {
-    en: 'English',
-    zh: '中文 (Chinese)',
-    ar: 'العربية (Arabic)',
-    ur: 'اردو (Urdu)'
-  },
-  
   // Products
   products: {
     title: 'Products',

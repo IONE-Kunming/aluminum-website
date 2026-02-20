@@ -12,6 +12,11 @@ let _activeConversationId = null;
 let _cleanupListener = null;
 let _isSending = false;
 
+// File type/size constants
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const ALLOWED_PDF_TYPES = ['application/pdf'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
 export async function renderChat() {
   const profile = authManager.getUserProfile();
   const t = languageManager.t.bind(languageManager);
@@ -359,10 +364,6 @@ function setupInputHandlers(conversationId, t) {
     });
   }
 }
-
-const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-const ALLOWED_PDF_TYPES = ['application/pdf'];
-const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 /** Scroll messages container to bottom */
 function scrollToBottom() {
