@@ -509,19 +509,71 @@ async function toggleUserStatus(user) {
   }
 }
 
-function exportUserProfile(user) {
+async function exportUserProfile(user) {
   const t = languageManager.t.bind(languageManager);
-  const data = JSON.stringify(user, null, 2);
-  const blob = new Blob([data], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `user-profile-${user.id}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  window.toast.success(t('admin.profileExported'));
+  try {
+    window.toast.info(t('admin.exportingProfile') || 'Exporting profile...');
+    await dataService.init();
+
+    // Fetch products, orders, and invoices in parallel
+    const [productsSnap, ordersAsBuyerSnap, ordersAsSellerSnap, invoicesAsBuyerSnap, invoicesAsSellerSnap] = await Promise.all([
+      dataService.db.collection('products').where('sellerId', '==', user.id).get(),
+      dataService.db.collection('orders').where('buyerId', '==', user.id).get(),
+      dataService.db.collection('orders').where('sellerId', '==', user.id).get(),
+      dataService.db.collection('invoices').where('buyerId', '==', user.id).get(),
+      dataService.db.collection('invoices').where('sellerId', '==', user.id).get(),
+    ]);
+
+    const products = productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const orderIds = new Set();
+    const orders = [];
+    [...ordersAsBuyerSnap.docs, ...ordersAsSellerSnap.docs].forEach(doc => {
+      if (!orderIds.has(doc.id)) {
+        orderIds.add(doc.id);
+        orders.push({ id: doc.id, ...doc.data() });
+      }
+    });
+    const invoiceIds = new Set();
+    const invoices = [];
+    [...invoicesAsBuyerSnap.docs, ...invoicesAsSellerSnap.docs].forEach(doc => {
+      if (!invoiceIds.has(doc.id)) {
+        invoiceIds.add(doc.id);
+        invoices.push({ id: doc.id, ...doc.data() });
+      }
+    });
+
+    // Build comprehensive export object
+    const exportData = {
+      profile: { ...user },
+      products: products,
+      financials: {
+        orders: orders,
+        invoices: invoices,
+        summary: {
+          totalProducts: products.length,
+          totalOrders: orders.length,
+          totalInvoices: invoices.length,
+          totalRevenue: orders.reduce((sum, o) => sum + (o.total || 0), 0),
+        }
+      },
+      exportedAt: new Date().toISOString()
+    };
+
+    const data = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `user-profile-${user.id}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    window.toast.success(t('admin.profileExported'));
+  } catch (error) {
+    console.error('Error exporting profile:', error);
+    window.toast.error(t('admin.profileExportFailed') || 'Failed to export profile');
+  }
 }
 
 function importUserProfile() {
