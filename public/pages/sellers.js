@@ -3,6 +3,7 @@ import languageManager from '../js/language.js';
 import dataService from '../js/dataService.js';
 import authManager from '../js/auth.js';
 import router from '../js/router.js';
+import chatService from '../js/chatService.js';
 import { escapeHtml } from '../js/utils.js';
 
 export async function renderSellers() {
@@ -102,6 +103,10 @@ export async function renderSellers() {
                       <i data-lucide="package"></i>
                       ${t('catalog.viewProducts')}
                     </button>
+                    <button class="btn btn-outline flex-1 chat-with-seller-btn" data-seller-id="${sellerId}">
+                      <i data-lucide="message-circle"></i>
+                      ${t('sellers.chatWithSeller')}
+                    </button>
                   </div>
                 ` : ''}
               </div>
@@ -116,6 +121,26 @@ export async function renderSellers() {
       btn.addEventListener('click', () => {
         const sellerId = btn.dataset.sellerId;
         router.navigate(`/buyer/catalog?seller=${sellerId}`);
+      });
+    });
+
+    document.querySelectorAll('.chat-with-seller-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const sellerId = btn.dataset.sellerId;
+        const buyerId = currentUser?.uid;
+        if (!buyerId) return;
+
+        btn.disabled = true;
+        try {
+          chatService.init();
+          const conversationId = await chatService.getOrCreateConversation('direct', buyerId, sellerId);
+          router.navigate(`/buyer/chats?id=${conversationId}`);
+        } catch (err) {
+          console.error('[Sellers] Failed to start chat:', err);
+          if (window.toast) window.toast.error(t('common.error'));
+        } finally {
+          btn.disabled = false;
+        }
       });
     });
 

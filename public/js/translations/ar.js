@@ -494,7 +494,8 @@ export default {
     viewInfo: 'عرض المعلومات',
     company: 'الشركة',
     city: 'المدينة',
-    contactSeller: 'اتصل بالبائع'
+    contactSeller: 'اتصل بالبائع',
+    chatWithSeller: 'محادثة مع البائع'
   },
   
   // الفروع
