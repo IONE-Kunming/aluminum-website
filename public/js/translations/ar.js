@@ -14,6 +14,7 @@ export default {
     branches: 'الفروع',
     users: 'المستخدمون',
     chats: 'المحادثات',
+    finances: 'المالية',
     signOut: 'تسجيل الخروج'
   },
   

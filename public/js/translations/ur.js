@@ -14,6 +14,7 @@ export default {
     branches: 'شاخیں',
     users: 'صارفین',
     chats: 'گفتگو',
+    finances: 'مالیات',
     signOut: 'سائن آؤٹ'
   },
   

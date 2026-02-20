@@ -19,17 +19,29 @@ function getStatusClass(status) {
 async function fetchFinancialData() {
   await dataService.init();
   const uid = authManager.getCurrentUser()?.uid;
+  const profile = authManager.getUserProfile();
+  const role = profile?.role || 'buyer';
   let orders = [];
   let invoices = [];
 
   try {
     if (dataService.db) {
-      const ordersSnap = await dataService.db.collection('orders')
-        .orderBy('createdAt', 'desc').limit(50).get();
+      let ordersQuery = dataService.db.collection('orders');
+      let invoicesQuery = dataService.db.collection('invoices');
+
+      // Scope data by role: sellers see their sales, buyers see their purchases, admin sees all
+      if (role === 'seller') {
+        ordersQuery = ordersQuery.where('sellerId', '==', uid);
+        invoicesQuery = invoicesQuery.where('sellerId', '==', uid);
+      } else if (role === 'buyer') {
+        ordersQuery = ordersQuery.where('buyerId', '==', uid);
+        invoicesQuery = invoicesQuery.where('buyerId', '==', uid);
+      }
+
+      const ordersSnap = await ordersQuery.orderBy('createdAt', 'desc').limit(50).get();
       orders = ordersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-      const invoicesSnap = await dataService.db.collection('invoices')
-        .orderBy('createdAt', 'desc').limit(50).get();
+      const invoicesSnap = await invoicesQuery.orderBy('createdAt', 'desc').limit(50).get();
       invoices = invoicesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
     }
   } catch (err) {
@@ -86,8 +98,11 @@ function buildChartPlaceholder(grossRevenue, expenses) {
 
 export async function renderFinancesDashboard() {
   const profile = authManager.getUserProfile();
+  const role = profile?.role || 'buyer';
   const t = languageManager.t.bind(languageManager);
   const data = await fetchFinancialData();
+
+  const basePath = `/${role}/finances`;
 
   const content = `
     <div class="dashboard-page">
@@ -96,6 +111,16 @@ export async function renderFinancesDashboard() {
           <h1>Financial Dashboard</h1>
           <p class="dashboard-subtitle">Overview of revenue, expenses, and recent transactions</p>
         </div>
+      </div>
+
+      <!-- Sub-navigation -->
+      <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;border-bottom:1px solid var(--border-color);padding-bottom:16px;">
+        <a href="#" class="btn btn-primary" data-nav="${basePath}">Dashboard</a>
+        <a href="#" class="btn" data-nav="${basePath}/transactions">Transactions</a>
+        <a href="#" class="btn" data-nav="${basePath}/accounts">Chart of Accounts</a>
+        <a href="#" class="btn" data-nav="${basePath}/reports">Reports</a>
+        <a href="#" class="btn" data-nav="${basePath}/tax">Tax Management</a>
+        <a href="#" class="btn" data-nav="${basePath}/reconciliation">Reconciliation</a>
       </div>
 
       <!-- Period Selector -->
@@ -212,7 +237,7 @@ export async function renderFinancesDashboard() {
     </div>
   `;
 
-  renderPageWithLayout(content, 'seller');
+  renderPageWithLayout(content, role);
 
   // Navigation listeners
   document.querySelectorAll('[data-nav]').forEach(btn => {
@@ -230,11 +255,13 @@ export async function renderFinancesDashboard() {
     });
   });
 
-  // Quick action placeholders
-  ['btn-reconcile', 'btn-reports', 'btn-export', 'btn-tax'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('click', () => alert('This feature is coming soon.'));
+  // Quick action buttons
+  document.getElementById('btn-reconcile')?.addEventListener('click', () => router.navigate(`${basePath}/reconciliation`));
+  document.getElementById('btn-reports')?.addEventListener('click', () => router.navigate(`${basePath}/reports`));
+  document.getElementById('btn-export')?.addEventListener('click', () => {
+    window.toast.info('Export statements feature coming soon');
   });
+  document.getElementById('btn-tax')?.addEventListener('click', () => router.navigate(`${basePath}/tax`));
 
   if (window.lucide) {
     window.lucide.createIcons();

@@ -22,6 +22,7 @@ export function renderLayout(content, userRole = null) {
     { path: '/buyer/cart', icon: 'shopping-cart', label: t('nav.cart') },
     { path: '/buyer/orders', icon: 'file-text', label: t('nav.orders') },
     { path: '/buyer/invoices', icon: 'file-text', label: t('nav.invoices') },
+    { path: '/buyer/finances', icon: 'bar-chart-2', label: t('nav.finances') },
     { path: '/buyer/chats', icon: 'message-circle', label: t('nav.chats') },
     { path: '/buyer/sellers', icon: 'store', label: t('nav.sellers') },
     { path: '/buyer/support', icon: 'help-circle', label: t('nav.support') },
@@ -34,6 +35,7 @@ export function renderLayout(content, userRole = null) {
     { path: '/seller/products', icon: 'package', label: t('nav.products') },
     { path: '/seller/orders', icon: 'file-text', label: t('nav.orders') },
     { path: '/seller/invoices', icon: 'file-text', label: t('nav.invoices') },
+    { path: '/seller/finances', icon: 'bar-chart-2', label: t('nav.finances') },
     { path: '/seller/chats', icon: 'message-circle', label: t('nav.chats') },
     { path: '/seller/branches', icon: 'git-branch', label: t('nav.branches') },
     { path: '/seller/support', icon: 'help-circle', label: t('nav.support') },
@@ -47,6 +49,7 @@ export function renderLayout(content, userRole = null) {
     { path: '/admin/products', icon: 'package', label: t('nav.products') },
     { path: '/admin/orders', icon: 'shopping-bag', label: t('nav.orders') },
     { path: '/admin/invoices', icon: 'file-text', label: t('nav.invoices') },
+    { path: '/admin/finances', icon: 'bar-chart-2', label: t('nav.finances') },
     { path: '/admin/support', icon: 'help-circle', label: t('nav.support') },
     { path: '/admin/profile', icon: 'user', label: t('nav.profile') },
   ];

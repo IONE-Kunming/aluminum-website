@@ -14,6 +14,7 @@ export default {
     branches: '分支机构',
     users: '用户',
     chats: '聊天',
+    finances: '财务',
     signOut: '退出'
   },
   

@@ -14,6 +14,7 @@ export default {
     branches: 'Branches',
     users: 'Users',
     chats: 'Chats',
+    finances: 'Finances',
     signOut: 'Sign Out'
   },
   
