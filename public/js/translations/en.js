@@ -516,7 +516,8 @@ export default {
     viewInfo: 'View Info',
     company: 'Company',
     city: 'City',
-    contactSeller: 'Contact Seller'
+    contactSeller: 'Contact Seller',
+    chatWithSeller: 'Chat With Seller'
   },
   
   // Branches

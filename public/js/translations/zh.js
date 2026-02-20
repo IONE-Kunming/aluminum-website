@@ -493,7 +493,8 @@ export default {
     viewInfo: '查看信息',
     company: '公司',
     city: '城市',
-    contactSeller: '联系卖家'
+    contactSeller: '联系卖家',
+    chatWithSeller: '与卖家聊天'
   },
   
   // 分支机构

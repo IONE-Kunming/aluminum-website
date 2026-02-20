@@ -240,6 +240,29 @@ class ChatService {
     updates[`userConversations/${conv.sellerId}/${conversationId}/lastMessageAt`] = timestamp;
 
     await this.db.ref().update(updates);
+
+    // Send notification to the other user
+    const uid = this._getUid();
+    const recipientId = uid === conv.buyerId ? conv.sellerId : conv.buyerId;
+    await this._notifyRecipient(uid, recipientId, text);
+  }
+
+  /** Create a Firestore notification for the message recipient */
+  async _notifyRecipient(senderId, recipientId, messageText) {
+    try {
+      const firestore = window.firebase.firestore();
+      const senderName = await this.getUserDisplayName(senderId);
+      await firestore.collection('notifications').add({
+        userId: recipientId,
+        type: 'chat',
+        title: senderName,
+        message: messageText,
+        read: false,
+        createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (err) {
+      console.error('[ChatService] Failed to send notification:', err);
+    }
   }
 
   /**

@@ -1234,6 +1234,26 @@ class DataService {
     }
   }
 
+  // Add a notification for a user
+  async addNotification({ userId, type, title, message }) {
+    await this.init();
+    
+    try {
+      if (!this.db || !userId) return;
+      
+      await this.db.collection('notifications').add({
+        userId,
+        type: type || 'default',
+        title: title || '',
+        message: message || '',
+        read: false,
+        createdAt: window.firebase.firestore.FieldValue.serverTimestamp()
+      });
+    } catch (error) {
+      console.error('Error adding notification:', error);
+    }
+  }
+
   // ==================== Invoice Methods ====================
 
   // Generate unique invoice number using Firestore transaction

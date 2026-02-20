@@ -494,7 +494,8 @@ export default {
     viewInfo: 'معلومات دیکھیں',
     company: 'کمپنی',
     city: 'شہر',
-    contactSeller: 'فروخت کنندہ سے رابطہ کریں'
+    contactSeller: 'فروخت کنندہ سے رابطہ کریں',
+    chatWithSeller: 'فروخت کنندہ سے بات کریں'
   },
   
   // شاخیں
