@@ -6,9 +6,7 @@ import { escapeHtml, showConfirm } from '../js/utils.js';
 import {
   getSubcategories,
   getMainCategories,
-  getMainCategoryForSubcategory,
-  isMainCategory,
-  isSubcategory
+  getMainCategoryForSubcategory
 } from '../js/categoryHierarchy.js';
 
 let allProducts = [];
