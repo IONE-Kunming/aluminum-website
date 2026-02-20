@@ -310,6 +310,18 @@ a:hover {
   color: white;
 }
 
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--electric-blue);
+  color: var(--electric-blue);
+  background: rgba(0, 128, 255, 0.1);
+}
+
 .btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

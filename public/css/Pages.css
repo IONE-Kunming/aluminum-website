@@ -981,6 +981,14 @@
 .seller-actions {
   display: flex;
   gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.seller-actions .btn {
+  flex: 1;
+  justify-content: center;
 }
 
 /* ==========================================
@@ -2838,6 +2846,12 @@
   padding: var(--spacing-lg);
 }
 
+.product-chat-btn {
+  margin-top: var(--spacing-md);
+  width: 100%;
+  justify-content: center;
+}
+
 .product-description h2,
 .product-details h2,
 .product-order-form h2 {
@@ -2958,12 +2972,6 @@
 
 .sellers-grid {
   flex: 1;
-}
-
-.seller-actions {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid var(--border-color);
 }
 
 .btn-chat {

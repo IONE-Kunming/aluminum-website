@@ -3,6 +3,7 @@ import router from '../js/router.js';
 import authManager from '../js/auth.js';
 import cartManager from '../js/cart.js';
 import dataService from '../js/dataService.js';
+import chatService from '../js/chatService.js';
 import { escapeHtml } from '../js/utils.js';
 import languageManager from '../js/language.js';
 
@@ -178,6 +179,12 @@ export async function renderProductDetail() {
                 ${t('catalog.addToCart')}
               </button>
             </form>
+            ${product.sellerId ? `
+              <button class="btn btn-outline btn-large product-chat-btn" id="chat-with-seller-btn">
+                <i data-lucide="message-circle"></i>
+                ${t('sellers.chatWithSeller')}
+              </button>
+            ` : ''}
           </div>
         </div>
       </div>
@@ -191,6 +198,26 @@ export async function renderProductDetail() {
   if (backBtn) {
     backBtn.addEventListener('click', () => {
       router.navigate('/buyer/catalog');
+    });
+  }
+
+  // Chat with seller button
+  const chatBtn = document.getElementById('chat-with-seller-btn');
+  if (chatBtn && product.sellerId && product.sellerId.trim() !== '') {
+    chatBtn.addEventListener('click', async () => {
+      const currentUser = authManager.getCurrentUser();
+      if (!currentUser?.uid) return;
+      chatBtn.disabled = true;
+      try {
+        chatService.init();
+        const conversationId = await chatService.getOrCreateConversation(product.id, currentUser.uid, product.sellerId);
+        router.navigate(`/buyer/chats?id=${conversationId}`);
+      } catch (err) {
+        console.error('[ProductDetail] Failed to start chat:', err);
+        if (window.toast) window.toast.error(t('common.error'));
+      } finally {
+        chatBtn.disabled = false;
+      }
     });
   }
 
