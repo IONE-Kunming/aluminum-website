@@ -314,6 +314,8 @@ export async function renderProducts() {
 
 // Load products from Firestore
 let allProducts = []; // Store all products globally for filtering
+const PAGE_SIZE = 12;
+let currentProductPage = 1;
 
 async function loadProducts() {
   const loadingEl = document.getElementById('products-loading');
@@ -329,7 +331,7 @@ async function loadProducts() {
     }
 
     // Fetch only this seller's products
-    allProducts = await dataService.getProducts({ sellerId: user.uid, limit: 2000 });
+    allProducts = await dataService.getProducts({ sellerId: user.uid, limit: 500 });
     
     if (loadingEl) loadingEl.style.display = 'none';
     
@@ -365,7 +367,7 @@ function showEmptyState() {
 // Display products in grid
 let selectedSubcategory = null; // Track selected subcategory filter
 
-function displayProducts(products, filterSubcategory = null) {
+function displayProducts(products, filterSubcategory = null, page = 1) {
   const t = languageManager.t.bind(languageManager);
   const gridEl = document.getElementById('products-grid');
   const emptyStateEl = document.getElementById('empty-state');
@@ -380,9 +382,16 @@ function displayProducts(products, filterSubcategory = null) {
   const subcategories = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
   
   // Filter products if a subcategory is selected
-  const displayedProducts = filterSubcategory 
+  const filteredProducts = filterSubcategory 
     ? products.filter(p => p.category === filterSubcategory)
     : products;
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
+  if (page > totalPages) page = totalPages;
+  currentProductPage = page;
+  const startIdx = (page - 1) * PAGE_SIZE;
+  const displayedProducts = filteredProducts.slice(startIdx, startIdx + PAGE_SIZE);
   
   gridEl.innerHTML = `
     <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 12px;">
@@ -463,6 +472,26 @@ function displayProducts(products, filterSubcategory = null) {
         </div>
       `).join('')}
     </div>
+
+    ${totalPages > 1 ? `
+      <div class="products-pagination" style="margin-top: 24px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+        <div class="pagination-controls" style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap; justify-content: center;">
+          <button class="btn btn-secondary btn-sm product-page-btn" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>&lsaquo; Previous</button>
+          ${(() => {
+            let start = Math.max(1, page - 2);
+            let end = Math.min(totalPages, start + 4);
+            if (end - start < 4) start = Math.max(1, end - 4);
+            let btns = '';
+            for (let i = start; i <= end; i++) {
+              btns += '<button class="btn btn-sm product-page-btn ' + (i === page ? 'btn-primary' : 'btn-secondary') + '" data-page="' + i + '">' + i + '</button>';
+            }
+            return btns;
+          })()}
+          <button class="btn btn-secondary btn-sm product-page-btn" data-page="${page + 1}" ${page >= totalPages ? 'disabled' : ''}>Next &rsaquo;</button>
+        </div>
+        <div class="pagination-info" style="font-size: 13px; color: #6b7280;">Page ${page} of ${totalPages}</div>
+      </div>
+    ` : ''}
   `;
   
   if (window.lucide) window.lucide.createIcons();
@@ -485,6 +514,18 @@ function displayProducts(products, filterSubcategory = null) {
     btn.addEventListener('click', (e) => {
       const productId = e.currentTarget.getAttribute('data-id');
       deleteProduct(productId);
+    });
+  });
+
+  // Initialize pagination button handlers
+  document.querySelectorAll('.product-page-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const targetPage = parseInt(e.currentTarget.getAttribute('data-page'), 10);
+      if (targetPage >= 1 && targetPage <= totalPages) {
+        displayProducts(products, filterSubcategory, targetPage);
+        const gridEl = document.getElementById('products-grid');
+        if (gridEl) gridEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     });
   });
 }
@@ -1164,11 +1205,11 @@ function initializeSubcategoryFilter() {
       // If clicking the same subcategory, clear the filter
       if (selectedSubcategory === subcategory) {
         selectedSubcategory = null;
-        displayProducts(allProducts, null);
+        displayProducts(allProducts, null, 1);
       } else {
         // Set new filter
         selectedSubcategory = subcategory;
-        displayProducts(allProducts, subcategory);
+        displayProducts(allProducts, subcategory, 1);
       }
     });
   });
