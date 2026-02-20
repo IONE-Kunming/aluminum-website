@@ -552,7 +552,7 @@ function importUserProfile() {
         </div>
         <div class="modal-body">
           <p style="margin: 0 0 12px; color: var(--text-secondary);">
-            Imported fields: ${escapeHtml(Object.keys(profileData).join(', '))}
+            Imported fields: ${escapeHtml(Object.keys(profileData).slice(0, 20).join(', '))}${Object.keys(profileData).length > 20 ? '...' : ''}
           </p>
           <div class="form-group">
             <label for="import-target-select">Select existing user</label>
@@ -593,10 +593,23 @@ function importUserProfile() {
         return;
       }
 
-      // Strip id field from imported data to avoid overwriting doc id
-      const { id, ...updateData } = profileData;
+      // Only allow safe profile fields to be imported
+      const allowedFields = [
+        'displayName', 'email', 'companyName', 'phoneNumber', 'bio',
+        'address', 'role', 'isActive', 'photoURL', 'language'
+      ];
+      const { id, ...rawData } = profileData;
+      const updateData = {};
+      for (const key of allowedFields) {
+        if (key in rawData) updateData[key] = rawData[key];
+      }
 
-      if (!await showConfirm(`Apply imported profile data to user "${escapeHtml(targetId)}"?`)) {
+      if (Object.keys(updateData).length === 0) {
+        window.toast.error('No valid profile fields found in the imported file');
+        return;
+      }
+
+      if (!await showConfirm(`Apply imported profile data to user "${targetId}"?`)) {
         return;
       }
 
