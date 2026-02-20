@@ -12,6 +12,8 @@ export default {
     profile: '个人资料',
     products: '我的产品',
     branches: '分支机构',
+    users: '用户',
+    chats: '聊天',
     signOut: '退出'
   },
   
@@ -50,14 +52,6 @@ export default {
     confirmAction: '确认操作',
     page: '页',
     of: '共'
-  },
-  
-  // 语言
-  languages: {
-    en: 'English',
-    zh: '中文 (Chinese)',
-    ar: 'العربية (Arabic)',
-    ur: 'اردو (Urdu)'
   },
   
   // 产品
@@ -212,7 +206,17 @@ export default {
     original: '原文',
     translated: '已翻译',
     buyer: '买家',
-    seller: '卖家'
+    seller: '卖家',
+    uploading: '上传中...',
+    uploadFailed: '上传失败',
+    invalidFileType: '无效的文件类型',
+    fileTooLarge: '文件过大（最大5MB）',
+    imageOnly: '仅允许 JPG, PNG, WEBP 图片',
+    pdfOnly: '仅允许 PDF 文件',
+    viewPdf: '查看 PDF',
+    loadingMessages: '加载消息中...',
+    noMessages: '暂无消息。打个招呼吧！',
+    product: '产品'
   },
   
   // 发票

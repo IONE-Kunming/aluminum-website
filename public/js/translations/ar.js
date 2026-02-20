@@ -12,6 +12,8 @@ export default {
     profile: 'الملف الشخصي',
     products: 'منتجاتي',
     branches: 'الفروع',
+    users: 'المستخدمون',
+    chats: 'المحادثات',
     signOut: 'تسجيل الخروج'
   },
   
@@ -50,14 +52,6 @@ export default {
     confirmAction: 'تأكيد الإجراء',
     page: 'صفحة',
     of: 'من'
-  },
-  
-  // اللغات
-  languages: {
-    en: 'English',
-    zh: '中文 (Chinese)',
-    ar: 'العربية (Arabic)',
-    ur: 'اردو (Urdu)'
   },
   
   // المنتجات
@@ -212,7 +206,17 @@ export default {
     original: 'الأصلي',
     translated: 'مترجم',
     buyer: 'مشتري',
-    seller: 'بائع'
+    seller: 'بائع',
+    uploading: 'جارٍ الرفع...',
+    uploadFailed: 'فشل الرفع',
+    invalidFileType: 'نوع الملف غير صالح',
+    fileTooLarge: 'الملف كبير جداً (الحد الأقصى 5 ميجابايت)',
+    imageOnly: 'يُسمح فقط بصور JPG, PNG, WEBP',
+    pdfOnly: 'يُسمح فقط بملفات PDF',
+    viewPdf: 'عرض PDF',
+    loadingMessages: 'جارٍ تحميل الرسائل...',
+    noMessages: 'لا توجد رسائل بعد. قل مرحباً!',
+    product: 'المنتج'
   },
   
   // الفواتير

@@ -13,6 +13,7 @@ export default {
     products: 'Products',
     branches: 'Branches',
     users: 'Users',
+    chats: 'Chats',
     signOut: 'Sign Out'
   },
   
@@ -53,14 +54,6 @@ export default {
     confirmAction: 'Confirm Action',
     page: 'Page',
     of: 'of'
-  },
-  
-  // Languages
-  languages: {
-    en: 'English',
-    zh: '中文 (Chinese)',
-    ar: 'العربية (Arabic)',
-    ur: 'اردو (Urdu)'
   },
   
   // Products
@@ -230,7 +223,17 @@ export default {
     original: 'Original',
     translated: 'Translated',
     buyer: 'Buyer',
-    seller: 'Seller'
+    seller: 'Seller',
+    uploading: 'Uploading...',
+    uploadFailed: 'Upload failed',
+    invalidFileType: 'Invalid file type',
+    fileTooLarge: 'File too large (max 5MB)',
+    imageOnly: 'Only JPG, PNG, WEBP images allowed',
+    pdfOnly: 'Only PDF files allowed',
+    viewPdf: 'View PDF',
+    loadingMessages: 'Loading messages...',
+    noMessages: 'No messages yet. Say hello!',
+    product: 'Product'
   },
   
   // Invoices

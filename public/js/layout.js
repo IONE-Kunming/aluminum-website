@@ -22,6 +22,7 @@ export function renderLayout(content, userRole = null) {
     { path: '/buyer/cart', icon: 'shopping-cart', label: t('nav.cart') },
     { path: '/buyer/orders', icon: 'file-text', label: t('nav.orders') },
     { path: '/buyer/invoices', icon: 'file-text', label: t('nav.invoices') },
+    { path: '/buyer/chats', icon: 'message-circle', label: t('nav.chats') },
     { path: '/buyer/sellers', icon: 'store', label: t('nav.sellers') },
     { path: '/buyer/support', icon: 'help-circle', label: t('nav.support') },
     { path: '/buyer/notifications', icon: 'bell', label: t('nav.notifications') },
@@ -33,6 +34,7 @@ export function renderLayout(content, userRole = null) {
     { path: '/seller/products', icon: 'package', label: t('nav.products') },
     { path: '/seller/orders', icon: 'file-text', label: t('nav.orders') },
     { path: '/seller/invoices', icon: 'file-text', label: t('nav.invoices') },
+    { path: '/seller/chats', icon: 'message-circle', label: t('nav.chats') },
     { path: '/seller/branches', icon: 'git-branch', label: t('nav.branches') },
     { path: '/seller/support', icon: 'help-circle', label: t('nav.support') },
     { path: '/seller/notifications', icon: 'bell', label: t('nav.notifications') },
@@ -59,7 +61,7 @@ export function renderLayout(content, userRole = null) {
   const avatarLetter = displayName.charAt(0).toUpperCase() || 'U';
   
   app.innerHTML = `
-    <div class="layout" data-role="${role}">
+    <div class="layout" data-role="${role}" data-lang="${languageManager.getLanguage()}">
       <!-- Mobile Menu Button -->
       <button class="mobile-menu-btn" id="mobile-menu-btn">
         <i data-lucide="menu" id="menu-icon"></i>
@@ -123,16 +125,16 @@ export function renderLayout(content, userRole = null) {
         <div class="cart-overlay-widget" id="cart-overlay-widget" style="display: none;">
           <div class="cart-overlay-header">
             <i data-lucide="shopping-cart"></i>
-            <span class="cart-overlay-title">Cart</span>
+            <span class="cart-overlay-title">${t('cart.title')}</span>
             <span class="cart-overlay-count" id="cart-overlay-count">0</span>
           </div>
           <div class="cart-overlay-body" id="cart-overlay-body">
-            <p class="cart-overlay-empty">Your cart is empty</p>
+            <p class="cart-overlay-empty">${t('cart.emptyCart')}</p>
           </div>
           <div class="cart-overlay-footer">
             <button class="btn btn-sm btn-primary" id="cart-overlay-checkout">
               <i data-lucide="credit-card"></i>
-              Checkout
+              ${t('cart.checkout')}
             </button>
           </div>
         </div>
@@ -357,15 +359,16 @@ async function initCartOverlay() {
 }
 
 // Helper function to render page with layout
-// Optimized: reuses existing sidebar if same role to avoid full re-render
+// Optimized: reuses existing sidebar if same role and language to avoid full re-render
 export function renderPageWithLayout(pageContent, userRole = null) {
   const profile = authManager.getUserProfile();
   const role = userRole || profile?.role || 'buyer';
+  const currentLang = languageManager.getLanguage();
   const existingLayout = document.querySelector('.layout');
   const mainContent = document.getElementById('main-content');
 
-  // If layout already exists with same role, only update the content area (fast path)
-  if (existingLayout && mainContent && existingLayout.dataset.role === role) {
+  // If layout already exists with same role and language, only update the content area (fast path)
+  if (existingLayout && mainContent && existingLayout.dataset.role === role && existingLayout.dataset.lang === currentLang) {
     mainContent.innerHTML = pageContent;
 
     // Update active nav item
@@ -379,6 +382,6 @@ export function renderPageWithLayout(pageContent, userRole = null) {
     return;
   }
 
-  // Full layout render (first time or role change)
+  // Full layout render (first time, role change, or language change)
   renderLayout(pageContent, userRole);
 }
