@@ -1,7 +1,6 @@
 // Chat Service - Firebase Realtime Database
 // Handles conversations, messages, file uploads for marketplace chat
 
-import { escapeHtml } from './utils.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const MESSAGE_LIMIT = 50;
