@@ -184,7 +184,7 @@ export async function renderProducts() {
             </p>
             
             <div style="margin-bottom: 16px;">
-              <a href="/sample-products-import.csv" download="sample-products-import.csv" class="btn btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+              <a href="${(import.meta.env.BASE_URL || '/') + 'sample-products-import.csv'}" download="sample-products-import.csv" class="btn btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
                 <i data-lucide="download"></i>
                 ${t('products.downloadTemplate')}
               </a>

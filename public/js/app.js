@@ -38,7 +38,7 @@ import { renderLandingPage } from '../pages/landing.js';
 import { renderLoginPage } from '../pages/login.js';
 import { renderSignupPage } from '../pages/signup.js';
 import { renderProfileSelection } from '../pages/profile-selection.js';
-import { renderPublicCategories } from '../pages/public-categories.js';
+import { renderGuestCategories } from '../pages/guest-categories.js';
 import { renderGuestCatalog } from '../pages/guest-catalog.js';
 import { renderGuestProductDetail } from '../pages/guest-product-detail.js';
 
@@ -221,7 +221,9 @@ async function initApp() {
   router.register('/', renderLandingPage);
   router.register('/login', renderLoginPage);
   router.register('/signup', renderSignupPage);
-  router.register('/categories', renderPublicCategories);
+  router.register('/guest/categories', renderGuestCategories);
+  // Keep backward compatibility for old /categories route
+  router.register('/categories', renderGuestCategories);
   router.register('/guest/catalog', renderGuestCatalog);
   router.register('/guest/product', renderGuestProductDetail);
   router.register('/profile-selection', async () => {
