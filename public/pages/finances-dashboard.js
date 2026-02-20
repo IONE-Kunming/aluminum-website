@@ -56,15 +56,15 @@ async function fetchFinancialData() {
   return { grossRevenue, netProfit, expenses, taxCollected, orders, invoices };
 }
 
-function buildTransactionsRows(orders) {
+function buildTransactionsRows(orders, t) {
   const recent = orders.slice(0, 10);
   if (recent.length === 0) {
-    return `<tr><td colspan="5" style="text-align:center;padding:24px;opacity:0.6;">No recent transactions found.</td></tr>`;
+    return `<tr><td colspan="5" style="text-align:center;padding:24px;opacity:0.6;">${t('finances.noRecentTransactions')}</td></tr>`;
   }
   return recent.map(order => {
     const date = formatDate(order.createdAt);
     const ref = escapeHtml(order.id?.substring(0, 8) || 'N/A');
-    const desc = escapeHtml(order.productName || order.description || 'Order');
+    const desc = escapeHtml(order.productName || order.description || t('finances.order'));
     const amount = formatCurrency(order.total || order.amount || 0);
     const status = escapeHtml(order.status || 'pending');
     const statusClass = getStatusClass(order.status);
@@ -79,7 +79,7 @@ function buildTransactionsRows(orders) {
   }).join('');
 }
 
-function buildChartPlaceholder(grossRevenue, expenses) {
+function buildChartPlaceholder(grossRevenue, expenses, t) {
   const max = Math.max(grossRevenue, expenses, 1);
   const revPct = Math.round((grossRevenue / max) * 100);
   const expPct = Math.round((expenses / max) * 100);
@@ -87,11 +87,11 @@ function buildChartPlaceholder(grossRevenue, expenses) {
     <div style="display:flex;align-items:flex-end;gap:32px;height:120px;padding:16px 0;">
       <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
         <div style="width:100%;background:#388e3c;border-radius:4px 4px 0 0;height:${revPct}%;min-height:4px;"></div>
-        <span style="margin-top:8px;font-size:12px;">Revenue</span>
+        <span style="margin-top:8px;font-size:12px;">${t('finances.revenue')}</span>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;flex:1;">
         <div style="width:100%;background:#d32f2f;border-radius:4px 4px 0 0;height:${expPct}%;min-height:4px;"></div>
-        <span style="margin-top:8px;font-size:12px;">Expenses</span>
+        <span style="margin-top:8px;font-size:12px;">${t('finances.expenses')}</span>
       </div>
     </div>`;
 }
@@ -108,28 +108,28 @@ export async function renderFinancesDashboard() {
     <div class="dashboard-page">
       <div class="dashboard-header">
         <div>
-          <h1>Financial Dashboard</h1>
-          <p class="dashboard-subtitle">Overview of revenue, expenses, and recent transactions</p>
+          <h1>${t('finances.dashboard')}</h1>
+          <p class="dashboard-subtitle">${t('finances.dashboardSubtitle')}</p>
         </div>
       </div>
 
       <!-- Sub-navigation -->
       <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;border-bottom:1px solid var(--border-color);padding-bottom:16px;">
-        <a href="#" class="btn btn-primary" data-nav="${basePath}">Dashboard</a>
-        <a href="#" class="btn" data-nav="${basePath}/transactions">Transactions</a>
-        <a href="#" class="btn" data-nav="${basePath}/accounts">Chart of Accounts</a>
-        <a href="#" class="btn" data-nav="${basePath}/reports">Reports</a>
-        <a href="#" class="btn" data-nav="${basePath}/tax">Tax Management</a>
-        <a href="#" class="btn" data-nav="${basePath}/reconciliation">Reconciliation</a>
+        <a href="#" class="btn btn-primary" data-nav="${basePath}">${t('finances.dashboardNav')}</a>
+        <a href="#" class="btn" data-nav="${basePath}/transactions">${t('finances.transactions')}</a>
+        <a href="#" class="btn" data-nav="${basePath}/accounts">${t('finances.chartOfAccounts')}</a>
+        <a href="#" class="btn" data-nav="${basePath}/reports">${t('finances.reports')}</a>
+        <a href="#" class="btn" data-nav="${basePath}/tax">${t('finances.taxManagement')}</a>
+        <a href="#" class="btn" data-nav="${basePath}/reconciliation">${t('finances.reconciliation')}</a>
       </div>
 
       <!-- Period Selector -->
       <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
-        <button class="btn btn-primary period-btn" data-period="today">Today</button>
-        <button class="btn period-btn" data-period="week">This Week</button>
-        <button class="btn period-btn" data-period="month">This Month</button>
-        <button class="btn period-btn" data-period="quarter">This Quarter</button>
-        <button class="btn period-btn" data-period="year">This Year</button>
+        <button class="btn btn-primary period-btn" data-period="today">${t('finances.today')}</button>
+        <button class="btn period-btn" data-period="week">${t('finances.thisWeek')}</button>
+        <button class="btn period-btn" data-period="month">${t('finances.thisMonth')}</button>
+        <button class="btn period-btn" data-period="quarter">${t('finances.thisQuarter')}</button>
+        <button class="btn period-btn" data-period="year">${t('finances.thisYear')}</button>
       </div>
 
       <!-- Summary Cards -->
@@ -139,9 +139,9 @@ export async function renderFinancesDashboard() {
             <i data-lucide="trending-up" style="color: #388e3c;"></i>
           </div>
           <div class="stat-content">
-            <h3>Gross Revenue</h3>
+            <h3>${t('finances.grossRevenue')}</h3>
             <p class="stat-value">${formatCurrency(data.grossRevenue)}</p>
-            <span class="stat-label">+0% from previous period</span>
+            <span class="stat-label">${t('finances.fromPreviousPeriod')}</span>
           </div>
         </div>
 
@@ -150,9 +150,9 @@ export async function renderFinancesDashboard() {
             <i data-lucide="dollar-sign" style="color: #1976d2;"></i>
           </div>
           <div class="stat-content">
-            <h3>Net Profit</h3>
+            <h3>${t('finances.netProfit')}</h3>
             <p class="stat-value">${formatCurrency(data.netProfit)}</p>
-            <span class="stat-label">+0% from previous period</span>
+            <span class="stat-label">${t('finances.fromPreviousPeriod')}</span>
           </div>
         </div>
 
@@ -161,9 +161,9 @@ export async function renderFinancesDashboard() {
             <i data-lucide="credit-card" style="color: #f57c00;"></i>
           </div>
           <div class="stat-content">
-            <h3>Expenses</h3>
+            <h3>${t('finances.expenses')}</h3>
             <p class="stat-value">${formatCurrency(data.expenses)}</p>
-            <span class="stat-label">+0% from previous period</span>
+            <span class="stat-label">${t('finances.fromPreviousPeriod')}</span>
           </div>
         </div>
 
@@ -172,9 +172,9 @@ export async function renderFinancesDashboard() {
             <i data-lucide="receipt" style="color: #7b1fa2;"></i>
           </div>
           <div class="stat-content">
-            <h3>Tax Collected</h3>
+            <h3>${t('finances.taxCollected')}</h3>
             <p class="stat-value">${formatCurrency(data.taxCollected)}</p>
-            <span class="stat-label">+0% from previous period</span>
+            <span class="stat-label">${t('finances.fromPreviousPeriod')}</span>
           </div>
         </div>
       </div>
@@ -182,31 +182,31 @@ export async function renderFinancesDashboard() {
       <!-- Revenue vs Expenses Chart -->
       <div class="dashboard-section">
         <div class="section-header">
-          <h2>Revenue vs Expenses — Last 30 Days</h2>
+          <h2>${t('finances.revenueVsExpenses')}</h2>
         </div>
         <div class="stat-card" style="padding:24px;">
-          ${buildChartPlaceholder(data.grossRevenue, data.expenses)}
+          ${buildChartPlaceholder(data.grossRevenue, data.expenses, t)}
         </div>
       </div>
 
       <!-- Recent Transactions -->
       <div class="dashboard-section">
         <div class="section-header">
-          <h2>Recent Transactions</h2>
+          <h2>${t('finances.recentTransactions')}</h2>
         </div>
         <div class="table-container">
           <table class="data-table">
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Reference</th>
-                <th>Description</th>
-                <th>Amount</th>
-                <th>Status</th>
+                <th>${t('finances.date')}</th>
+                <th>${t('finances.reference')}</th>
+                <th>${t('finances.description')}</th>
+                <th>${t('finances.amount')}</th>
+                <th>${t('finances.status')}</th>
               </tr>
             </thead>
             <tbody>
-              ${buildTransactionsRows(data.orders)}
+              ${buildTransactionsRows(data.orders, t)}
             </tbody>
           </table>
         </div>
@@ -214,23 +214,23 @@ export async function renderFinancesDashboard() {
 
       <!-- Quick Actions -->
       <div class="quick-actions">
-        <h2>Quick Actions</h2>
+        <h2>${t('finances.quickActions')}</h2>
         <div class="action-buttons">
           <button class="action-button" id="btn-reconcile">
             <i data-lucide="check-circle"></i>
-            Reconcile Now
+            ${t('finances.reconcileNow')}
           </button>
           <button class="action-button" id="btn-reports">
             <i data-lucide="bar-chart-2"></i>
-            Generate Reports
+            ${t('finances.generateReports')}
           </button>
           <button class="action-button" id="btn-export">
             <i data-lucide="download"></i>
-            Export Statements
+            ${t('finances.exportStatements')}
           </button>
           <button class="action-button" id="btn-tax">
             <i data-lucide="file-text"></i>
-            Tax Filing
+            ${t('finances.taxFiling')}
           </button>
         </div>
       </div>
@@ -259,7 +259,7 @@ export async function renderFinancesDashboard() {
   document.getElementById('btn-reconcile')?.addEventListener('click', () => router.navigate(`${basePath}/reconciliation`));
   document.getElementById('btn-reports')?.addEventListener('click', () => router.navigate(`${basePath}/reports`));
   document.getElementById('btn-export')?.addEventListener('click', () => {
-    window.toast.info('Export statements feature coming soon');
+    window.toast.info(t('finances.exportStatementsComingSoon'));
   });
   document.getElementById('btn-tax')?.addEventListener('click', () => router.navigate(`${basePath}/tax`));
 
