@@ -555,14 +555,22 @@ class DataService {
       const cursors = this._pageCursors[queryKey];
 
       // Try ordering by createdAt (requires composite index for multi-field queries)
+      // Cache index availability per query key to avoid repeated test queries
       let orderedQuery;
-      try {
+      const indexKey = `idx|${queryKey}`;
+      if (this._pageCursors[indexKey] === true) {
         orderedQuery = baseQuery.orderBy('createdAt', 'desc');
-        // Test query to check if index exists
-        await orderedQuery.limit(1).get();
-      } catch {
-        // Index not available, use unordered query
+      } else if (this._pageCursors[indexKey] === false) {
         orderedQuery = baseQuery;
+      } else {
+        try {
+          orderedQuery = baseQuery.orderBy('createdAt', 'desc');
+          await orderedQuery.limit(1).get();
+          this._pageCursors[indexKey] = true;
+        } catch {
+          orderedQuery = baseQuery;
+          this._pageCursors[indexKey] = false;
+        }
       }
 
       let query = orderedQuery;
