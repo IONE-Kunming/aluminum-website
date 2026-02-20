@@ -320,7 +320,10 @@ async function renderGuestProducts(category, t, app) {
       if (paginationContainer) paginationContainer.innerHTML = '';
     } else {
       const totalPages = Math.ceil(productsToRender.length / PAGE_SIZE);
-      if (page > totalPages) page = totalPages;
+      if (page > totalPages) {
+        page = totalPages;
+        currentPage = page;
+      }
       const start = (page - 1) * PAGE_SIZE;
       const pageProducts = productsToRender.slice(start, start + PAGE_SIZE);
 
