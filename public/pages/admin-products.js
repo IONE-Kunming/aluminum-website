@@ -19,6 +19,11 @@ export async function renderAdminProducts() {
       <div class="page-header">
         <h1><i data-lucide="package"></i> ${t('nav.products')} Management</h1>
         <p>Manage all products on the platform</p>
+        <div style="margin-top: 12px;">
+          <button class="btn btn-secondary" id="bulk-edit-nav-btn">
+            <i data-lucide="table"></i> Bulk Edit
+          </button>
+        </div>
       </div>
       
       <div class="admin-controls">
@@ -62,6 +67,9 @@ export async function renderAdminProducts() {
   document.getElementById('category-filter').addEventListener('change', filterProducts);
   document.getElementById('seller-filter').addEventListener('change', filterProducts);
   document.getElementById('status-filter').addEventListener('change', filterProducts);
+  document.getElementById('bulk-edit-nav-btn').addEventListener('click', () => {
+    window.router.navigate('/admin/bulk-edit');
+  });
 }
 
 let allProducts = [];

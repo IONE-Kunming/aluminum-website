@@ -71,6 +71,7 @@ const lazyPages = {
   adminProducts: () => import('../pages/admin-products.js').then(m => m.renderAdminProducts),
   adminOrders: () => import('../pages/admin-orders.js').then(m => m.renderAdminOrders),
   adminInvoices: () => import('../pages/admin-invoices.js').then(m => m.renderAdminInvoices),
+  adminBulkEdit: () => import('../pages/admin-bulk-edit.js').then(m => m.renderAdminBulkEdit),
   chat: () => import('../pages/chat.js').then(m => m.renderChat),
   financesDashboard: () => import('../pages/finances-dashboard.js').then(m => m.renderFinancesDashboard),
   financesTransactions: () => import('../pages/finances-transactions.js').then(m => m.renderFinancesTransactions),
@@ -315,6 +316,7 @@ async function initApp() {
   router.register('/admin/products', protectedRoute(lazyRoute(lazyPages.adminProducts), 'admin'));
   router.register('/admin/orders', protectedRoute(lazyRoute(lazyPages.adminOrders), 'admin'));
   router.register('/admin/invoices', protectedRoute(lazyRoute(lazyPages.adminInvoices), 'admin'));
+  router.register('/admin/bulk-edit', protectedRoute(lazyRoute(lazyPages.adminBulkEdit), 'admin'));
   router.register('/admin/invoice', protectedRoute(lazyRoute(lazyPages.invoiceDetail), 'admin'));
   router.register('/admin/support', protectedRoute(lazyRoute(lazyPages.support), 'admin'));
   router.register('/admin/profile', protectedRoute(lazyRoute(lazyPages.profile), 'admin'));
