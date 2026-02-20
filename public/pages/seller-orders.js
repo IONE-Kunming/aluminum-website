@@ -28,7 +28,7 @@ export async function renderSellerOrders() {
     return;
   }
 
-  const userProfile = await dataService.getUserProfile(user.uid);
+  const userProfile = authManager.getUserProfile();
   if (!userProfile || userProfile.role !== 'seller') {
     const content = `
       <div class="orders-page">

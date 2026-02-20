@@ -13,6 +13,8 @@ class DataService {
       categories: { data: null, timestamp: null, ttl: 300000 }, // 5 minutes TTL
       userProfiles: { data: new Map(), timestamp: null, ttl: 300000 }, // Cache user profiles for 5 minutes
     };
+    // Cursor cache for Firestore pagination (keyed by query fingerprint)
+    this._pageCursors = {};
   }
 
   // Initialize Firestore connection
@@ -64,18 +66,33 @@ class DataService {
       }
       
       // Enable offline persistence for faster loading
+      // Configure cache size for optimal performance with large datasets
+      try {
+        this.db.settings({
+          cacheSizeBytes: window.firebase.firestore.CACHE_SIZE_UNLIMITED
+        });
+      } catch (settingsErr) {
+        // Settings may already be applied or not supported
+        console.warn('Firestore settings already applied or not supported:', settingsErr.message);
+      }
+
       try {
         await this.db.enablePersistence({ synchronizeTabs: true });
         console.log('Firestore persistence enabled - data will be cached locally');
       } catch (err) {
         if (err.code === 'failed-precondition') {
-          console.warn('Persistence failed: Multiple tabs open, persistence enabled in first tab only');
+          // Multiple tabs open - persistence works only in the first tab
+          // This is expected behavior, not an error
+          console.warn('Persistence: Multiple tabs open, persistence enabled in first tab only');
         } else if (err.code === 'unimplemented') {
           console.warn('Persistence not available in this browser');
         } else {
           console.warn('Error enabling persistence:', err);
         }
       }
+
+      // Setup online/offline monitoring for UX feedback
+      this._setupConnectivityMonitor();
       
       this.initialized = true;
       console.log('DataService initialized with Firestore');
@@ -107,6 +124,26 @@ class DataService {
     });
   }
 
+  // Monitor online/offline status and show appropriate UX feedback
+  _setupConnectivityMonitor() {
+    this._isOnline = navigator.onLine;
+
+    window.addEventListener('online', () => {
+      this._isOnline = true;
+      if (window.toast) window.toast.success('Back online - syncing data');
+    });
+
+    window.addEventListener('offline', () => {
+      this._isOnline = false;
+      if (window.toast) window.toast.warning('You are offline - showing cached data');
+    });
+  }
+
+  // Check if the app is currently online
+  isOnline() {
+    return this._isOnline !== false;
+  }
+
   // Invalidate cache for a specific key or all caches
   invalidateCache(cacheKey = null) {
     if (cacheKey && this.cache[cacheKey]) {
@@ -123,6 +160,8 @@ class DataService {
           this.cache[key].data = null;
         }
       });
+      // Also reset pagination cursors
+      this._pageCursors = {};
       console.log('All caches invalidated');
     }
   }
@@ -501,6 +540,112 @@ class DataService {
     }
   }
 
+  // Get paginated products using Firestore cursors (scalable for 200K+ products)
+  async getProductsPaginated({ category = null, sellerId = null, pageSize = 12, page = 1 } = {}) {
+    await this.init();
+    if (!this.db) return { products: [], hasMore: false };
+
+    try {
+      let baseQuery = this.db.collection('products');
+      if (category) baseQuery = baseQuery.where('category', '==', category);
+      if (sellerId) baseQuery = baseQuery.where('sellerId', '==', sellerId);
+
+      const queryKey = `${category || ''}|${sellerId || ''}`;
+      if (!this._pageCursors[queryKey]) this._pageCursors[queryKey] = {};
+      const cursors = this._pageCursors[queryKey];
+
+      // Try ordering by createdAt (requires composite index for multi-field queries)
+      // Cache index availability per query key to avoid repeated test queries
+      let orderedQuery;
+      const indexKey = `idx|${queryKey}`;
+      if (this._pageCursors[indexKey] === true) {
+        orderedQuery = baseQuery.orderBy('createdAt', 'desc');
+      } else if (this._pageCursors[indexKey] === false) {
+        orderedQuery = baseQuery;
+      } else {
+        try {
+          orderedQuery = baseQuery.orderBy('createdAt', 'desc');
+          await orderedQuery.limit(1).get();
+          this._pageCursors[indexKey] = true;
+        } catch {
+          orderedQuery = baseQuery;
+          this._pageCursors[indexKey] = false;
+        }
+      }
+
+      let query = orderedQuery;
+
+      if (page > 1) {
+        if (cursors[page]) {
+          // Use cached cursor for this page
+          query = orderedQuery.startAfter(cursors[page]);
+        } else {
+          // Fetch documents to reach the start position for this page
+          const skipCount = (page - 1) * pageSize;
+          const skipSnapshot = await orderedQuery.limit(skipCount).get();
+          if (skipSnapshot.docs.length === skipCount) {
+            const lastDoc = skipSnapshot.docs[skipSnapshot.docs.length - 1];
+            cursors[page] = lastDoc;
+            query = orderedQuery.startAfter(lastDoc);
+          } else {
+            // Not enough documents for this page
+            return { products: [], hasMore: false };
+          }
+        }
+      }
+
+      // Fetch pageSize + 1 to determine if there are more pages
+      const snapshot = await query.limit(pageSize + 1).get();
+      const hasMore = snapshot.docs.length > pageSize;
+      const pageDocs = snapshot.docs.slice(0, pageSize);
+
+      // Cache cursor for the next page
+      if (pageDocs.length > 0) {
+        cursors[page + 1] = pageDocs[pageDocs.length - 1];
+      }
+
+      const products = pageDocs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      return { products, hasMore };
+    } catch (error) {
+      console.error('Error fetching paginated products:', error);
+      return { products: [], hasMore: false };
+    }
+  }
+
+  // Get total count of products matching filters (for pagination UI)
+  async getProductsCount({ category = null, sellerId = null } = {}) {
+    await this.init();
+    if (!this.db) return 0;
+
+    try {
+      let query = this.db.collection('products');
+      if (category) query = query.where('category', '==', category);
+      if (sellerId) query = query.where('sellerId', '==', sellerId);
+
+      // Try Firestore count() aggregation (Firebase v10+, most efficient)
+      try {
+        const countSnapshot = await query.count().get();
+        return countSnapshot.data().count;
+      } catch {
+        // Fallback: full query to count documents
+        const snapshot = await query.get();
+        return snapshot.size;
+      }
+    } catch (error) {
+      console.error('Error getting products count:', error);
+      return 0;
+    }
+  }
+
+  // Reset page cursors (call when data changes)
+  resetPagination() {
+    this._pageCursors = {};
+  }
+
   // Add a new product
   async addProduct(productData) {
     await this.init();
@@ -591,6 +736,12 @@ class DataService {
   async getCategories(sellerId = null) {
     await this.init();
 
+    // Use cached categories for unfiltered queries
+    if (!sellerId && this.cache.categories.data && this.cache.categories.timestamp &&
+        (Date.now() - this.cache.categories.timestamp < this.cache.categories.ttl)) {
+      return this.cache.categories.data;
+    }
+
     try {
       if (!this.db) {
         return [];
@@ -616,7 +767,15 @@ class DataService {
       });
       
       // Convert to array and sort alphabetically
-      return Array.from(categoriesSet).sort();
+      const result = Array.from(categoriesSet).sort();
+
+      // Cache result for unfiltered queries
+      if (!sellerId) {
+        this.cache.categories.data = result;
+        this.cache.categories.timestamp = Date.now();
+      }
+
+      return result;
     } catch (error) {
       console.error('Error fetching categories:', error);
       return [];

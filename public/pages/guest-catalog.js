@@ -179,11 +179,11 @@ async function renderGuestMainCategoryTiles(t, app) {
 // Render subcategory selection for a main category
 async function renderGuestSubcategorySelection(mainCategory, t, app) {
   const subcategories = getSubcategories(mainCategory);
-  const allProducts = await dataService.getProducts({ limit: 2000 });
+  const categoriesWithProducts = await dataService.getCategories();
   
   // Filter to only subcategories that have products
   const availableSubcategories = subcategories.filter(subcat => 
-    allProducts.some(p => p.category === subcat)
+    categoriesWithProducts.includes(subcat)
   );
   
   const renderSubcategories = (subcategoriesToRender) => {
@@ -294,15 +294,20 @@ async function renderGuestSubcategorySelection(mainCategory, t, app) {
 
 // Render products for a specific category (without seller selection)
 async function renderGuestProducts(category, t, app) {
-  const allProducts = await dataService.getProducts({ limit: 2000 });
+  const allProducts = await dataService.getProducts({ category, limit: 500 });
   
   // Filter products by category and active status
   const categoryProducts = allProducts.filter(p => 
     p.category === category && p.isActive !== false
   );
+
+  const PAGE_SIZE = 12;
+  let currentPage = 1;
   
-  const renderProducts = (productsToRender) => {
+  const renderProducts = (productsToRender, page = 1) => {
+    currentPage = page;
     const productsGrid = document.querySelector('.products-grid');
+    const paginationContainer = document.querySelector('.products-pagination');
     if (!productsGrid) return;
 
     if (productsToRender.length === 0) {
@@ -312,8 +317,17 @@ async function renderGuestProducts(category, t, app) {
           <p>${t('catalog.noProducts')}</p>
         </div>
       `;
+      if (paginationContainer) paginationContainer.innerHTML = '';
     } else {
-      productsGrid.innerHTML = productsToRender.map(product => `
+      const totalPages = Math.ceil(productsToRender.length / PAGE_SIZE);
+      if (page > totalPages) {
+        page = totalPages;
+        currentPage = page;
+      }
+      const start = (page - 1) * PAGE_SIZE;
+      const pageProducts = productsToRender.slice(start, start + PAGE_SIZE);
+
+      productsGrid.innerHTML = pageProducts.map(product => `
         <div class="product-card card" data-product-id="${product.id}" style="cursor: pointer;">
           ${product.imageUrl ? `
             <img src="${product.imageUrl}" 
@@ -360,13 +374,48 @@ async function renderGuestProducts(category, t, app) {
           </div>
         </div>
       `).join('');
+
+      // Render pagination controls
+      if (paginationContainer) {
+        if (totalPages > 1) {
+          let pageButtons = '';
+          const windowSize = 5;
+          let startPage = Math.max(1, page - Math.floor(windowSize / 2));
+          let endPage = Math.min(totalPages, startPage + windowSize - 1);
+          if (endPage - startPage < windowSize - 1) {
+            startPage = Math.max(1, endPage - windowSize + 1);
+          }
+          for (let i = startPage; i <= endPage; i++) {
+            const btnClass = i === page ? 'btn btn-primary btn-sm product-page-btn' : 'btn btn-secondary btn-sm product-page-btn';
+            pageButtons += `<button class="${btnClass}" data-page="${i}">${i}</button>`;
+          }
+          paginationContainer.innerHTML = `
+            <div class="pagination-controls">
+              <button class="btn btn-secondary btn-sm product-page-btn" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>&#8249; Previous</button>
+              ${pageButtons}
+              <button class="btn btn-secondary btn-sm product-page-btn" data-page="${page + 1}" ${page >= totalPages ? 'disabled' : ''}>Next &#8250;</button>
+            </div>
+            <div class="pagination-info">Page ${page} of ${totalPages}</div>
+          `;
+
+          paginationContainer.querySelectorAll('.product-page-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const targetPage = parseInt(btn.dataset.page, 10);
+              if (targetPage >= 1 && targetPage <= totalPages) {
+                renderProducts(productsToRender, targetPage);
+              }
+            });
+          });
+        } else {
+          paginationContainer.innerHTML = '';
+        }
+      }
     }
 
     // Re-attach event listeners for product cards
     document.querySelectorAll('.product-card[data-product-id]').forEach(card => {
       card.addEventListener('click', () => {
         const productId = card.dataset.productId;
-        // Navigate to guest product detail
         router.navigate(`/guest/product?id=${productId}`);
       });
     });
@@ -404,6 +453,8 @@ async function renderGuestProducts(category, t, app) {
         <div class="products-grid">
           <!-- Products will be rendered here -->
         </div>
+
+        <div class="products-pagination"></div>
         
         <div style="text-align: center; margin-top: 48px; padding: 24px; background: var(--background-secondary); border-radius: 8px;">
           <p style="margin-bottom: 12px; font-size: 16px; font-weight: 500;">Want to order these products?</p>
@@ -448,7 +499,7 @@ async function renderGuestProducts(category, t, app) {
         });
       }
 
-      renderProducts(filtered);
+      renderProducts(filtered, 1);
     });
   }
 }

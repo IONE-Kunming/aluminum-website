@@ -24,15 +24,25 @@ export async function renderAllProducts() {
   
   // Fetch all products from all sellers and category hierarchy
   const [products, hierarchyData] = await Promise.all([
-    dataService.getProducts({ limit: 2000 }),
+    dataService.getProducts({ limit: 500 }),
     dataService.getCategoriesHierarchy()
   ]);
   
   const { mainCategories, unmappedCategories } = hierarchyData;
   
-  const renderProducts = (productsToRender) => {
+  const PAGE_SIZE = 12;
+  let currentPage = 1;
+
+  const renderProducts = (productsToRender, page = 1) => {
+    currentPage = page;
     const productsGrid = document.querySelector('.products-grid');
+    const paginationContainer = document.querySelector('.products-pagination');
     if (!productsGrid) return;
+
+    const totalPages = Math.max(1, Math.ceil(productsToRender.length / PAGE_SIZE));
+    if (page > totalPages) page = totalPages;
+    const start = (page - 1) * PAGE_SIZE;
+    const pageProducts = productsToRender.slice(start, start + PAGE_SIZE);
 
     if (productsToRender.length === 0) {
       productsGrid.innerHTML = `
@@ -41,8 +51,9 @@ export async function renderAllProducts() {
           <p>${t('catalog.noProducts')}</p>
         </div>
       `;
+      if (paginationContainer) paginationContainer.innerHTML = '';
     } else {
-      productsGrid.innerHTML = productsToRender.map(product => `
+      productsGrid.innerHTML = pageProducts.map(product => `
         <div class="product-card card" data-product-id="${product.id}" style="cursor: pointer;">
           ${product.imageUrl ? `
             <img src="${product.imageUrl}" 
@@ -93,6 +104,44 @@ export async function renderAllProducts() {
           </div>
         </div>
       `).join('');
+
+      // Render pagination controls
+      if (paginationContainer && totalPages > 1) {
+        let numberedButtons = '';
+        const windowSize = 5;
+        let startPage = Math.max(1, page - Math.floor(windowSize / 2));
+        let endPage = Math.min(totalPages, startPage + windowSize - 1);
+        if (endPage - startPage < windowSize - 1) {
+          startPage = Math.max(1, endPage - windowSize + 1);
+        }
+        for (let i = startPage; i <= endPage; i++) {
+          const btnClass = i === page ? 'btn-primary' : 'btn-secondary';
+          numberedButtons += `<button class="btn ${btnClass} btn-sm product-page-btn" data-page="${i}">${i}</button>`;
+        }
+
+        paginationContainer.innerHTML = `
+          <div class="pagination-controls" style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 24px;">
+            <button class="btn btn-secondary btn-sm product-page-btn" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>&#8249; Previous</button>
+            ${numberedButtons}
+            <button class="btn btn-secondary btn-sm product-page-btn" data-page="${page + 1}" ${page >= totalPages ? 'disabled' : ''}>Next &#8250;</button>
+          </div>
+          <div class="pagination-info" style="text-align: center; margin-top: 8px; color: var(--text-secondary); font-size: 14px;">Page ${page} of ${totalPages}</div>
+        `;
+
+        // Attach pagination click handlers
+        paginationContainer.querySelectorAll('.product-page-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const targetPage = parseInt(btn.getAttribute('data-page'), 10);
+            if (targetPage >= 1 && targetPage <= totalPages) {
+              renderProducts(productsToRender, targetPage);
+              const productsSection = document.getElementById('products-section');
+              if (productsSection) productsSection.scrollIntoView({ behavior: 'smooth' });
+            }
+          });
+        });
+      } else if (paginationContainer) {
+        paginationContainer.innerHTML = '';
+      }
     }
 
     // Re-attach event listeners for product cards
@@ -160,6 +209,7 @@ export async function renderAllProducts() {
         <div class="products-grid">
           <!-- Products will be rendered here -->
         </div>
+        <div class="products-pagination"></div>
       </div>
     </div>
   `;
@@ -269,7 +319,7 @@ export async function renderAllProducts() {
   
   // Initial render of products
   let filteredProducts = [...products];
-  renderProducts(filteredProducts);
+  renderProducts(filteredProducts, 1);
   
   // Filter and sort functionality
   const applyFilters = () => {
@@ -315,7 +365,8 @@ export async function renderAllProducts() {
       }
     });
     
-    renderProducts(filtered);
+    currentPage = 1;
+    renderProducts(filtered, 1);
   };
   
   // Add event listeners

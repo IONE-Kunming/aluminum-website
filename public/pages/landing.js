@@ -56,10 +56,10 @@ export function renderLandingPage() {
               ${t('landing.hero.description')}
             </p>
             <div class="hero-buttons">
-              <button class="btn btn-primary btn-lg" data-nav="categories">
+              <button class="btn btn-primary btn-lg" data-nav="guest/categories">
                 ${t('landing.hero.startTrading')} <i data-lucide="arrow-right"></i>
               </button>
-              <button class="btn btn-secondary btn-lg" data-nav="categories">
+              <button class="btn btn-secondary btn-lg" data-nav="guest/categories">
                 ${t('landing.hero.learnMore')}
               </button>
             </div>
@@ -198,7 +198,7 @@ export function renderLandingPage() {
                     }).join('')}
                     ${category.subcategories.length > 4 ? `<span class="subcategory-badge more">+${category.subcategories.length - 4} ${t('landing.categories.more')}</span>` : ''}
                   </div>
-                  <button class="btn btn-secondary btn-sm category-explore-btn" data-nav="categories">
+                  <button class="btn btn-secondary btn-sm category-explore-btn" data-nav="guest/categories">
                     ${t('landing.categories.exploreCategory')} <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
                   </button>
                 </div>
@@ -206,7 +206,7 @@ export function renderLandingPage() {
             `).join('')}
           </div>
           <div style="text-align: center; margin-top: 48px;">
-            <button class="btn btn-primary btn-lg" data-nav="categories">
+            <button class="btn btn-primary btn-lg" data-nav="guest/categories">
               ${t('landing.categories.viewAllCategories')} <i data-lucide="grid" style="width: 20px; height: 20px;"></i>
             </button>
           </div>
@@ -332,7 +332,7 @@ export function renderLandingPage() {
             ${t('landing.cta.description')}
           </p>
           <div class="cta-buttons">
-            <button class="btn btn-primary btn-lg" data-nav="categories">
+            <button class="btn btn-primary btn-lg" data-nav="guest/categories">
               ${t('landing.cta.getStarted')} <i data-lucide="arrow-right"></i>
             </button>
           </div>

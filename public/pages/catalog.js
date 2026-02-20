@@ -71,7 +71,10 @@ export async function renderCatalog() {
 
 // Render products for a specific seller
 async function renderSellerProducts(sellerId, filterCategory, t) {
-  const products = await dataService.getProducts({ sellerId, limit: 2000 });
+  const PAGE_SIZE = 12;
+  let currentPage = 1;
+
+  const products = await dataService.getProducts({ sellerId, limit: 500 });
   // Filter to only show active products
   const activeProducts = products.filter(p => p.isActive !== false);
   const sellers = await dataService.getSellers();
@@ -115,9 +118,15 @@ async function renderSellerProducts(sellerId, filterCategory, t) {
     ? activeProducts.filter(p => p.category === filterCategory)
     : activeProducts;
   
-  const renderProducts = (productsToRender) => {
+  const renderProducts = (productsToRender, page = 1) => {
     const productsGrid = document.querySelector('.products-grid');
+    const paginationContainer = document.querySelector('.products-pagination');
     if (!productsGrid) return;
+
+    const totalPages = Math.max(1, Math.ceil(productsToRender.length / PAGE_SIZE));
+    page = Math.min(Math.max(1, page), totalPages);
+    currentPage = page;
+    const pageProducts = productsToRender.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     if (productsToRender.length === 0) {
       productsGrid.innerHTML = `
@@ -127,7 +136,7 @@ async function renderSellerProducts(sellerId, filterCategory, t) {
         </div>
       `;
     } else {
-      productsGrid.innerHTML = productsToRender.map(product => `
+      productsGrid.innerHTML = pageProducts.map(product => `
         <div class="product-card card" data-product-id="${product.id}" style="cursor: pointer;">
           ${product.imageUrl ? `
             <img src="${product.imageUrl}" 
@@ -176,6 +185,37 @@ async function renderSellerProducts(sellerId, filterCategory, t) {
       `).join('');
     }
 
+    // Render pagination controls
+    if (paginationContainer) {
+      if (totalPages > 1) {
+        let pageButtons = '';
+        let startPage = Math.max(1, page - 2);
+        const endPage = Math.min(totalPages, startPage + 4);
+        startPage = Math.max(1, endPage - 4);
+        for (let i = startPage; i <= endPage; i++) {
+          pageButtons += `<button class="btn btn-sm product-page-btn ${i === page ? 'btn-primary' : 'btn-secondary'}" data-page="${i}">${i}</button>`;
+        }
+        paginationContainer.innerHTML = `
+          <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm product-page-btn" data-page="${page - 1}" ${page <= 1 ? 'disabled' : ''}>&#8249; ${t('common.previous') || 'Previous'}</button>
+            ${pageButtons}
+            <button class="btn btn-secondary btn-sm product-page-btn" data-page="${page + 1}" ${page >= totalPages ? 'disabled' : ''}>${t('common.next') || 'Next'} &#8250;</button>
+          </div>
+          <div style="text-align: center; margin-top: 8px; font-size: 14px; color: var(--text-secondary);">
+            ${t('common.page') || 'Page'} ${page} ${t('common.of') || 'of'} ${totalPages}
+          </div>
+        `;
+        paginationContainer.querySelectorAll('.product-page-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const targetPage = parseInt(btn.dataset.page);
+            renderProducts(productsToRender, targetPage);
+          });
+        });
+      } else {
+        paginationContainer.innerHTML = '';
+      }
+    }
+
     // Re-attach event listeners for product cards
     document.querySelectorAll('.product-card[data-product-id]').forEach(card => {
       card.addEventListener('click', () => {
@@ -212,6 +252,7 @@ async function renderSellerProducts(sellerId, filterCategory, t) {
       <div class="products-grid">
         <!-- Products will be rendered here -->
       </div>
+      <div class="products-pagination"></div>
     </div>
   `;
 
@@ -233,7 +274,8 @@ async function renderSellerProducts(sellerId, filterCategory, t) {
         });
       }
 
-      renderProducts(filtered);
+      currentPage = 1;
+      renderProducts(filtered, 1);
     });
   }
 }
@@ -328,11 +370,11 @@ async function renderMainCategoryTiles(t) {
 // Render subcategory selection for a main category
 async function renderSubcategorySelection(mainCategory, t) {
   const subcategories = getSubcategories(mainCategory);
-  const allProducts = await dataService.getProducts({ limit: 2000 });
+  const categoriesWithProducts = await dataService.getCategories();
   
   // Filter to only subcategories that have products
   const availableSubcategories = subcategories.filter(subcat => 
-    allProducts.some(p => p.category === subcat)
+    categoriesWithProducts.includes(subcat)
   );
   
   const renderSubcategories = (subcategoriesToRender) => {
@@ -419,7 +461,7 @@ async function renderSubcategorySelection(mainCategory, t) {
 
 // Render sellers for a specific category
 async function renderSellersForCategory(category, t) {
-  const allProducts = await dataService.getProducts({ limit: 2000 });
+  const allProducts = await dataService.getProducts({ category, limit: 500 });
   const allSellers = await dataService.getSellers();
   
   // Determine if current category is a main category or subcategory
@@ -639,7 +681,7 @@ async function renderSellersForCategory(category, t) {
 
 // Render seller tiles
 async function renderSellerTiles(t) {
-  const allProducts = await dataService.getProducts({ limit: 2000 });
+  const allProducts = await dataService.getProducts({ limit: 500 });
   const allSellers = await dataService.getSellers();
   const categories = await dataService.getCategories();
   

@@ -38,7 +38,7 @@ import { renderLandingPage } from '../pages/landing.js';
 import { renderLoginPage } from '../pages/login.js';
 import { renderSignupPage } from '../pages/signup.js';
 import { renderProfileSelection } from '../pages/profile-selection.js';
-import { renderPublicCategories } from '../pages/public-categories.js';
+import { renderGuestCategories } from '../pages/guest-categories.js';
 import { renderGuestCatalog } from '../pages/guest-catalog.js';
 import { renderGuestProductDetail } from '../pages/guest-product-detail.js';
 
@@ -76,11 +76,13 @@ const lazyPages = {
 function lazyRoute(pageLoader) {
   return async () => {
     try {
-      console.log('[lazyRoute] Starting to load page...');
+      // Show a lightweight loading state immediately for perceived performance
+      const mainContent = document.getElementById('main-content');
+      if (mainContent) {
+        mainContent.innerHTML = '<div class="page-loading"><div class="spinner"></div></div>';
+      }
       const renderFn = await pageLoader();
-      console.log('[lazyRoute] Page module loaded, render function:', typeof renderFn);
       await renderFn();
-      console.log('[lazyRoute] Page rendered successfully');
     } catch (error) {
       console.error('[lazyRoute] Error loading page:', error);
       console.error('[lazyRoute] Error stack:', error.stack);
@@ -171,7 +173,7 @@ function protectedRoute(handler, requireRole = null) {
     }
     
     console.log('[protectedRoute] Calling handler');
-    handler();
+    await handler();
   };
 }
 
@@ -221,7 +223,9 @@ async function initApp() {
   router.register('/', renderLandingPage);
   router.register('/login', renderLoginPage);
   router.register('/signup', renderSignupPage);
-  router.register('/categories', renderPublicCategories);
+  router.register('/guest/categories', renderGuestCategories);
+  // Keep backward compatibility for old /categories route
+  router.register('/categories', renderGuestCategories);
   router.register('/guest/catalog', renderGuestCatalog);
   router.register('/guest/product', renderGuestProductDetail);
   router.register('/profile-selection', async () => {
