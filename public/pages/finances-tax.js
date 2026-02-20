@@ -1,7 +1,7 @@
 import { renderPageWithLayout } from '../js/layout.js';
 import authManager from '../js/auth.js';
 import languageManager from '../js/language.js';
-import { escapeHtml, formatCurrency } from '../js/utils.js';
+import { escapeHtml } from '../js/utils.js';
 
 const DEFAULT_TAX_RATES = [
   { jurisdiction: 'United States', region: 'Federal', rate: 0, type: 'Sales Tax', shipping: false },
