@@ -8,7 +8,7 @@
     },
     "messages": {
       "$conversationId": {
-        ".read": "auth != null && root.child('conversations').child($conversationId).child('buyerId').val() === auth.uid || root.child('conversations').child($conversationId).child('sellerId').val() === auth.uid",
+        ".read": "auth != null && root.child('conversations').child($conversationId).exists() && (root.child('conversations').child($conversationId).child('buyerId').val() === auth.uid || root.child('conversations').child($conversationId).child('sellerId').val() === auth.uid)",
         ".write": "auth != null && (root.child('conversations').child($conversationId).child('buyerId').val() === auth.uid || root.child('conversations').child($conversationId).child('sellerId').val() === auth.uid)"
       }
     },

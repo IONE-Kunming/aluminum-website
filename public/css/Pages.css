@@ -2970,7 +2970,7 @@
   position: relative;
 }
 
-.sellers-grid {
+.sellers-content .sellers-grid {
   flex: 1;
 }
 
@@ -4072,8 +4072,10 @@
 
 /* ==========================================
    SELLER TILES IN CATALOG
+   Scoped under .catalog-page / .seller-tile to
+   avoid conflicting with .sellers-page styles
    ========================================== */
-.sellers-grid {
+.catalog-page .sellers-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: var(--spacing-lg);
@@ -4098,7 +4100,7 @@
   border-bottom: 1px solid var(--border-color);
 }
 
-.seller-avatar {
+.seller-tile .seller-avatar {
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -4110,7 +4112,7 @@
   flex-shrink: 0;
 }
 
-.seller-avatar i {
+.seller-tile .seller-avatar i {
   width: 28px;
   height: 28px;
 }
@@ -4131,7 +4133,7 @@
   margin-bottom: var(--spacing-md);
 }
 
-.seller-detail {
+.seller-tile .seller-detail {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -4140,7 +4142,7 @@
   color: var(--text-secondary);
 }
 
-.seller-detail i {
+.seller-tile .seller-detail i {
   width: 16px;
   height: 16px;
   flex-shrink: 0;

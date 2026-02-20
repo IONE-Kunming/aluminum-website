@@ -341,7 +341,10 @@ function initializeOrderCheckout(order) {
       
     } catch (error) {
       console.error('Error processing payment:', error);
-      window.toast.error(t('orders.paymentFailed') || 'Payment failed. Please try again.');
+      const errorMsg = error?.code === 'permission-denied'
+        ? (t('orders.paymentPermissionDenied') || 'Payment failed: insufficient permissions. Contact support if this persists.')
+        : (t('orders.paymentFailed') || 'Payment failed. Please try again.');
+      window.toast.error(errorMsg);
       
       confirmBtn.disabled = false;
       confirmBtn.innerHTML = `<i data-lucide="check-circle"></i> ${t('orders.confirmPayment') || 'Confirm Payment'}`;
