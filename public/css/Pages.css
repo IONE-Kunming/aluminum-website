@@ -981,6 +981,14 @@
 .seller-actions {
   display: flex;
   gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--border-color);
+}
+
+.seller-actions .btn {
+  flex: 1;
+  justify-content: center;
 }
 
 /* ==========================================
@@ -2958,12 +2966,6 @@
 
 .sellers-grid {
   flex: 1;
-}
-
-.seller-actions {
-  margin-top: 15px;
-  padding-top: 15px;
-  border-top: 1px solid var(--border-color);
 }
 
 .btn-chat {

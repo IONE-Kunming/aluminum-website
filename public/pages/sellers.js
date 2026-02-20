@@ -98,12 +98,12 @@ export async function renderSellers() {
                   ` : ''}
                 </div>
                 ${currentUser ? `
-                  <div class="seller-actions" style="display: flex; gap: 8px;">
-                    <button class="btn btn-primary flex-1 view-products-btn" data-seller-id="${sellerId}">
+                  <div class="seller-actions">
+                    <button class="btn btn-primary view-products-btn" data-seller-id="${sellerId}">
                       <i data-lucide="package"></i>
                       ${t('catalog.viewProducts')}
                     </button>
-                    <button class="btn btn-outline flex-1 chat-with-seller-btn" data-seller-id="${sellerId}">
+                    <button class="btn btn-outline chat-with-seller-btn" data-seller-id="${sellerId}">
                       <i data-lucide="message-circle"></i>
                       ${t('sellers.chatWithSeller')}
                     </button>

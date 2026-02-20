@@ -50,44 +50,38 @@ class ChatService {
     this.init();
     const conversationId = this.getConversationId(productId, buyerId, sellerId);
     const convRef = this.db.ref(`conversations/${conversationId}`);
+    const now = Date.now();
 
     // Use transaction to prevent duplicate creation
-    await convRef.transaction((current) => {
+    const result = await convRef.transaction((current) => {
       if (current) return; // Already exists, abort write
       return {
         productId,
         buyerId,
         sellerId,
         lastMessage: '',
-        lastMessageAt: Date.now()
+        lastMessageAt: now
       };
     });
 
-    // Ensure userConversations entries exist for both users
-    const uid = this._getUid();
-    const otherUserId = uid === buyerId ? sellerId : buyerId;
-
-    const updates = {};
-    updates[`userConversations/${buyerId}/${conversationId}`] = {
-      otherUserId: sellerId,
-      productId,
-      lastMessage: '',
-      lastMessageAt: Date.now()
-    };
-    updates[`userConversations/${sellerId}/${conversationId}`] = {
-      otherUserId: buyerId,
-      productId,
-      lastMessage: '',
-      lastMessageAt: Date.now()
-    };
-    // Only set if not exists — use update per path
-    const buyerSnap = await this.db.ref(`userConversations/${buyerId}/${conversationId}`).once('value');
-    if (!buyerSnap.exists()) {
-      await this.db.ref(`userConversations/${buyerId}/${conversationId}`).set(updates[`userConversations/${buyerId}/${conversationId}`]);
-    }
-    const sellerSnap = await this.db.ref(`userConversations/${sellerId}/${conversationId}`).once('value');
-    if (!sellerSnap.exists()) {
-      await this.db.ref(`userConversations/${sellerId}/${conversationId}`).set(updates[`userConversations/${sellerId}/${conversationId}`]);
+    // Only create userConversations entries when the conversation was newly created
+    if (result.committed) {
+      const buyerEntry = {
+        otherUserId: sellerId,
+        productId,
+        lastMessage: '',
+        lastMessageAt: now
+      };
+      const sellerEntry = {
+        otherUserId: buyerId,
+        productId,
+        lastMessage: '',
+        lastMessageAt: now
+      };
+      // Write both entries directly without reading first
+      // (current user may not have read permission on the other user's userConversations)
+      await this.db.ref(`userConversations/${buyerId}/${conversationId}`).set(buyerEntry);
+      await this.db.ref(`userConversations/${sellerId}/${conversationId}`).set(sellerEntry);
     }
 
     return conversationId;

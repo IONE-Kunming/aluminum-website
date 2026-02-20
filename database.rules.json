@@ -2,7 +2,7 @@
   "rules": {
     "conversations": {
       "$conversationId": {
-        ".read": "auth != null && (data.child('buyerId').val() === auth.uid || data.child('sellerId').val() === auth.uid)",
+        ".read": "auth != null && (!data.exists() || data.child('buyerId').val() === auth.uid || data.child('sellerId').val() === auth.uid)",
         ".write": "auth != null && (!data.exists() || data.child('buyerId').val() === auth.uid || data.child('sellerId').val() === auth.uid)"
       }
     },
