@@ -304,7 +304,8 @@ function setupBulkRowListeners(products, mainCategories) {
         const newUrls = [];
 
         for (const file of files) {
-          const imageRef = storage.ref(`products/${product.sellerId || 'admin'}/${Date.now()}_${file.name}`);
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+          const imageRef = storage.ref(`products/${product.sellerId || 'admin'}/${Date.now()}_${safeName}`);
           await imageRef.put(file);
           const url = await imageRef.getDownloadURL();
           newUrls.push(url);

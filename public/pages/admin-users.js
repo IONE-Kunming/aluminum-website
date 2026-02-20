@@ -553,7 +553,8 @@ async function exportUserProfile(user) {
           totalProducts: products.length,
           totalOrders: orders.length,
           totalInvoices: invoices.length,
-          totalRevenue: orders.reduce((sum, o) => sum + (o.total || 0), 0),
+          totalSellerRevenue: ordersAsSellerSnap.docs.reduce((sum, doc) => sum + (doc.data().total || 0), 0),
+          totalBuyerSpending: ordersAsBuyerSnap.docs.reduce((sum, doc) => sum + (doc.data().total || 0), 0),
         }
       },
       exportedAt: new Date().toISOString()
