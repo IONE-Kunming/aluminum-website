@@ -348,7 +348,9 @@ export default {
     wechat: 'وی چیٹ پے',
     bankTransfer: 'بینک ٹرانسفر',
     cardPayment: 'کارڈ کی ادائیگی',
-    units: 'اکائیاں'
+    units: 'اکائیاں',
+    draftOrdersCreated: 'ڈرافٹ آرڈرز کامیابی سے بنائے گئے۔ براہ کرم ہر آرڈر کی علیحدہ ادائیگی کریں۔',
+    fullPayment: 'مکمل ادائیگی'
   },
   
   // کیٹلاگ

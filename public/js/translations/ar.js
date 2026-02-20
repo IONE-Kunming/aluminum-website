@@ -348,7 +348,9 @@ export default {
     wechat: 'وي تشات باي',
     bankTransfer: 'تحويل بنكي',
     cardPayment: 'الدفع بالبطاقة',
-    units: 'وحدات'
+    units: 'وحدات',
+    draftOrdersCreated: 'تم إنشاء الطلبات المسودة بنجاح. يرجى إتمام الدفع لكل طلب على حدة.',
+    fullPayment: 'الدفع الكامل'
   },
   
   // الكتالوج

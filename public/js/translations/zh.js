@@ -348,7 +348,9 @@ export default {
     wechat: '微信支付',
     bankTransfer: '银行转账',
     cardPayment: '银行卡支付',
-    units: '单位'
+    units: '单位',
+    draftOrdersCreated: '草稿订单已成功创建。请分别结账每个订单。',
+    fullPayment: '全额付款'
   },
   
   // 目录
