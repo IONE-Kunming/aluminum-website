@@ -74,7 +74,7 @@ async function renderSellerProducts(sellerId, filterCategory, t) {
   const PAGE_SIZE = 12;
   let currentPage = 1;
 
-  const products = await dataService.getProducts({ sellerId, limit: 2000 });
+  const products = await dataService.getProducts({ sellerId, limit: 500 });
   // Filter to only show active products
   const activeProducts = products.filter(p => p.isActive !== false);
   const sellers = await dataService.getSellers();
