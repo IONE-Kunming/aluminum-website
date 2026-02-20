@@ -541,11 +541,11 @@ function importUserProfile() {
       return;
     }
 
-    // Show modal to pick target user
+    // Show modal with option to pick existing or create new user
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     modal.innerHTML = `
-      <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-content" style="max-width: 540px;">
         <div class="modal-header">
           <h2><i data-lucide="upload"></i> Import Profile Data</h2>
           <button class="modal-close" id="close-import-modal"><i data-lucide="x"></i></button>
@@ -554,16 +554,46 @@ function importUserProfile() {
           <p style="margin: 0 0 12px; color: var(--text-secondary);">
             Imported fields: ${escapeHtml(Object.keys(profileData).slice(0, 20).join(', '))}${Object.keys(profileData).length > 20 ? '...' : ''}
           </p>
-          <div class="form-group">
-            <label for="import-target-select">Select existing user</label>
-            <select id="import-target-select">
-              <option value="">-- Choose a user --</option>
-              ${allUsers.map(u => `<option value="${escapeHtml(u.id)}">${escapeHtml(u.displayName || u.email || u.id)}</option>`).join('')}
-            </select>
+
+          <!-- Import mode toggle -->
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label style="font-weight: 600; margin-bottom: 8px; display: block;">Import to:</label>
+            <div style="display: flex; gap: 12px;">
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="radio" name="import-mode" value="existing" checked />
+                Existing User
+              </label>
+              <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                <input type="radio" name="import-mode" value="new" />
+                New User
+              </label>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="import-target-id">Or enter User ID manually</label>
-            <input type="text" id="import-target-id" placeholder="Paste user ID here..." />
+
+          <!-- Existing user section -->
+          <div id="import-existing-section">
+            <div class="form-group">
+              <label for="import-target-select">Select user from list</label>
+              <select id="import-target-select" class="form-control">
+                <option value="">-- Choose a user --</option>
+                ${allUsers.map(u => `<option value="${escapeHtml(u.id)}">${escapeHtml((u.displayName || 'No name') + ' (' + (u.email || u.id) + ')')}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+
+          <!-- New user section (hidden initially) -->
+          <div id="import-new-section" style="display: none;">
+            <div class="form-group">
+              <label for="import-new-email">Email (required for account creation)</label>
+              <input type="email" id="import-new-email" class="form-control" value="${escapeHtml(profileData.email || '')}" placeholder="user@example.com" />
+            </div>
+            <div class="form-group">
+              <label for="import-new-password">Password (min 6 characters)</label>
+              <input type="password" id="import-new-password" class="form-control" placeholder="Enter password for the new account" />
+            </div>
+            <small style="color: var(--text-secondary); display: block; margin-top: -8px;">
+              A new Firebase account will be created with these credentials and the imported profile data will be applied.
+            </small>
           </div>
         </div>
         <div class="modal-footer">
@@ -583,20 +613,23 @@ function importUserProfile() {
     document.getElementById('cancel-import-btn').addEventListener('click', closeModal);
     modal.addEventListener('click', (ev) => { if (ev.target === modal) closeModal(); });
 
-    document.getElementById('apply-import-btn').addEventListener('click', async () => {
-      const selectedId = document.getElementById('import-target-select').value;
-      const manualId = document.getElementById('import-target-id').value.trim();
-      const targetId = selectedId || manualId;
+    // Toggle between existing and new user sections
+    modal.querySelectorAll('input[name="import-mode"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        const isNew = radio.value === 'new' && radio.checked;
+        document.getElementById('import-existing-section').style.display = isNew ? 'none' : 'block';
+        document.getElementById('import-new-section').style.display = isNew ? 'block' : 'none';
+      });
+    });
 
-      if (!targetId) {
-        window.toast.error('Please select a user or enter a User ID');
-        return;
-      }
+    document.getElementById('apply-import-btn').addEventListener('click', async () => {
+      const mode = modal.querySelector('input[name="import-mode"]:checked').value;
 
       // Only allow safe profile fields to be imported
       const allowedFields = [
         'displayName', 'email', 'companyName', 'phoneNumber', 'bio',
-        'address', 'role', 'isActive', 'photoURL', 'language'
+        'address', 'role', 'isActive', 'photoURL', 'language',
+        'preferredLanguage', 'paymentMethods'
       ];
       const { id, ...rawData } = profileData;
       const updateData = {};
@@ -604,23 +637,113 @@ function importUserProfile() {
         if (key in rawData) updateData[key] = rawData[key];
       }
 
-      if (Object.keys(updateData).length === 0) {
-        window.toast.error('No valid profile fields found in the imported file');
-        return;
-      }
+      if (mode === 'existing') {
+        // --- Import to existing user ---
+        const targetId = document.getElementById('import-target-select').value;
+        if (!targetId) {
+          window.toast.error('Please select a user from the list');
+          return;
+        }
 
-      if (!await showConfirm(`Apply imported profile data to user "${targetId}"?`)) {
-        return;
-      }
+        const targetUser = allUsers.find(u => u.id === targetId);
+        const targetLabel = targetUser ? (targetUser.displayName || targetUser.email) : targetId;
 
-      try {
-        await dataService.db.collection('users').doc(targetId).set(updateData, { merge: true });
-        window.toast.success('Profile imported successfully');
-        closeModal();
-        await loadUsers();
-      } catch (error) {
-        console.error('Error importing profile:', error);
-        window.toast.error('Failed to import profile');
+        if (Object.keys(updateData).length === 0) {
+          window.toast.error('No valid profile fields found in the imported file');
+          return;
+        }
+
+        if (!await showConfirm(`Apply imported profile data to "${escapeHtml(targetLabel)}"?`)) {
+          return;
+        }
+
+        try {
+          await dataService.db.collection('users').doc(targetId).set(updateData, { merge: true });
+          window.toast.success('Profile imported successfully');
+          closeModal();
+          await loadUsers();
+        } catch (error) {
+          console.error('Error importing profile:', error);
+          window.toast.error('Failed to import profile');
+        }
+      } else {
+        // --- Create new user and import data ---
+        const newEmail = document.getElementById('import-new-email').value.trim();
+        const newPassword = document.getElementById('import-new-password').value;
+
+        if (!newEmail) {
+          window.toast.error('Email is required to create a new account');
+          return;
+        }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(newEmail)) {
+          window.toast.error('Please enter a valid email address');
+          return;
+        }
+        if (!newPassword || newPassword.length < 6) {
+          window.toast.error('Password must be at least 6 characters');
+          return;
+        }
+
+        if (!await showConfirm(`Create a new account for "${escapeHtml(newEmail)}" and apply imported profile data?`)) {
+          return;
+        }
+
+        const applyBtn = document.getElementById('apply-import-btn');
+        applyBtn.disabled = true;
+        applyBtn.innerHTML = '<i data-lucide="loader"></i> Creating...';
+        if (window.lucide) window.lucide.createIcons();
+
+        try {
+          // Use a secondary Firebase app to create the user without signing out the admin
+          const { firebaseConfig } = await import('../js/config.js');
+          const secondaryApp = firebase.initializeApp(firebaseConfig, 'importUserApp');
+          const secondaryAuth = secondaryApp.auth();
+
+          // Connect to emulator if in dev mode
+          if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            try { secondaryAuth.useEmulator('http://localhost:9099'); } catch (_) { /* ignore */ }
+          }
+
+          const credential = await secondaryAuth.createUserWithEmailAndPassword(newEmail, newPassword);
+          const newUid = credential.user.uid;
+
+          // Sign out from secondary app immediately
+          await secondaryAuth.signOut();
+          await secondaryApp.delete();
+
+          // Ensure the email is set in profile data
+          updateData.email = newEmail;
+          if (!updateData.createdAt) {
+            updateData.createdAt = new Date().toISOString();
+          }
+          if (!updateData.isActive) {
+            updateData.isActive = true;
+          }
+
+          // Create the Firestore profile document with the new UID
+          await dataService.db.collection('users').doc(newUid).set(updateData);
+          window.toast.success(`New account created for ${escapeHtml(newEmail)} and profile data imported`);
+          closeModal();
+          await loadUsers();
+        } catch (error) {
+          console.error('Error creating new user:', error);
+          // Clean up secondary app if it still exists
+          try {
+            const existingApp = firebase.app('importUserApp');
+            await existingApp.delete();
+          } catch (_) { /* already deleted */ }
+
+          if (error.code === 'auth/email-already-in-use') {
+            window.toast.error('An account with this email already exists. Use "Existing User" mode instead.');
+          } else {
+            window.toast.error('Failed to create account: ' + (error.message || 'Unknown error'));
+          }
+        } finally {
+          applyBtn.disabled = false;
+          applyBtn.innerHTML = '<i data-lucide="check"></i> Apply Import';
+          if (window.lucide) window.lucide.createIcons();
+        }
       }
     });
   });
