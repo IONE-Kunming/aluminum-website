@@ -11,15 +11,21 @@ import {
 
 let allProducts = [];
 let sellers = {};
+let currentUserRole = 'admin';
+let currentUserId = null;
 
 export async function renderAdminBulkEdit() {
   const t = languageManager.t.bind(languageManager);
 
   const profile = authManager.getUserProfile();
-  if (profile?.role !== 'admin') {
-    renderPageWithLayout('<div class="error">Access denied. Admin privileges required.</div>', 'admin');
+  if (profile?.role !== 'admin' && profile?.role !== 'seller') {
+    renderPageWithLayout('<div class="error">Access denied. Admin or Seller privileges required.</div>', 'admin');
     return;
   }
+
+  const currentRole = profile.role;
+  currentUserRole = currentRole;
+  currentUserId = authManager.getCurrentUser()?.uid || null;
 
   const content = `
     <div class="admin-bulk-edit-page">
@@ -61,12 +67,18 @@ export async function renderAdminBulkEdit() {
     </div>
   `;
 
-  renderPageWithLayout(content, 'admin');
+  renderPageWithLayout(content, currentRole);
   if (window.lucide) window.lucide.createIcons();
 
   document.getElementById('back-to-products-btn').addEventListener('click', () => {
-    window.router.navigate('/admin/products');
+    window.router.navigate(currentRole === 'seller' ? '/seller/products' : '/admin/products');
   });
+
+  // Hide seller filter for seller users (they only see their own products)
+  if (currentRole === 'seller') {
+    const sellerFilterEl = document.getElementById('bulk-seller-filter');
+    if (sellerFilterEl) sellerFilterEl.style.display = 'none';
+  }
 
   await loadBulkProducts();
 
@@ -78,14 +90,23 @@ export async function renderAdminBulkEdit() {
 async function loadBulkProducts() {
   try {
     await dataService.init();
-    const products = await dataService.getProducts({ limit: 1000000 });
+    let products;
+    if (currentUserRole === 'seller' && currentUserId) {
+      // Sellers only see their own products
+      const snap = await dataService.db.collection('products').where('sellerId', '==', currentUserId).get();
+      products = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } else {
+      products = await dataService.getProducts({ limit: 1000000 });
+    }
     allProducts = products;
 
-    const sellersSnapshot = await dataService.db.collection('users').where('role', '==', 'seller').get();
-    sellers = {};
-    sellersSnapshot.docs.forEach(doc => {
-      sellers[doc.id] = doc.data().companyName || doc.data().displayName || 'Unknown';
-    });
+    if (currentUserRole === 'admin') {
+      const sellersSnapshot = await dataService.db.collection('users').where('role', '==', 'seller').get();
+      sellers = {};
+      sellersSnapshot.docs.forEach(doc => {
+        sellers[doc.id] = doc.data().companyName || doc.data().displayName || 'Unknown';
+      });
+    }
 
     populateBulkFilters();
     displayBulkTable(allProducts);

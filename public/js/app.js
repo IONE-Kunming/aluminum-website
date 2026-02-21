@@ -72,6 +72,7 @@ const lazyPages = {
   adminOrders: () => import('../pages/admin-orders.js').then(m => m.renderAdminOrders),
   adminInvoices: () => import('../pages/admin-invoices.js').then(m => m.renderAdminInvoices),
   adminBulkEdit: () => import('../pages/admin-bulk-edit.js').then(m => m.renderAdminBulkEdit),
+  sellerBulkEdit: () => import('../pages/admin-bulk-edit.js').then(m => m.renderAdminBulkEdit),
   chat: () => import('../pages/chat.js').then(m => m.renderChat),
   financesDashboard: () => import('../pages/finances-dashboard.js').then(m => m.renderFinancesDashboard),
   financesTransactions: () => import('../pages/finances-transactions.js').then(m => m.renderFinancesTransactions),
@@ -306,6 +307,7 @@ async function initApp() {
   router.register('/seller/finances/reports', protectedRoute(lazyRoute(lazyPages.financesReports), 'seller'));
   router.register('/seller/finances/tax', protectedRoute(lazyRoute(lazyPages.financesTax), 'seller'));
   router.register('/seller/finances/reconciliation', protectedRoute(lazyRoute(lazyPages.financesReconciliation), 'seller'));
+  router.register('/seller/bulk-edit', protectedRoute(lazyRoute(lazyPages.sellerBulkEdit), 'seller'));
   
   // Register shared routes (accessible by both buyer and seller)
   router.register('/order/detail', protectedRoute(lazyRoute(lazyPages.orderDetail)));
