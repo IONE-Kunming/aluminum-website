@@ -524,28 +524,123 @@ async function exportUserProfile(user) {
       dataService.db.collection('invoices').where('sellerId', '==', user.id).get(),
     ]);
 
-    const products = productsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    // Map products with explicit detail fields
+    const products = productsSnap.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data.name || '',
+        modelNumber: data.modelNumber || '',
+        description: data.description || '',
+        price: data.price || 0,
+        stock: data.stock || data.stockQuantity || 0,
+        category: data.category || '',
+        mainCategory: data.mainCategory || '',
+        primaryImage: data.imageUrl || '',
+        images: data.images || [],
+        specifications: data.specifications || null,
+        weight: data.weight || null,
+        dimensions: data.dimensions || null,
+        material: data.material || null,
+        color: data.color || null,
+        createdAt: data.createdAt || '',
+        updatedAt: data.updatedAt || '',
+        isActive: data.isActive !== false,
+        ...data,
+      };
+    });
+
+    // Collect all product image URLs into a flat list
+    const allProductImages = [];
+    products.forEach(p => {
+      if (p.primaryImage) allProductImages.push({ productId: p.id, productName: p.name || p.modelNumber, url: p.primaryImage, type: 'primary' });
+      if (p.images && p.images.length > 0) {
+        p.images.forEach((img, idx) => {
+          allProductImages.push({ productId: p.id, productName: p.name || p.modelNumber, url: img, type: idx === 0 ? 'primary' : 'additional' });
+        });
+      }
+    });
+
+    // De-duplicate orders and invoices
     const orderIds = new Set();
     const orders = [];
     [...ordersAsBuyerSnap.docs, ...ordersAsSellerSnap.docs].forEach(doc => {
       if (!orderIds.has(doc.id)) {
         orderIds.add(doc.id);
-        orders.push({ id: doc.id, ...doc.data() });
+        const data = doc.data();
+        orders.push({
+          id: doc.id,
+          status: data.status || '',
+          total: data.total || 0,
+          deposit: data.deposit || 0,
+          remainingBalance: data.remainingBalance || 0,
+          paymentMethod: data.paymentMethod || '',
+          paymentStatus: data.paymentStatus || '',
+          items: data.items || [],
+          buyerId: data.buyerId || '',
+          sellerId: data.sellerId || '',
+          createdAt: data.createdAt || '',
+          updatedAt: data.updatedAt || '',
+          ...data,
+        });
       }
     });
+
     const invoiceIds = new Set();
     const invoices = [];
     [...invoicesAsBuyerSnap.docs, ...invoicesAsSellerSnap.docs].forEach(doc => {
       if (!invoiceIds.has(doc.id)) {
         invoiceIds.add(doc.id);
-        invoices.push({ id: doc.id, ...doc.data() });
+        const data = doc.data();
+        invoices.push({
+          id: doc.id,
+          invoiceNumber: data.invoiceNumber || '',
+          status: data.status || '',
+          total: data.total || 0,
+          subtotal: data.subtotal || 0,
+          tax: data.tax || 0,
+          items: data.items || [],
+          buyerId: data.buyerId || '',
+          sellerId: data.sellerId || '',
+          dueDate: data.dueDate || '',
+          paidAt: data.paidAt || '',
+          createdAt: data.createdAt || '',
+          ...data,
+        });
       }
     });
 
+    // Compute financial summary
+    const totalSellerRevenue = ordersAsSellerSnap.docs.reduce((sum, doc) => sum + (doc.data().total || 0), 0);
+    const totalBuyerSpending = ordersAsBuyerSnap.docs.reduce((sum, doc) => sum + (doc.data().total || 0), 0);
+    const totalDepositsReceived = ordersAsSellerSnap.docs.reduce((sum, doc) => sum + (doc.data().deposit || 0), 0);
+    const totalDepositsPaid = ordersAsBuyerSnap.docs.reduce((sum, doc) => sum + (doc.data().deposit || 0), 0);
+    const paidInvoices = invoices.filter(inv => inv.status === 'paid');
+    const unpaidInvoices = invoices.filter(inv => inv.status !== 'paid');
+    const totalInvoicedAmount = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+    const totalPaidAmount = paidInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+    const totalUnpaidAmount = unpaidInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+
     // Build comprehensive export object
     const exportData = {
-      profile: { ...user },
+      profile: {
+        id: user.id,
+        displayName: user.displayName || '',
+        email: user.email || '',
+        role: user.role || '',
+        companyName: user.companyName || '',
+        phoneNumber: user.phoneNumber || '',
+        address: user.address || null,
+        bio: user.bio || '',
+        photoURL: user.photoURL || '',
+        isActive: user.isActive !== false,
+        createdAt: user.createdAt || '',
+        language: user.language || user.preferredLanguage || '',
+        paymentMethods: user.paymentMethods || [],
+        ...user,
+      },
       products: products,
+      productImages: allProductImages,
       financials: {
         orders: orders,
         invoices: invoices,
@@ -553,8 +648,15 @@ async function exportUserProfile(user) {
           totalProducts: products.length,
           totalOrders: orders.length,
           totalInvoices: invoices.length,
-          totalSellerRevenue: ordersAsSellerSnap.docs.reduce((sum, doc) => sum + (doc.data().total || 0), 0),
-          totalBuyerSpending: ordersAsBuyerSnap.docs.reduce((sum, doc) => sum + (doc.data().total || 0), 0),
+          totalSellerRevenue: totalSellerRevenue,
+          totalBuyerSpending: totalBuyerSpending,
+          totalDepositsReceived: totalDepositsReceived,
+          totalDepositsPaid: totalDepositsPaid,
+          totalInvoicedAmount: totalInvoicedAmount,
+          totalPaidInvoiceAmount: totalPaidAmount,
+          totalUnpaidInvoiceAmount: totalUnpaidAmount,
+          paidInvoicesCount: paidInvoices.length,
+          unpaidInvoicesCount: unpaidInvoices.length,
         }
       },
       exportedAt: new Date().toISOString()

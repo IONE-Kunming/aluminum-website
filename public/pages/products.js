@@ -36,6 +36,10 @@ export async function renderProducts() {
             <i data-lucide="layers"></i>
             Bulk Edit
           </button>
+          <button class="btn btn-secondary" id="bulk-edit-table-btn">
+            <i data-lucide="table"></i>
+            Table Edit
+          </button>
           <div id="bulk-actions-container" style="display: none; margin-left: auto; gap: 12px; align-items: center;">
             <span id="selected-count" style="font-size: 14px; color: #6b7280;">0 selected</span>
             <button class="btn btn-danger" id="bulk-delete-btn">
@@ -310,6 +314,14 @@ export async function renderProducts() {
 
   // Initialize bulk edit functionality
   initializeBulkEdit();
+
+  // Navigate to table-based bulk edit page
+  const bulkEditTableBtn = document.getElementById('bulk-edit-table-btn');
+  if (bulkEditTableBtn) {
+    bulkEditTableBtn.addEventListener('click', () => {
+      window.router.navigate('/seller/bulk-edit');
+    });
+  }
 }
 
 // Load products from Firestore
