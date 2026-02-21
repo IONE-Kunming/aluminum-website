@@ -553,10 +553,17 @@ async function exportUserProfile(user) {
     // Collect all product image URLs into a flat list
     const allProductImages = [];
     products.forEach(p => {
-      if (p.primaryImage) allProductImages.push({ productId: p.id, productName: p.name || p.modelNumber, url: p.primaryImage, type: 'primary' });
+      const imageSet = new Set();
+      if (p.primaryImage) {
+        imageSet.add(p.primaryImage);
+        allProductImages.push({ productId: p.id, productName: p.name || p.modelNumber, url: p.primaryImage, type: 'primary' });
+      }
       if (p.images && p.images.length > 0) {
         p.images.forEach((img, idx) => {
-          allProductImages.push({ productId: p.id, productName: p.name || p.modelNumber, url: img, type: idx === 0 ? 'primary' : 'additional' });
+          if (!imageSet.has(img)) {
+            imageSet.add(img);
+            allProductImages.push({ productId: p.id, productName: p.name || p.modelNumber, url: img, type: 'additional' });
+          }
         });
       }
     });

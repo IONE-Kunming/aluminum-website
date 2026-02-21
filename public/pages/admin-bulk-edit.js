@@ -24,6 +24,8 @@ export async function renderAdminBulkEdit() {
   }
 
   const currentRole = profile.role;
+  currentUserRole = currentRole;
+  currentUserId = authManager.getCurrentUser()?.uid || null;
 
   const content = `
     <div class="admin-bulk-edit-page">
@@ -77,9 +79,6 @@ export async function renderAdminBulkEdit() {
     const sellerFilterEl = document.getElementById('bulk-seller-filter');
     if (sellerFilterEl) sellerFilterEl.style.display = 'none';
   }
-
-  currentUserRole = currentRole;
-  currentUserId = authManager.getCurrentUser()?.uid || null;
 
   await loadBulkProducts();
 
