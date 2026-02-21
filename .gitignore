@@ -24,3 +24,10 @@ dist-ssr
 *.sw?
 node_modules/
 dist/
+
+# Firebase service account keys (NEVER commit these!)
+serviceAccountKey.json
+service-account.json
+**/serviceAccountKey.json
+**/service-account.json
+firebase-adminsdk-*.json
