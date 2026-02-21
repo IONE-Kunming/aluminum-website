@@ -41,6 +41,9 @@ export async function renderAdminUsers() {
           <button class="btn btn-secondary" id="import-profile-btn">
             <i data-lucide="upload"></i> ${t('admin.importProfile')}
           </button>
+          <button class="btn btn-primary" id="export-all-users-btn">
+            <i data-lucide="download"></i> ${t('admin.exportAllUsers')}
+          </button>
         </div>
       </div>
       
@@ -65,6 +68,7 @@ export async function renderAdminUsers() {
   document.getElementById('role-filter').addEventListener('change', filterUsers);
   document.getElementById('status-filter').addEventListener('change', filterUsers);
   document.getElementById('import-profile-btn').addEventListener('click', importUserProfile);
+  document.getElementById('export-all-users-btn').addEventListener('click', exportAllUsers);
 }
 
 let allUsers = [];
@@ -683,6 +687,188 @@ async function exportUserProfile(user) {
   } catch (error) {
     console.error('Error exporting profile:', error);
     window.toast.error(t('admin.profileExportFailed') || 'Failed to export profile');
+  }
+}
+
+async function exportAllUsers() {
+  const t = languageManager.t.bind(languageManager);
+  try {
+    window.toast.info(t('admin.exportingAllUsers') || 'Exporting all users...');
+    await dataService.init();
+
+    const usersSnapshot = await dataService.db.collection('users').get();
+    const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    const allExports = [];
+    for (const user of users) {
+      const [productsSnap, ordersAsBuyerSnap, ordersAsSellerSnap, invoicesAsBuyerSnap, invoicesAsSellerSnap] = await Promise.all([
+        dataService.db.collection('products').where('sellerId', '==', user.id).get(),
+        dataService.db.collection('orders').where('buyerId', '==', user.id).get(),
+        dataService.db.collection('orders').where('sellerId', '==', user.id).get(),
+        dataService.db.collection('invoices').where('buyerId', '==', user.id).get(),
+        dataService.db.collection('invoices').where('sellerId', '==', user.id).get(),
+      ]);
+
+      const products = productsSnap.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          name: data.name || '',
+          modelNumber: data.modelNumber || '',
+          description: data.description || '',
+          price: data.price || 0,
+          stock: data.stock || data.stockQuantity || 0,
+          category: data.category || '',
+          mainCategory: data.mainCategory || '',
+          primaryImage: data.imageUrl || '',
+          images: data.images || [],
+          specifications: data.specifications || null,
+          weight: data.weight || null,
+          dimensions: data.dimensions || null,
+          material: data.material || null,
+          color: data.color || null,
+          createdAt: data.createdAt || '',
+          updatedAt: data.updatedAt || '',
+          isActive: data.isActive !== false,
+          ...data,
+        };
+      });
+
+      const allProductImages = [];
+      products.forEach(p => {
+        const imageSet = new Set();
+        if (p.primaryImage) {
+          imageSet.add(p.primaryImage);
+          allProductImages.push({ productId: p.id, productName: p.name || p.modelNumber, url: p.primaryImage, type: 'primary' });
+        }
+        if (p.images && p.images.length > 0) {
+          p.images.forEach((img) => {
+            if (!imageSet.has(img)) {
+              imageSet.add(img);
+              allProductImages.push({ productId: p.id, productName: p.name || p.modelNumber, url: img, type: 'additional' });
+            }
+          });
+        }
+      });
+
+      const orderIds = new Set();
+      const orders = [];
+      [...ordersAsBuyerSnap.docs, ...ordersAsSellerSnap.docs].forEach(doc => {
+        if (!orderIds.has(doc.id)) {
+          orderIds.add(doc.id);
+          const data = doc.data();
+          orders.push({
+            id: doc.id,
+            status: data.status || '',
+            total: data.total || 0,
+            deposit: data.deposit || 0,
+            remainingBalance: data.remainingBalance || 0,
+            paymentMethod: data.paymentMethod || '',
+            paymentStatus: data.paymentStatus || '',
+            items: data.items || [],
+            buyerId: data.buyerId || '',
+            sellerId: data.sellerId || '',
+            createdAt: data.createdAt || '',
+            updatedAt: data.updatedAt || '',
+            ...data,
+          });
+        }
+      });
+
+      const invoiceIds = new Set();
+      const invoices = [];
+      [...invoicesAsBuyerSnap.docs, ...invoicesAsSellerSnap.docs].forEach(doc => {
+        if (!invoiceIds.has(doc.id)) {
+          invoiceIds.add(doc.id);
+          const data = doc.data();
+          invoices.push({
+            id: doc.id,
+            invoiceNumber: data.invoiceNumber || '',
+            status: data.status || '',
+            total: data.total || 0,
+            subtotal: data.subtotal || 0,
+            tax: data.tax || 0,
+            items: data.items || [],
+            buyerId: data.buyerId || '',
+            sellerId: data.sellerId || '',
+            dueDate: data.dueDate || '',
+            paidAt: data.paidAt || '',
+            createdAt: data.createdAt || '',
+            ...data,
+          });
+        }
+      });
+
+      const totalSellerRevenue = ordersAsSellerSnap.docs.reduce((sum, doc) => sum + (doc.data().total || 0), 0);
+      const totalBuyerSpending = ordersAsBuyerSnap.docs.reduce((sum, doc) => sum + (doc.data().total || 0), 0);
+      const totalDepositsReceived = ordersAsSellerSnap.docs.reduce((sum, doc) => sum + (doc.data().deposit || 0), 0);
+      const totalDepositsPaid = ordersAsBuyerSnap.docs.reduce((sum, doc) => sum + (doc.data().deposit || 0), 0);
+      const paidInvoices = invoices.filter(inv => inv.status === 'paid');
+      const unpaidInvoices = invoices.filter(inv => inv.status !== 'paid');
+      const totalInvoicedAmount = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+      const totalPaidAmount = paidInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+      const totalUnpaidAmount = unpaidInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+
+      allExports.push({
+        profile: {
+          id: user.id,
+          displayName: user.displayName || '',
+          email: user.email || '',
+          role: user.role || '',
+          companyName: user.companyName || '',
+          phoneNumber: user.phoneNumber || '',
+          address: user.address || null,
+          bio: user.bio || '',
+          photoURL: user.photoURL || '',
+          isActive: user.isActive !== false,
+          createdAt: user.createdAt || '',
+          language: user.language || user.preferredLanguage || '',
+          paymentMethods: user.paymentMethods || [],
+          ...user,
+        },
+        products: products,
+        productImages: allProductImages,
+        financials: {
+          orders: orders,
+          invoices: invoices,
+          summary: {
+            totalProducts: products.length,
+            totalOrders: orders.length,
+            totalInvoices: invoices.length,
+            totalSellerRevenue: totalSellerRevenue,
+            totalBuyerSpending: totalBuyerSpending,
+            totalDepositsReceived: totalDepositsReceived,
+            totalDepositsPaid: totalDepositsPaid,
+            totalInvoicedAmount: totalInvoicedAmount,
+            totalPaidInvoiceAmount: totalPaidAmount,
+            totalUnpaidInvoiceAmount: totalUnpaidAmount,
+            paidInvoicesCount: paidInvoices.length,
+            unpaidInvoicesCount: unpaidInvoices.length,
+          }
+        },
+      });
+    }
+
+    const exportData = {
+      users: allExports,
+      totalUsers: allExports.length,
+      exportedAt: new Date().toISOString(),
+    };
+
+    const data = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `all-users-export-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    window.toast.success(t('admin.allUsersExported'));
+  } catch (error) {
+    console.error('Error exporting all users:', error);
+    window.toast.error(t('admin.allUsersExportFailed') || 'Failed to export all users');
   }
 }
 
